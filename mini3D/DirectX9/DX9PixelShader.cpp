@@ -1,0 +1,90 @@
+#include "DX9VertexBuffer.h"
+#include <d3d9.h>
+
+DX9PixelShader::DX9PixelShader(DX9GraphicsService* pGraphicsService, void* pShaderBytes, unsigned int sizeInBytes) :
+	pGraphicsService(pGraphicsService), pShaderBytes(0), pShaderBuffer(0)
+{
+	SetPixelShader(pShaderBytes, sizeInBytes);
+	LoadResource();
+}
+
+DX9PixelShader::~DX9PixelShader(void)
+{
+	UnloadResource();
+	UnloadPixelShader();
+	pGraphicsService->RemoveResource(this);
+}
+
+void* DX9PixelShader::GetPixelShader(unsigned int& sizeInBytes)
+{
+	void* pReturnShaderBytes = pShaderBytes;
+	sizeInBytes = this->sizeInBytes;
+
+	// reset the data because we are "removing it" when we do a GetPixelShader!
+	this->pShaderBytes = 0;
+	this->sizeInBytes = 0;
+	this->isDirty = true;
+
+
+	return pReturnShaderBytes;
+}
+void DX9PixelShader::SetPixelShader(void* pShaderBytes, unsigned int sizeInBytes)
+{
+	UnloadPixelShader();
+	
+	this->pShaderBytes = pShaderBytes;
+	this->sizeInBytes = sizeInBytes;
+
+	isDirty = true;
+}
+IDirect3DPixelShader9* DX9PixelShader::GetPixelShaderBuffer(void)
+{
+	return pShaderBuffer;
+}
+void DX9PixelShader::UnloadPixelShader(void)
+{
+	if (pShaderBytes != 0)
+		delete pShaderBytes;
+
+	pShaderBytes = 0;
+	sizeInBytes = 0;
+}
+unsigned int DX9PixelShader::GetSizeInBytes()
+{
+	return sizeInBytes;
+}
+void DX9PixelShader::LoadResource(void)
+{
+	IDirect3DDevice9* pDevice = pGraphicsService->GetDevice();
+	if (pDevice == 0)
+		return;
+
+	// If the buffer exists tear it down.
+	if (pShaderBuffer != 0)
+	{
+		UnloadResource();
+	}
+
+	if( FAILED( pDevice->CreatePixelShader((DWORD*)pShaderBytes, &pShaderBuffer)))
+	{
+		isDirty = true;
+		return;
+	}
+
+	isDirty = false;
+}
+
+void DX9PixelShader::UnloadResource(void)
+{
+	if (pShaderBuffer != 0)
+	{
+		pShaderBuffer->Release();
+		pShaderBuffer = 0;
+	}
+
+	isDirty = true;
+}
+bool DX9PixelShader::GetIsDirty(void)
+{
+	return isDirty;
+}
