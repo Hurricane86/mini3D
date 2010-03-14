@@ -134,10 +134,34 @@ IVertexShader* DX9GraphicsService::GetVertexShader(void)
 void DX9GraphicsService::SetTexture(ITexture* pTexture, unsigned int index)
 {	
 	DX9Texture* pDX9Texture = (DX9Texture*)pTexture;
+
+	if (currentWrapStyle != pDX9Texture->GetWrapStyle())
+	{
+		D3DTEXTUREADDRESS adressMode;
+
+		switch(pDX9Texture->GetWrapStyle())
+		{
+		case ITexture::TILE:
+			adressMode = D3DTADDRESS_WRAP;
+			break;
+		case ITexture::MIRROR:
+			adressMode = D3DTADDRESS_MIRROR;
+			break;
+		case ITexture::CLAMP:
+			adressMode = D3DTADDRESS_CLAMP;
+			break;
+		}
+
+		pDevice->SetTextureStageState(index, D3DSAMP_ADDRESSU, adressMode);
+		pDevice->SetTextureStageState(index, D3DSAMP_ADDRESSV, adressMode);
+		pDevice->SetTextureStageState(index, D3DSAMP_ADDRESSW, adressMode);
+	}
+
 	if (pDX9Texture != pCurrentTexture && pDX9Texture->GetTexture() != 0 && pDevice != 0)
 	{
 		pDevice->SetTexture(index, pDX9Texture->GetTexture());
 		pCurrentTexture = pDX9Texture;
+		currentWrapStyle = pDX9Texture->GetWrapStyle();
 	}
 }
 
@@ -335,9 +359,9 @@ IDepthStencil* DX9GraphicsService::CreateDepthStencil(unsigned int width, unsign
 	return new DX9DepthStencil(this, width, height);
 }
 
-ITexture* DX9GraphicsService::CreateTexture(void* pBitmap, unsigned int width, unsigned int height)
+ITexture* DX9GraphicsService::CreateTexture(void* pBitmap, unsigned int width, unsigned int height, ITexture::WrapStyle wrapStyle, ITexture::BitDepth bitDepth)
 {
-	return new DX9Texture(this, pBitmap, width, height);
+	return new DX9Texture(this, pBitmap, width, height, wrapStyle, bitDepth);
 }
 
 IVertexBuffer* DX9GraphicsService::CreateVertexBuffer(void* vertices, unsigned int count, const VertexDeclaration& vertexDeclaration)

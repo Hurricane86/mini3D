@@ -50,6 +50,8 @@ private:
 	IVertexBuffer* pCurrentVertexBuffer;
 	IIndexBuffer* pCurrentIndexBuffer;
 
+	ITexture::WrapStyle currentWrapStyle;
+
 	D3DPRESENT_PARAMETERS presentationParameters;
 
 private:
@@ -121,7 +123,7 @@ public:
 	virtual IRenderTarget* CreateRenderTarget(unsigned int width, unsigned int height);
 	virtual IDepthStencil* CreateDepthStencil(unsigned int width, unsigned int height);
 
-	virtual ITexture* CreateTexture(void* pBitmap, unsigned int width, unsigned int height);
+	virtual ITexture* CreateTexture(void* pBitmap, unsigned int width, unsigned int height, ITexture::WrapStyle wrapStyle = ITexture::TILE, ITexture::BitDepth bitDepth = ITexture::BIT32);
 
 	virtual IVertexBuffer* CreateVertexBuffer(void* pVertices, unsigned int count, const VertexDeclaration& vertexDeclaration);
 	virtual IIndexBuffer* CreateIndexBuffer(int* pIndices, unsigned int count);

@@ -75,7 +75,7 @@ public:
 	virtual IRenderTarget* CreateRenderTarget(unsigned int width, unsigned int height) = 0;
 	virtual IDepthStencil* CreateDepthStencil(unsigned int width, unsigned int height) = 0;
 
-	virtual ITexture* CreateTexture(void* pBitmap, unsigned int width, unsigned int height) = 0;
+	virtual ITexture* CreateTexture(void* pBitmap, unsigned int width, unsigned int height, ITexture::WrapStyle wrapStyle = ITexture::TILE, ITexture::BitDepth bitDepth = ITexture::BIT32) = 0;
 
 	virtual IVertexBuffer* CreateVertexBuffer(void* pVertices, unsigned int count, const VertexDeclaration& vertexDeclaration) = 0;
 	virtual IIndexBuffer* CreateIndexBuffer(int* pIndices, unsigned int count) = 0;

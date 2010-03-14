@@ -1,7 +1,7 @@
 #include "DX9Texture.h"
 #include <d3d9.h>
 
-DX9Texture::DX9Texture(DX9GraphicsService* pGraphicsService, void* pBitmap, unsigned int width, unsigned int height) :
+DX9Texture::DX9Texture(DX9GraphicsService* pGraphicsService, void* pBitmap, unsigned int width, unsigned int height, ITexture::WrapStyle wrapStyle, ITexture::BitDepth bitDepth) :
 	pGraphicsService(pGraphicsService), bufferWidth(0), bufferHeight(0), pBitmap(0), pTexture(0)
 {
 	SetBitmap(pBitmap, width, height);
@@ -18,22 +18,28 @@ IDirect3DTexture9* DX9Texture::GetTexture(void)
 {
 	return pTexture;
 }
-void* DX9Texture::GetBitmap(unsigned int& width, unsigned int& height)
+void* DX9Texture::GetBitmap(unsigned int& width, unsigned int& height, ITexture::WrapStyle& wrapStyle, ITexture::BitDepth& bitDepth)
 {
 	void* pReturnBitmap = pBitmap;
 	width = this->width;
 	height = this->height;
+	wrapStyle = this->wrapStyle;
+	bitDepth = this->bitDepth;
+	
 
 	// reset the bitmap information because we are "removing" the bitmap from the texture when we get it!
 	this->width = 0;
 	this->height = 0;
 	this->pBitmap = 0;
 
+	wrapStyle = ITexture::TILE;
+	bitDepth = ITexture::BIT32;
+
 	this->isDirty = true;
 
 	return pReturnBitmap;
 }
-void DX9Texture::SetBitmap(void* pBitmap, unsigned int width, unsigned int height)
+void DX9Texture::SetBitmap(void* pBitmap, unsigned int width, unsigned int height, ITexture::WrapStyle wrapStyle, ITexture::BitDepth bitDepth)
 {
 	UnloadBitmap();
 	
@@ -42,6 +48,9 @@ void DX9Texture::SetBitmap(void* pBitmap, unsigned int width, unsigned int heigh
 
 	this->width = width;
 	this->height = height;
+	
+	this->wrapStyle = wrapStyle;
+	this->bitDepth = bitDepth;
 
 	isDirty = true;
 }
@@ -53,14 +62,24 @@ void DX9Texture::UnloadBitmap(void)
 	pBitmap = 0;
 	width = 0;
 	height = 0;
+	wrapStyle = ITexture::TILE;
+	bitDepth = ITexture::BIT32;
 }
-unsigned int DX9Texture::GetWidth()
+unsigned int DX9Texture::GetWidth(void)
 {
 	return width;
 }
-unsigned int DX9Texture::GetHeight()
+unsigned int DX9Texture::GetHeight(void)
 {
 	return height;
+}
+ITexture::WrapStyle DX9Texture::GetWrapStyle(void)
+{
+	return wrapStyle;
+}
+ITexture::BitDepth DX9Texture::GetBitDepth(void)
+{
+	return bitDepth;
 }
 void DX9Texture::LoadResource(void)
 {
@@ -85,7 +104,25 @@ void DX9Texture::LoadResource(void)
 	// If it does not exist, create a new one
 	if (pTexture == 0)
 	{
-		if( FAILED( pDevice->CreateTexture(width, height, 1, D3DUSAGE_DYNAMIC, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pTexture, 0 ) ) ) 
+		D3DFORMAT fmt;
+
+		switch (bitDepth)
+		{
+		case ITexture::BIT16:
+			fmt = D3DFMT_X4R4G4B4;
+			break;
+		case ITexture::BIT32:
+			fmt = D3DFMT_X8R8G8B8;
+			break;
+		case ITexture::BIT64:
+			fmt = D3DFMT_A16B16G16R16;
+			break;
+		default:
+			fmt = D3DFMT_X8R8G8B8;
+		}
+
+
+		if( FAILED( pDevice->CreateTexture(width, height, 1, D3DUSAGE_DYNAMIC, fmt, D3DPOOL_DEFAULT, &pTexture, 0 ) ) ) 
 		{
 			isDirty = true;
 			return;

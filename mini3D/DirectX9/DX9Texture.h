@@ -15,6 +15,8 @@ private:
 	void* pBitmap;
 	int width;
 	int height;
+	ITexture::WrapStyle wrapStyle;
+	ITexture::BitDepth bitDepth;
 	
 	// Buffer
 	IDirect3DTexture9* pTexture;
@@ -31,20 +33,23 @@ private:
 	virtual IDirect3DTexture9* GetTexture(void);
 	void UnloadBitmap(void);
 
-public:
-	DX9Texture(DX9GraphicsService* graphicsService, void* pBitmap, unsigned int width, unsigned int height);
-	~DX9Texture(void);
-
-	virtual void* GetBitmap(unsigned int& width, unsigned int& height);
-	virtual void SetBitmap(void* pBitmap, unsigned int width, unsigned int height);
-
-	virtual unsigned int GetWidth(void);
-	virtual unsigned int GetHeight(void);
-
 	// IDX9Resource
 	virtual void LoadResource(void);
 	virtual void UnloadResource(void);
 	virtual bool GetIsDirty(void);
+
+public:
+	DX9Texture(DX9GraphicsService* graphicsService, void* pBitmap, unsigned int width, unsigned int height, ITexture::WrapStyle wrapStyle = ITexture::TILE, ITexture::BitDepth bitDepth = ITexture::BIT32);
+	~DX9Texture(void);
+
+	virtual void* GetBitmap(unsigned int& width, unsigned int& height, ITexture::WrapStyle& wrapStyle, ITexture::BitDepth& bitDepth);
+	virtual void SetBitmap(void* pBitmap, unsigned int width, unsigned int height, ITexture::WrapStyle wrapStyle = ITexture::TILE, ITexture::BitDepth bitDepth = ITexture::BIT32);
+
+	virtual unsigned int GetWidth(void);
+	virtual unsigned int GetHeight(void);
+
+	virtual WrapStyle GetWrapStyle(void);
+	virtual BitDepth GetBitDepth(void);
 };
 
 #endif
