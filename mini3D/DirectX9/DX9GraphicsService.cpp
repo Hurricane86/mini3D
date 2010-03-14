@@ -205,6 +205,8 @@ void DX9GraphicsService::BeginFrame(void)
 {
 	if (pDevice == 0)
 		return;
+	
+	UpdateResources();
 
 	// Set Render States
 	//pDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);

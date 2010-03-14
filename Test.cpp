@@ -128,10 +128,10 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	ITexture* pTexture = graphics->CreateTexture(pBitmap, 512, 512);
 	
 	long sizeInBytes;
-	char* shaderBytes = ShaderBytesFromFile(L"D:/Projects/Aurora/Source/Aurora/waterPixel.fxo", sizeInBytes);
+	char* shaderBytes = ShaderBytesFromFile(L"testPixelShader.fxo", sizeInBytes);
 	IPixelShader* pPixelShader = graphics->CreatePixelShader(shaderBytes, sizeInBytes);
 
-	shaderBytes = ShaderBytesFromFile(L"D:/Projects/Aurora/Source/Aurora/waterVertex.fxo", sizeInBytes);
+	shaderBytes = ShaderBytesFromFile(L"testVertexShader.fxo", sizeInBytes);
 	IVertexShader* pVertexShader = graphics->CreateVertexShader(shaderBytes, sizeInBytes);
 
 	D3DXMATRIX viewMatrix;
