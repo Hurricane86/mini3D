@@ -2,9 +2,10 @@ Welcome to mini3D!
 
 Mini3D is an easy to use, cross platform, wrapper for DirectX and OpenGL.
 It aims to give the easiest possible API for drawing 3D graphics without
-sacrificing (to much) performance or functionality. Mini3D supports only
-the progammable shader pipline, removes redundant API calls, and hides 
-as much as possible behind the scenes.
+sacrificing functionality or (too much) performance. Mini3D supports only
+the progammable shader pipline. Mini3D keeps code simple and clean by
+removing redundant API calls, and hiding as much as possible behind the 
+scenes.
 
 Mini3D can be used under the MIT License. Please see the LICENCE file in
 the root folder of the code archive.
