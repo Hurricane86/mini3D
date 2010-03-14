@@ -49,7 +49,7 @@ IDirect3DIndexBuffer9* DX9IndexBuffer::GetIndexBuffer(void)
 void DX9IndexBuffer::UnloadIndices(void)
 {
 	if (pIndices != 0)
-		delete pIndices;
+		operator delete(pIndices);
 
 	pIndices = 0;
 	sizeInBytes = 0;

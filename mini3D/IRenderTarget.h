@@ -5,6 +5,9 @@
 class IRenderTarget
 {
 public:
+
+	virtual ~IRenderTarget(void) {};
+
 	virtual void SetRenderTarget(unsigned int width, unsigned int height) = 0;
 	virtual unsigned int GetWidth(void) = 0;
 	virtual unsigned int GetHeight(void) = 0;

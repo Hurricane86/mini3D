@@ -48,7 +48,7 @@ void DX9Texture::SetBitmap(void* pBitmap, unsigned int width, unsigned int heigh
 void DX9Texture::UnloadBitmap(void)
 {
 	if (pBitmap != 0)
-		free(pBitmap);
+		operator delete(pBitmap);
 
 	pBitmap = 0;
 	width = 0;

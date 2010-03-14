@@ -7,6 +7,8 @@
 class IVertexBuffer
 {
 public:
+	virtual ~IVertexBuffer(void) {};
+
 	virtual void SetVertices(void* pVertices, unsigned int count, const VertexDeclaration& vertexDeclaration) = 0;
 	virtual void* GetVertices(unsigned int& count, VertexDeclaration& vertexDeclaration) = 0;
 

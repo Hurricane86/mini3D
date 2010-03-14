@@ -40,7 +40,7 @@ void DX9VertexShader::SetVertexShader(void* pShaderBytes, unsigned int sizeInByt
 void DX9VertexShader::UnloadVertexShader(void)
 {
 	if (pShaderBytes != 0)
-		delete pShaderBytes;
+		operator delete(pShaderBytes);
 
 	pShaderBytes = 0;
 	sizeInBytes = 0;

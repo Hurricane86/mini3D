@@ -114,7 +114,7 @@ unsigned int DX9VertexBuffer::GetVertexSizeInBytes(void)
 void DX9VertexBuffer::UnloadVertices(void)
 {
 	if (pVertices != 0)
-		delete pVertices;
+		operator delete(pVertices);
 
 	pVertices = 0;
 	sizeInBytes = 0;

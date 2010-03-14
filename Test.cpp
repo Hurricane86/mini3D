@@ -110,18 +110,23 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	VertexDeclaration vd(vdt, sizeof(vdt));
 
 	IGraphicsService* graphics = new DX9GraphicsService(GraphicsSettings(), (int)hWindow);
-	IIndexBuffer* iBuffer = graphics->CreateIndexBuffer(indices, 6);
-	IVertexBuffer* vBuffer = graphics->CreateVertexBuffer(vertices, 4, vd);
+	
+	int* pIndices = new int[6];
+	VertexPCT* pVertices = new VertexPCT[4];
 
-	int* pBitmap = (int*)malloc(512 * 512 * 4);
+	memcpy(pIndices, &indices, sizeof(indices));
+	memcpy(pVertices, &vertices, sizeof(vertices));
+	
+	IIndexBuffer* iBuffer = graphics->CreateIndexBuffer(pIndices, 6);
+	IVertexBuffer* vBuffer = graphics->CreateVertexBuffer(pVertices, 4, vd);
+
+	int* pBitmap = new int[512 * 512 * 4];
 	for(int i = 0; i < 512 * 512; i++)
 	{
 		pBitmap[i] = 0xFFFFFFFF * ((i / 128) % 2);
 	}
 	ITexture* pTexture = graphics->CreateTexture(pBitmap, 512, 512);
 	
-	free(pBitmap);
-
 	long sizeInBytes;
 	char* shaderBytes = ShaderBytesFromFile(L"D:/Projects/Aurora/Source/Aurora/waterPixel.fxo", sizeInBytes);
 	IPixelShader* pPixelShader = graphics->CreatePixelShader(shaderBytes, sizeInBytes);
@@ -162,6 +167,8 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 			TranslateMessage(&Msg);
 			DispatchMessage(&Msg);
 		}
+
+		delete vBuffer;
 	
 		return Msg.wParam;
 	}

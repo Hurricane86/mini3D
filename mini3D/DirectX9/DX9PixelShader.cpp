@@ -44,7 +44,7 @@ IDirect3DPixelShader9* DX9PixelShader::GetPixelShaderBuffer(void)
 void DX9PixelShader::UnloadPixelShader(void)
 {
 	if (pShaderBytes != 0)
-		delete pShaderBytes;
+		operator delete(pShaderBytes);
 
 	pShaderBytes = 0;
 	sizeInBytes = 0;
