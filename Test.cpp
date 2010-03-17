@@ -130,11 +130,14 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	ShowWindow(hWindow, SW_SHOW);
 	UpdateWindow(hWindow);
 
-	VertexDeclaration::VertexDataType vdt[] = {VertexDeclaration.POSITION, VertexDeclaration.COLOR, VertexDeclaration.TEXTURECOORDINATE};
+	VertexDeclaration::VertexDataType vdt[] = {VertexDeclaration::POSITION, VertexDeclaration::COLOR, VertexDeclaration::TEXTURECOORDINATE};
 	int size = sizeof(vdt);
 	VertexDeclaration vd(vdt, sizeof(vdt));
 
-	IGraphicsService* graphics = new DX9GraphicsService(GraphicsSettings(), (int)hWindow);
+	GraphicsSettings gs;
+	gs.multisampleFormat = GraphicsSettings::SIXTEEN_SAMPLES;
+
+	IGraphicsService* graphics = new DX9GraphicsService(gs, (int)hWindow);
 	
 	int* pIndices = new int[6];
 	VertexPCT* pVertices = new VertexPCT[4];
@@ -175,20 +178,22 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	graphics->SetPixelShader(pPixelShader);
 	graphics->SetVertexShader(pVertexShader);
 	graphics->SetTexture(pTexture, 0);
-	graphics->BeginFrame();
-	graphics->BeginDraw();
-	graphics->SetShaderParameterFloat(0, &viewProjectionMatrixTranspose._11, 4);
-	graphics->ClearRenderTarget(0xFFDDCCFF);
-	graphics->ClearDepthStencil();
-	graphics->Draw();
-	graphics->EndDraw();
-	graphics->EndFrame();
+
 
 	MSG Msg;
 	while(true)
 	{
 	    while(GetMessage(&Msg, NULL, 0, 0) > 0)
 		{
+			graphics->BeginFrame();
+			graphics->BeginDraw();
+			graphics->SetShaderParameterFloat(0, &viewProjectionMatrixTranspose._11, 4);
+			graphics->ClearRenderTarget(0xFFDDCCFF);
+			graphics->ClearDepthStencil();
+			graphics->Draw();
+			graphics->EndDraw();
+			graphics->EndFrame();
+
 			TranslateMessage(&Msg);
 			DispatchMessage(&Msg);
 		}

@@ -29,7 +29,19 @@ OTHER DEALINGS IN THE SOFTWARE.
 DX9GraphicsService::DX9GraphicsService(const GraphicsSettings& graphicsSettings, int hWindow) :
 	pDevice(0), hWindow(hWindow), graphicsSettings(graphicsSettings)
 {
+
 	pD3D = Direct3DCreate9(D3D_SDK_VERSION);
+	pD3D->GetDeviceCaps(0, D3DDEVTYPE_HAL, &deviceCaps);
+
+	currentTextures = new IDirect3DTexture9*[deviceCaps.MaxSimultaneousTextures];
+	memset(currentTextures, 0, deviceCaps.MaxSimultaneousTextures * sizeof(IDirect3DTexture9*));
+
+	currentITextures = new ITexture*[deviceCaps.MaxSimultaneousTextures];
+	memset(currentITextures, 0, deviceCaps.MaxSimultaneousTextures * sizeof(ITexture*));
+
+	currentWrapStyles = new ITexture::WrapStyle[deviceCaps.MaxSimultaneousTextures];
+	memset(currentWrapStyles, ITexture::TILE, deviceCaps.MaxSimultaneousTextures * sizeof(ITexture::WrapStyle));
+
 	this->hWindow = hWindow;
 
 	if (pD3D == 0)
@@ -77,6 +89,8 @@ void DX9GraphicsService::CreateDevice(void)
 	D3DDISPLAYMODE d3ddm;
 	pD3D->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &d3ddm);
 
+	CheckMultisampleFormat(graphicsSettings, d3ddm);
+
 	// set the presentation parameters
 	D3DPRESENT_PARAMETERS d3dpp;
 	ZeroMemory(&d3dpp, sizeof(d3dpp));
@@ -90,6 +104,8 @@ void DX9GraphicsService::CreateDevice(void)
 	d3dpp.AutoDepthStencilFormat = D3DFMT_D16;
 	d3dpp.FullScreen_RefreshRateInHz = D3DPRESENT_RATE_DEFAULT;
 	d3dpp.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
+	d3dpp.MultiSampleType = FromMultisampleFormat(graphicsSettings.multisampleFormat);
+	d3dpp.MultiSampleQuality = 0;
 
 	if (FAILED(pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, (HWND)hWindow, D3DCREATE_SOFTWARE_VERTEXPROCESSING, &d3dpp, &pDevice)))
 	{
@@ -97,6 +113,45 @@ void DX9GraphicsService::CreateDevice(void)
 		return;
 	}
 	presentationParameters = d3dpp;
+}
+
+void DX9GraphicsService::CheckMultisampleFormat(GraphicsSettings& graphicsSettings, D3DDISPLAYMODE displayMode)
+{
+	DWORD pQualityLevels;
+	while (	graphicsSettings.multisampleFormat > 0 && 
+			FAILED(pD3D->CheckDeviceMultiSampleType( D3DADAPTER_DEFAULT, 
+														D3DDEVTYPE_HAL, 
+														displayMode.Format, 
+														!graphicsSettings.fullscreen,
+														FromMultisampleFormat(graphicsSettings.multisampleFormat),
+														&pQualityLevels)))
+	{
+		graphicsSettings.multisampleFormat = (GraphicsSettings::MultisampleFormat)((int)graphicsSettings.multisampleFormat - 1);
+	}
+}
+
+D3DMULTISAMPLE_TYPE DX9GraphicsService::FromMultisampleFormat(GraphicsSettings::MultisampleFormat multisampleFormat)
+{
+	switch(multisampleFormat)
+	{
+		case GraphicsSettings::NO_MULTISAMPLE:
+			return D3DMULTISAMPLE_NONE;
+			break;
+		case GraphicsSettings::TWO_SAMPLES:
+			return D3DMULTISAMPLE_2_SAMPLES;
+			break;
+		case GraphicsSettings::FOUR_SAMPLES:
+			return D3DMULTISAMPLE_4_SAMPLES;
+			break;
+		case GraphicsSettings::EIGHT_SAMPLES:
+			return D3DMULTISAMPLE_8_SAMPLES;
+			break;
+		case GraphicsSettings::SIXTEEN_SAMPLES:
+			return D3DMULTISAMPLE_16_SAMPLES;
+			break;
+	}
+	// default case, no multisample
+	return D3DMULTISAMPLE_NONE;
 }
 
 void DX9GraphicsService::Release(void)
@@ -159,42 +214,58 @@ IVertexShader* DX9GraphicsService::GetVertexShader(void)
 
 void DX9GraphicsService::SetTexture(ITexture* pTexture, unsigned int index)
 {	
-	DX9Texture* pDX9Texture = (DX9Texture*)pTexture;
 
-	if (currentWrapStyle != pDX9Texture->GetWrapStyle())
+	if (index > deviceCaps.MaxSimultaneousTextures)
 	{
-		D3DTEXTUREADDRESS adressMode;
-
-		switch(pDX9Texture->GetWrapStyle())
-		{
-		case ITexture::TILE:
-			adressMode = D3DTADDRESS_WRAP;
-			break;
-		case ITexture::MIRROR:
-			adressMode = D3DTADDRESS_MIRROR;
-			break;
-		case ITexture::CLAMP:
-			adressMode = D3DTADDRESS_CLAMP;
-			break;
-		}
-
-		pDevice->SetTextureStageState(index, D3DSAMP_ADDRESSU, adressMode);
-		pDevice->SetTextureStageState(index, D3DSAMP_ADDRESSV, adressMode);
-		pDevice->SetTextureStageState(index, D3DSAMP_ADDRESSW, adressMode);
+		// Throw error in debug mode;
+		return;
 	}
 
-	if (pDX9Texture != pCurrentTexture && pDX9Texture->GetTexture() != 0 && pDevice != 0)
+	DX9Texture* pDX9Texture = (DX9Texture*)pTexture;
+
+	//TODO: maby support for GetTexture should be removed... then this will not be needed
+	currentITextures[index] = pDX9Texture;
+
+	if (pDevice != 0 && pDX9Texture->GetTexture() != 0 && pDX9Texture->GetTexture() != currentTextures[index])
 	{
+		if (currentWrapStyles[index] != pDX9Texture->GetWrapStyle())
+		{
+			D3DTEXTUREADDRESS adressMode;
+
+			switch(pDX9Texture->GetWrapStyle())
+			{
+			case ITexture::TILE:
+				adressMode = D3DTADDRESS_WRAP;
+				break;
+			case ITexture::MIRROR:
+				adressMode = D3DTADDRESS_MIRROR;
+				break;
+			case ITexture::CLAMP:
+				adressMode = D3DTADDRESS_CLAMP;
+				break;
+			}
+
+			pDevice->SetSamplerState(index, D3DSAMP_ADDRESSU, adressMode);
+			pDevice->SetSamplerState(index, D3DSAMP_ADDRESSV, adressMode);
+			pDevice->SetSamplerState(index, D3DSAMP_ADDRESSW, adressMode);
+
+			currentWrapStyles[index] = pDX9Texture->GetWrapStyle();
+		}
+
 		pDevice->SetTexture(index, pDX9Texture->GetTexture());
-		pCurrentTexture = pDX9Texture;
-		currentWrapStyle = pDX9Texture->GetWrapStyle();
+		currentTextures[index] = pDX9Texture->GetTexture();
 	}
 }
 
 ITexture* DX9GraphicsService::GetTexture(unsigned int index)
 {
-	// Todo: this should be an array
-	return pCurrentTexture;
+	if (index > deviceCaps.MaxSimultaneousTextures)
+	{
+		// Throw error in debug mode;
+		return 0;
+	}
+
+	return currentITextures[index];
 }
 
 void DX9GraphicsService::SetRenderTarget(IRenderTarget* pRenderTarget)

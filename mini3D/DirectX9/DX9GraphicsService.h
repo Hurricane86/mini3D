@@ -29,6 +29,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 #include <d3d9.h>
 #include <set>
+#include "../GraphicsSettings.h"
 #include "../IGraphicsService.h"
 #include "IDX9Resource.h"
 #include "DX9Texture.h"
@@ -64,19 +65,26 @@ private:
 	typedef std::set<IDX9Resource*> ResourceContainer;
 	private: ResourceContainer resourceList;
 
+	D3DCAPS9 deviceCaps;
+
 	int hWindow;
 	GraphicsSettings graphicsSettings;
 	IDirect3D9* pD3D;
 	IDirect3DDevice9* pDevice;
 	IPixelShader* pCurrentPixelShader;
 	IVertexShader* pCurrentVertexShader;
-	ITexture* pCurrentTexture;
+	
+	IDirect3DTexture9** currentTextures;
+	ITexture** currentITextures;
+	
+	ITexture::WrapStyle* currentWrapStyles;
+	
 	IRenderTarget* pCurrentRenderTarget;
 	IDepthStencil* pCurrentDepthStencil;
 	IVertexBuffer* pCurrentVertexBuffer;
 	IIndexBuffer* pCurrentIndexBuffer;
 
-	ITexture::WrapStyle currentWrapStyle;
+
 
 	D3DPRESENT_PARAMETERS presentationParameters;
 
@@ -91,6 +99,9 @@ private:
 	void UpdateResources(void);
 	void AddResource(IDX9Resource* resource);
 	void RemoveResource(IDX9Resource* resource);
+
+	void CheckMultisampleFormat(GraphicsSettings& graphicsSettings, D3DDISPLAYMODE displayMode);
+	D3DMULTISAMPLE_TYPE FromMultisampleFormat(GraphicsSettings::MultisampleFormat multisampleFormat);
 
 public:
 	// IGraphicsService

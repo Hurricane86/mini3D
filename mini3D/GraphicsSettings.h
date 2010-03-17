@@ -38,11 +38,11 @@ struct GraphicsSettings
 
 	enum MultisampleFormat
 	{
-		NO_MULTISAMPLE,
-		TWO_SAMPLES,
-		FOUR_SAMPLES,
-		EIGHT_SAMPLES,
-		SIXTEEN_SAMPLES
+		NO_MULTISAMPLE = 0,
+		TWO_SAMPLES = 1,
+		FOUR_SAMPLES = 2,
+		EIGHT_SAMPLES = 3,
+		SIXTEEN_SAMPLES = 4
 	};
 
 	enum CullMode
@@ -52,7 +52,7 @@ struct GraphicsSettings
 		COUNTER_CLOCKWIZE
 	};
 
-	bool windowed;
+	bool fullscreen;
 	ColorFormat colorFormat;
 	MultisampleFormat multisampleFormat;
 	CullMode cullMode;
@@ -61,7 +61,7 @@ struct GraphicsSettings
 	{
 		GraphicsSettings graphicsSettings;
 		
-		graphicsSettings.windowed = rhs.windowed;
+		graphicsSettings.fullscreen = rhs.fullscreen;
 		graphicsSettings.colorFormat = rhs.colorFormat;
 		graphicsSettings.multisampleFormat = rhs.multisampleFormat;
 		graphicsSettings.cullMode = rhs.cullMode;
@@ -71,7 +71,7 @@ struct GraphicsSettings
 
 	inline bool operator== (const GraphicsSettings &rhs)
 	{
-		if (this->windowed == rhs.windowed &&
+		if (this->fullscreen == rhs.fullscreen &&
 			this->colorFormat == rhs.colorFormat &&
 			this->multisampleFormat == rhs.multisampleFormat &&
 			this->cullMode == rhs.cullMode)
