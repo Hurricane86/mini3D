@@ -25,6 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include "DX9GraphicsService.h"
+#include "support/D3DSetupManager.h"
 
 DX9GraphicsService::DX9GraphicsService(const GraphicsSettings& graphicsSettings, int hWindow) :
 	pDevice(0), hWindow(hWindow), graphicsSettings(graphicsSettings)
@@ -46,7 +47,7 @@ DX9GraphicsService::DX9GraphicsService(const GraphicsSettings& graphicsSettings,
 
 	if (pD3D == 0)
 	{
-		//TODO: Cast some error
+		//TODO: Cast some error??
 	}
 
 	CreateDevice();
@@ -89,73 +90,50 @@ void DX9GraphicsService::CreateDevice(void)
 	D3DDISPLAYMODE d3ddm;
 	pD3D->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &d3ddm);
 
-	CheckMultisampleFormat(graphicsSettings, d3ddm);
-
 	// set the presentation parameters
 	D3DPRESENT_PARAMETERS d3dpp;
+
+	// TODO: need to set back buffer format fist
+	D3DSetupManager::CheckMultisampleFormat(graphicsSettings, pD3D);
+
 	ZeroMemory(&d3dpp, sizeof(d3dpp));
-	d3dpp.BackBufferWidth = 512;
-	d3dpp.BackBufferHeight = 512;
-	d3dpp.BackBufferCount = 1;
-	d3dpp.BackBufferFormat = d3ddm.Format;
+	d3dpp.BackBufferWidth = 1; // Default backbuffer should be 1x1 and is never used
+	d3dpp.BackBufferHeight = 1; // Default backbuffer should be 1x1 and is never used
+	d3dpp.BackBufferCount = 1;	// TODO: More than one backbuffer?? What is it good for?
+	d3dpp.BackBufferFormat = D3DSetupManager::GetCorrectBackBufferFormat(graphicsSettings, pD3D); 
 	d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
-	d3dpp.Windowed = true;
-	d3dpp.EnableAutoDepthStencil = true;
-	d3dpp.AutoDepthStencilFormat = D3DFMT_D16;
+	d3dpp.Windowed = !graphicsSettings.fullscreen;
+	d3dpp.EnableAutoDepthStencil = true; // we manage swap chains manually
+	d3dpp.AutoDepthStencilFormat = D3DSetupManager::GetCorrectDepthStencilFormat(graphicsSettings, pD3D); 
 	d3dpp.FullScreen_RefreshRateInHz = D3DPRESENT_RATE_DEFAULT;
 	d3dpp.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
-	d3dpp.MultiSampleType = FromMultisampleFormat(graphicsSettings.multisampleFormat);
+	d3dpp.MultiSampleType = D3DSetupManager::FromMultisampleFormat(graphicsSettings.multisampleFormat);
 	d3dpp.MultiSampleQuality = 0;
 
-	if (FAILED(pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, (HWND)hWindow, D3DCREATE_SOFTWARE_VERTEXPROCESSING, &d3dpp, &pDevice)))
-	{
-		// TODO: Does the device get automatically set to NULL if the above call fails?
-		return;
-	}
 	presentationParameters = d3dpp;
-}
 
-void DX9GraphicsService::CheckMultisampleFormat(GraphicsSettings& graphicsSettings, D3DDISPLAYMODE displayMode)
-{
-	DWORD pQualityLevels;
-	while (	graphicsSettings.multisampleFormat > 0 && 
-			FAILED(pD3D->CheckDeviceMultiSampleType( D3DADAPTER_DEFAULT, 
-														D3DDEVTYPE_HAL, 
-														displayMode.Format, 
-														!graphicsSettings.fullscreen,
-														FromMultisampleFormat(graphicsSettings.multisampleFormat),
-														&pQualityLevels)))
+	if (FAILED(pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, (HWND)hWindow, D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dpp, &pDevice)))
 	{
-		graphicsSettings.multisampleFormat = (GraphicsSettings::MultisampleFormat)((int)graphicsSettings.multisampleFormat - 1);
+		if (FAILED(pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, (HWND)hWindow, D3DCREATE_MIXED_VERTEXPROCESSING, &d3dpp, &pDevice)))
+		{
+			if (FAILED(pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, (HWND)hWindow, D3DCREATE_SOFTWARE_VERTEXPROCESSING, &d3dpp, &pDevice)))
+			{				
+				// TODO: ALL FAILED THROW ERROR!!
+				throw;
+			}
+		}
 	}
-}
 
-D3DMULTISAMPLE_TYPE DX9GraphicsService::FromMultisampleFormat(GraphicsSettings::MultisampleFormat multisampleFormat)
-{
-	switch(multisampleFormat)
-	{
-		case GraphicsSettings::NO_MULTISAMPLE:
-			return D3DMULTISAMPLE_NONE;
-			break;
-		case GraphicsSettings::TWO_SAMPLES:
-			return D3DMULTISAMPLE_2_SAMPLES;
-			break;
-		case GraphicsSettings::FOUR_SAMPLES:
-			return D3DMULTISAMPLE_4_SAMPLES;
-			break;
-		case GraphicsSettings::EIGHT_SAMPLES:
-			return D3DMULTISAMPLE_8_SAMPLES;
-			break;
-		case GraphicsSettings::SIXTEEN_SAMPLES:
-			return D3DMULTISAMPLE_16_SAMPLES;
-			break;
-	}
-	// default case, no multisample
-	return D3DMULTISAMPLE_NONE;
+	// store the default back buffer so we can put it back when we reset the device
+	pDevice->GetRenderTarget(0, &pDefaultRenderTarget);
+
 }
 
 void DX9GraphicsService::Release(void)
 {
+
+	pDevice->SetRenderTarget(0, pDefaultRenderTarget);
+
 	if (pDevice != 0)
 		pDevice->Release();
 

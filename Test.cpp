@@ -136,8 +136,11 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 
 	GraphicsSettings gs;
 	gs.multisampleFormat = GraphicsSettings::SIXTEEN_SAMPLES;
+	gs.fullscreen = false;
 
 	IGraphicsService* graphics = new DX9GraphicsService(gs, (int)hWindow);
+
+	IRenderTargetBuffer* pSwapChain = graphics->CreateRenderTargetBuffer(512,512,(int)hWindow);
 	
 	int* pIndices = new int[6];
 	VertexPCT* pVertices = new VertexPCT[4];

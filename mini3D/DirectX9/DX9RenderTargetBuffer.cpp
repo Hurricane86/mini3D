@@ -28,7 +28,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include <d3d9.h>
 
 DX9RenderTargetBuffer::DX9RenderTargetBuffer(DX9GraphicsService* pGraphicsService, unsigned int width, unsigned int height, int hWindow) : 
-	pGraphicsService(pGraphicsService)
+	pGraphicsService(pGraphicsService), pRenderTargetBuffer(0)
 {
 	SetRenderTargetBuffer(width, height, hWindow);
 	LoadResource();	
@@ -84,6 +84,7 @@ void DX9RenderTargetBuffer::LoadResource(void)
 		
 		pp.BackBufferWidth = width;
 		pp.BackBufferHeight = height;
+		pp.hDeviceWindow = (HWND)hWindow;
 				
 		if( FAILED( pDevice->CreateAdditionalSwapChain(&pp, &pRenderTargetBuffer))) 
 		{
@@ -94,6 +95,7 @@ void DX9RenderTargetBuffer::LoadResource(void)
 
 	bufferWidth = width;
 	bufferHeight = height;
+	hBufferWindow = hWindow;
 	isDirty = false;
 }
 

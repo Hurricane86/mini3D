@@ -84,7 +84,7 @@ private:
 	IVertexBuffer* pCurrentVertexBuffer;
 	IIndexBuffer* pCurrentIndexBuffer;
 
-
+	IDirect3DSurface9* pDefaultRenderTarget;
 
 	D3DPRESENT_PARAMETERS presentationParameters;
 
@@ -99,9 +99,6 @@ private:
 	void UpdateResources(void);
 	void AddResource(IDX9Resource* resource);
 	void RemoveResource(IDX9Resource* resource);
-
-	void CheckMultisampleFormat(GraphicsSettings& graphicsSettings, D3DDISPLAYMODE displayMode);
-	D3DMULTISAMPLE_TYPE FromMultisampleFormat(GraphicsSettings::MultisampleFormat multisampleFormat);
 
 public:
 	// IGraphicsService

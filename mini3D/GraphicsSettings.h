@@ -29,13 +29,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 struct GraphicsSettings
 {
-	enum ColorFormat
-	{
-		COLOR_FORMAT_16BIT,
-		COLOR_FORMAT_32BIT,
-		COLOR_FORMAT_64BIT
-	};
-
 	enum MultisampleFormat
 	{
 		NO_MULTISAMPLE = 0,
@@ -53,7 +46,6 @@ struct GraphicsSettings
 	};
 
 	bool fullscreen;
-	ColorFormat colorFormat;
 	MultisampleFormat multisampleFormat;
 	CullMode cullMode;
 
@@ -62,7 +54,6 @@ struct GraphicsSettings
 		GraphicsSettings graphicsSettings;
 		
 		graphicsSettings.fullscreen = rhs.fullscreen;
-		graphicsSettings.colorFormat = rhs.colorFormat;
 		graphicsSettings.multisampleFormat = rhs.multisampleFormat;
 		graphicsSettings.cullMode = rhs.cullMode;
 
@@ -72,7 +63,6 @@ struct GraphicsSettings
 	inline bool operator== (const GraphicsSettings &rhs)
 	{
 		if (this->fullscreen == rhs.fullscreen &&
-			this->colorFormat == rhs.colorFormat &&
 			this->multisampleFormat == rhs.multisampleFormat &&
 			this->cullMode == rhs.cullMode)
 		{

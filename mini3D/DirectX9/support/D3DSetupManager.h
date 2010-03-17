@@ -24,20 +24,21 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef AURORA_IRENDERTARGETBUFFER_H
-#define AURORA_IRENDERTARGETBUFFER_H
+#ifndef AURORA_SETUPMANAGER_H
+#define AURORA_SETUPMANAGER_H
 
-#include "IRenderTarget.h"
+#include <d3d9.h>
+#include "../../GraphicsSettings.h"
 
-class IRenderTargetBuffer
+class D3DSetupManager
 {
-public:
+	public:
+	
+	static D3DFORMAT GetCorrectBackBufferFormat(GraphicsSettings& graphicsSettings, IDirect3D9* pD3D);
+	static D3DFORMAT GetCorrectDepthStencilFormat(GraphicsSettings& graphicsSettings, IDirect3D9* pD3D);
+	static void CheckMultisampleFormat(GraphicsSettings& graphicsSettings, IDirect3D9* pD3D);
+	static D3DMULTISAMPLE_TYPE FromMultisampleFormat(GraphicsSettings::MultisampleFormat multisampleFormat);
 
-	virtual ~IRenderTargetBuffer(void) {};
-
-	virtual void SetRenderTargetBuffer(unsigned int width, unsigned int height, int hWindow) = 0;
-	virtual unsigned int GetWidth(void) = 0;
-	virtual unsigned int GetHeight(void) = 0;
 };
 
 #endif
