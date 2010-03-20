@@ -28,7 +28,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include <d3d9.h>
 
 DX9DepthStencil::DX9DepthStencil(DX9GraphicsService* pGraphicsService, unsigned int width, unsigned int height) : 
-	pGraphicsService(pGraphicsService)
+	pGraphicsService(pGraphicsService), pDepthStencil(0)
 {
 	SetDepthStencil(width, height);
 	LoadResource();	
@@ -74,11 +74,13 @@ void DX9DepthStencil::LoadResource(void)
 		UnloadResource();
 	}
 
+	D3DPRESENT_PARAMETERS pp = pGraphicsService->GetPresentationParameters();
+
 	// If it does not exist, create a new one
 	if (pDepthStencil == 0)
 	{
 		
-		if( FAILED( pDevice->CreateDepthStencilSurface(width, height, D3DFMT_D16, D3DMULTISAMPLE_NONE, 0, true, &pDepthStencil, 0 ))) 
+		if( FAILED( pDevice->CreateDepthStencilSurface(width, height, pp.AutoDepthStencilFormat, pp.MultiSampleType, pp.MultiSampleQuality, true, &pDepthStencil, 0 ))) 
 		{
 			isDirty = true;
 			return;

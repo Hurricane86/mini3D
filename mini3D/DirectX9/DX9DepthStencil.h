@@ -33,6 +33,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 class DX9DepthStencil : public IDepthStencil, public IDX9Resource
 {
+friend class DX9ScreenRenderTarget;
+friend class DX9RenderTargetTexture;
 friend class DX9GraphicsService;
 
 private:

@@ -140,8 +140,8 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 
 	IGraphicsService* graphics = new DX9GraphicsService(gs, (int)hWindow);
 
-	IRenderTargetBuffer* pSwapChain = graphics->CreateRenderTargetBuffer(512,512,(int)hWindow);
-	
+	IScreenRenderTarget* pScreenRenderTarget = graphics->CreateScreenRenderTarget(512,512,(int)hWindow, true);
+
 	int* pIndices = new int[6];
 	VertexPCT* pVertices = new VertexPCT[4];
 
@@ -156,7 +156,7 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	{
 		pBitmap[i] = 0xFFFFFFFF * ((i / 128) % 2);
 	}
-	ITexture* pTexture = graphics->CreateTexture(pBitmap, 512, 512);
+	IBitmapTexture* pTexture = graphics->CreateBitmapTexture(pBitmap, 512, 512);
 	
 	long sizeInBytes;
 	char* shaderBytes = ShaderBytesFromFile(L"testPixelShader.fxo", sizeInBytes);
@@ -174,7 +174,8 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	D3DXMATRIX viewProjectionMatrix = viewMatrix * projectionMatrix;
 	D3DXMATRIX viewProjectionMatrixTranspose;
 	D3DXMatrixTranspose(&viewProjectionMatrixTranspose, &viewProjectionMatrix);
-	//D3DXMatrixMultiply(&viewProjectionMatrix, &viewMatrix, &projectionMatrix);
+	
+	graphics->SetRenderTarget(pScreenRenderTarget);
 
 	graphics->SetIndexBuffer(iBuffer);
 	graphics->SetVertexBuffer(vBuffer);
@@ -192,10 +193,10 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 			graphics->BeginDraw();
 			graphics->SetShaderParameterFloat(0, &viewProjectionMatrixTranspose._11, 4);
 			graphics->ClearRenderTarget(0xFFDDCCFF);
-			graphics->ClearDepthStencil();
 			graphics->Draw();
 			graphics->EndDraw();
 			graphics->EndFrame();
+			pScreenRenderTarget->Display();
 
 			TranslateMessage(&Msg);
 			DispatchMessage(&Msg);

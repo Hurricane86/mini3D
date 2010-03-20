@@ -31,12 +31,14 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "GraphicsSettings.h"
 #include "IPixelShader.h"
 #include "IVertexShader.h"
-#include "ITexture.h"
-#include "IRenderTarget.h"
+#include "internal/ITexture.h"
+#include "IBitmapTexture.h"
+#include "internal/IRenderTarget.h"
+#include "IRenderTargetTexture.h"
 #include "IDepthStencil.h"
 #include "IVertexBuffer.h"
 #include "IIndexBuffer.h"
-#include "IRenderTargetBuffer.h"
+#include "IScreenRenderTarget.h"
 
 class IGraphicsService
 {
@@ -63,8 +65,8 @@ public:
 	virtual IRenderTarget* GetRenderTarget(void) = 0;
 	virtual void SetRenderTarget(IRenderTarget* pRenderTarget) = 0;
 
-	virtual IDepthStencil* GetDepthStencil(void) = 0;
-	virtual void SetDepthStencil(IDepthStencil* pDepthStencil) = 0;
+//	virtual IDepthStencil* GetDepthStencil(void) = 0;
+//	virtual void SetDepthStencil(IDepthStencil* pDepthStencil) = 0;
 
 	// Get Graphics Card Capabilities
 	virtual int GetMaxTextures() = 0;
@@ -92,15 +94,15 @@ public:
 	virtual void DrawIndices(unsigned int startIndex, unsigned int numIndices) = 0;
 
 	virtual void ClearRenderTarget(int color) = 0;
-	virtual void ClearDepthStencil(void) = 0;
+	//virtual void ClearDepthStencil(void) = 0;
 
 	// Create Resources
-	virtual IRenderTargetBuffer* CreateRenderTargetBuffer(unsigned int width, unsigned int height, int hWindow) = 0;
+	virtual IScreenRenderTarget* CreateScreenRenderTarget(unsigned int width, unsigned int height, int hWindow, bool depthTestEnabled) = 0;
 
-	virtual IRenderTarget* CreateRenderTarget(unsigned int width, unsigned int height) = 0;
-	virtual IDepthStencil* CreateDepthStencil(unsigned int width, unsigned int height) = 0;
+	virtual IRenderTargetTexture* CreateRenderTargetTexture(unsigned int width, unsigned int height, bool depthTestEnabled) = 0;
+	//virtual IDepthStencil* CreateDepthStencil(unsigned int width, unsigned int height) = 0;
 
-	virtual ITexture* CreateTexture(void* pBitmap, unsigned int width, unsigned int height, ITexture::WrapStyle wrapStyle = ITexture::TILE, ITexture::BitDepth bitDepth = ITexture::BIT32) = 0;
+	virtual IBitmapTexture* CreateBitmapTexture(void* pBitmap, unsigned int width, unsigned int height, ITexture::WrapStyle wrapStyle = ITexture::TILE, IBitmapTexture::BitDepth bitDepth = IBitmapTexture::BIT32) = 0;
 
 	virtual IVertexBuffer* CreateVertexBuffer(void* pVertices, unsigned int count, const VertexDeclaration& vertexDeclaration) = 0;
 	virtual IIndexBuffer* CreateIndexBuffer(int* pIndices, unsigned int count) = 0;

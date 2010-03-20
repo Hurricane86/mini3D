@@ -28,7 +28,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "support/D3DSetupManager.h"
 
 DX9GraphicsService::DX9GraphicsService(const GraphicsSettings& graphicsSettings, int hWindow) :
-	pDevice(0), hWindow(hWindow), graphicsSettings(graphicsSettings)
+	pDevice(0), hWindow(hWindow), graphicsSettings(graphicsSettings), pCurrentDepthStencil(0)
 {
 
 	pD3D = Direct3DCreate9(D3D_SDK_VERSION);
@@ -103,7 +103,7 @@ void DX9GraphicsService::CreateDevice(void)
 	d3dpp.BackBufferFormat = D3DSetupManager::GetCorrectBackBufferFormat(graphicsSettings, pD3D); 
 	d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
 	d3dpp.Windowed = !graphicsSettings.fullscreen;
-	d3dpp.EnableAutoDepthStencil = true; // we manage swap chains manually
+	d3dpp.EnableAutoDepthStencil = false; // we manage swap chains manually
 	d3dpp.AutoDepthStencilFormat = D3DSetupManager::GetCorrectDepthStencilFormat(graphicsSettings, pD3D); 
 	d3dpp.FullScreen_RefreshRateInHz = D3DPRESENT_RATE_DEFAULT;
 	d3dpp.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
@@ -199,14 +199,16 @@ void DX9GraphicsService::SetTexture(ITexture* pTexture, unsigned int index)
 		return;
 	}
 
-	DX9Texture* pDX9Texture = (DX9Texture*)pTexture;
+	// this cast is "unfailable" (not exception caught). Whoever inherits from ITexture must also inherit from IDX9Texture
+	IDX9Texture* pDX9Texture = dynamic_cast<IDX9Texture*>(pTexture);
+	//IDX9Texture* pDX9Texture = (IDX9Texture*)pTexture;
 
 	//TODO: maby support for GetTexture should be removed... then this will not be needed
-	currentITextures[index] = pDX9Texture;
+	currentITextures[index] = pTexture;
 
-	if (pDevice != 0 && pDX9Texture->GetTexture() != 0 && pDX9Texture->GetTexture() != currentTextures[index])
+	if (pDevice != 0 && pDX9Texture->GetTextureBuffer() != 0 && pDX9Texture->GetTextureBuffer() != currentTextures[index])
 	{
-		if (currentWrapStyles[index] != pDX9Texture->GetWrapStyle())
+		if (currentWrapStyles[index] != pTexture->GetWrapStyle())
 		{
 			D3DTEXTUREADDRESS adressMode;
 
@@ -227,11 +229,11 @@ void DX9GraphicsService::SetTexture(ITexture* pTexture, unsigned int index)
 			pDevice->SetSamplerState(index, D3DSAMP_ADDRESSV, adressMode);
 			pDevice->SetSamplerState(index, D3DSAMP_ADDRESSW, adressMode);
 
-			currentWrapStyles[index] = pDX9Texture->GetWrapStyle();
+			currentWrapStyles[index] = pTexture->GetWrapStyle();
 		}
 
-		pDevice->SetTexture(index, pDX9Texture->GetTexture());
-		currentTextures[index] = pDX9Texture->GetTexture();
+		pDevice->SetTexture(index, pDX9Texture->GetTextureBuffer());
+		currentTextures[index] = pDX9Texture->GetTextureBuffer();
 	}
 }
 
@@ -248,12 +250,31 @@ ITexture* DX9GraphicsService::GetTexture(unsigned int index)
 
 void DX9GraphicsService::SetRenderTarget(IRenderTarget* pRenderTarget)
 {
-	DX9RenderTarget* pDX9RenderTarget = (DX9RenderTarget*)pRenderTarget;
-	if (pDX9RenderTarget != pCurrentRenderTarget && pDX9RenderTarget->GetRenderTargetBuffer() != 0 && pDevice != 0)
+	if (pDevice == 0)
+		return;
+
+	IDX9RenderTarget* pDX9RenderTarget = dynamic_cast<IDX9RenderTarget*>(pRenderTarget);
+	if (pDX9RenderTarget != pCurrentRenderTarget && pDX9RenderTarget->GetRenderTargetBuffer() != 0)
 	{
 		pDevice->SetRenderTarget(0,  (IDirect3DSurface9*)pDX9RenderTarget->GetRenderTargetBuffer());
 		pCurrentRenderTarget = pDX9RenderTarget;
 	}
+	IDirect3DSurface9* pDepthStencilBuffer = pDX9RenderTarget->GetDepthStencilBuffer();
+	
+	// clear the current assigned depth stencil if we are setting a rendertarget without depth stencil
+	if (pDepthStencilBuffer == 0 && pCurrentDepthStencil != 0)
+	{
+		pDevice->SetDepthStencilSurface(0);
+		pDevice->SetRenderState(D3DRS_ZENABLE, false);
+		pCurrentDepthStencil = 0;
+	}
+	else if (pDepthStencilBuffer != 0 && pCurrentDepthStencil != pDepthStencilBuffer)
+	{
+		pDevice->SetDepthStencilSurface(pDepthStencilBuffer);
+		pDevice->SetRenderState(D3DRS_ZENABLE, true);
+		pCurrentDepthStencil = pDepthStencilBuffer;
+	}
+
 }
 
 IRenderTarget* DX9GraphicsService::GetRenderTarget(void)
@@ -261,20 +282,27 @@ IRenderTarget* DX9GraphicsService::GetRenderTarget(void)
 	return pCurrentRenderTarget;
 }
 
-void DX9GraphicsService::SetDepthStencil(IDepthStencil* pDepthStencil)
-{
-	DX9DepthStencil* pDX9DepthStencil = (DX9DepthStencil*)pDepthStencil;
-	if (pDX9DepthStencil != pCurrentDepthStencil && pDX9DepthStencil->GetDepthStencilBuffer() != 0 && pDevice != 0)
-	{
-		pDevice->SetDepthStencilSurface(pDX9DepthStencil->GetDepthStencilBuffer());
-		pCurrentDepthStencil = pDX9DepthStencil;
-	}
-}
+//void DX9GraphicsService::SetDepthStencil(IDepthStencil* pDepthStencil)
+//{
+//	DX9DepthStencil* pDX9DepthStencil = (DX9DepthStencil*)pDepthStencil;
+//	if (pDX9DepthStencil != pCurrentDepthStencil && pDX9DepthStencil->GetDepthStencilBuffer() != 0 && pDevice != 0)
+//	{
+//		pDevice->SetDepthStencilSurface(pDX9DepthStencil->GetDepthStencilBuffer());
+//		pCurrentDepthStencil = pDX9DepthStencil;
+//		
+//		if (pCurrentDepthStencil != 0)
+//		{
+//		}
+//		else
+//		{
+//		}
+//	}
+//}
 
-IDepthStencil* DX9GraphicsService::GetDepthStencil(void)
-{
-	return pCurrentDepthStencil;
-}
+//IDepthStencil* DX9GraphicsService::GetDepthStencil(void)
+//{
+//	return pCurrentDepthStencil;
+//}
 
 
 // Get Graphics Card Capabilities
@@ -338,7 +366,7 @@ void DX9GraphicsService::BeginFrame(void)
 // before frame is started, resources will be updated
 void DX9GraphicsService::EndFrame(void)
 {
-	pDevice->Present(0,0,0,0);
+
 }
 
 void DX9GraphicsService::BeginDraw(void)
@@ -409,34 +437,42 @@ void DX9GraphicsService::DrawIndices(unsigned int startIndex, unsigned int numIn
 
 void DX9GraphicsService::ClearRenderTarget(int color)
 {
-	pDevice->Clear(0, 0, D3DCLEAR_TARGET, (DWORD)color, 1.0f, 0);
-}
 
-void DX9GraphicsService::ClearDepthStencil(void)
-{
-	pDevice->Clear(0, 0, D3DCLEAR_ZBUFFER, 0, 1.0f, 0);
+	DWORD flags = D3DCLEAR_TARGET;
+	
+	// if we have a depthstencil we need to clear that too
+	if (pCurrentDepthStencil != 0)
+	{
+		flags |= D3DCLEAR_ZBUFFER;
+	}
+	pDevice->Clear(0, 0, flags, (DWORD)color, 1.0f, 0);
 }
+// TODO: Depricated
+//void DX9GraphicsService::ClearDepthStencil(void)
+//{
+//	pDevice->Clear(0, 0, D3DCLEAR_ZBUFFER, 0, 1.0f, 0);
+//}
 
 
 // Create Resources
-IRenderTargetBuffer* DX9GraphicsService::CreateRenderTargetBuffer(unsigned int width, unsigned int height, int hWindow)
+IScreenRenderTarget* DX9GraphicsService::CreateScreenRenderTarget(unsigned int width, unsigned int height, int hWindow, bool depthTestEnabled)
 {
-	return new DX9RenderTargetBuffer(this, width, height, hWindow);
+	return new DX9ScreenRenderTarget(this, width, height, hWindow, depthTestEnabled);
 }
 
-IRenderTarget* DX9GraphicsService::CreateRenderTarget(unsigned int width, unsigned int height)
+IRenderTargetTexture* DX9GraphicsService::CreateRenderTargetTexture(unsigned int width, unsigned int height, bool depthTestEnabled)
 {
-	return new DX9RenderTarget(this, width, height);
+	return new DX9RenderTargetTexture(this, width, height, depthTestEnabled);
 }
 
-IDepthStencil* DX9GraphicsService::CreateDepthStencil(unsigned int width, unsigned int height)
-{
-	return new DX9DepthStencil(this, width, height);
-}
+//IDepthStencil* DX9GraphicsService::CreateDepthStencil(unsigned int width, unsigned int height)
+//{
+//	return new DX9DepthStencil(this, width, height);
+//}
 
-ITexture* DX9GraphicsService::CreateTexture(void* pBitmap, unsigned int width, unsigned int height, ITexture::WrapStyle wrapStyle, ITexture::BitDepth bitDepth)
+IBitmapTexture* DX9GraphicsService::CreateBitmapTexture(void* pBitmap, unsigned int width, unsigned int height, ITexture::WrapStyle wrapStyle, IBitmapTexture::BitDepth bitDepth)
 {
-	return new DX9Texture(this, pBitmap, width, height, wrapStyle, bitDepth);
+	return new DX9BitmapTexture(this, pBitmap, width, height, wrapStyle, bitDepth);
 }
 
 IVertexBuffer* DX9GraphicsService::CreateVertexBuffer(void* vertices, unsigned int count, const VertexDeclaration& vertexDeclaration)

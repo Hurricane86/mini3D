@@ -31,28 +31,33 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include <set>
 #include "../GraphicsSettings.h"
 #include "../IGraphicsService.h"
+
+#include "IDX9RenderTarget.h"
+#include "IDX9Texture.h"
+
 #include "IDX9Resource.h"
-#include "DX9Texture.h"
+#include "IDX9Texture.h"
+#include "DX9BitmapTexture.h"
 #include "DX9IndexBuffer.h"
 #include "DX9PixelShader.h"
 #include "DX9VertexShader.h"
 #include "DX9VertexBuffer.h"
 #include "DX9IndexBuffer.h"
-#include "DX9RenderTarget.h"
+#include "DX9RenderTargetTexture.h"
 #include "DX9DepthStencil.h"
-#include "DX9RenderTargetBuffer.h"
+#include "DX9ScreenRenderTarget.h"
 
 
 class DX9GraphicsService : public IGraphicsService
 {
-friend class DX9Texture;
-friend class DX9RenderTarget;
+friend class DX9BitmapTexture;
+friend class DX9RenderTargetTexture;
 friend class DX9PixelShader;
 friend class DX9VertexShader;
 friend class DX9VertexBuffer;
 friend class DX9IndexBuffer;
 friend class DX9DepthStencil;
-friend class DX9RenderTargetBuffer;
+friend class DX9ScreenRenderTarget;
 
 public:
 	// Constructor
@@ -80,7 +85,7 @@ private:
 	ITexture::WrapStyle* currentWrapStyles;
 	
 	IRenderTarget* pCurrentRenderTarget;
-	IDepthStencil* pCurrentDepthStencil;
+	IDirect3DSurface9* pCurrentDepthStencil;
 	IVertexBuffer* pCurrentVertexBuffer;
 	IIndexBuffer* pCurrentIndexBuffer;
 
@@ -120,9 +125,11 @@ public:
 	virtual IRenderTarget* GetRenderTarget(void);
 	virtual void SetRenderTarget(IRenderTarget* pRenderTarget);
 	
-	virtual IDepthStencil* GetDepthStencil(void);
-	virtual void SetDepthStencil(IDepthStencil* pDepthStencil);
-	
+//private: virtual IDepthStencil* GetDepthStencil(void);
+//private: virtual void SetDepthStencil(IDepthStencil* pDepthStencil);
+//
+//public:
+
 	// Get Graphics Card Capabilities
 	virtual int GetMaxTextures(void);
 	virtual int GetMaxTextureSize(void);
@@ -149,15 +156,15 @@ public:
 	virtual void DrawIndices(unsigned int startIndex, unsigned int numIndices);
 
 	virtual void ClearRenderTarget(int color);
-	virtual void ClearDepthStencil(void);
+//	virtual void ClearDepthStencil(void);
 
 	// Create Resources
-	virtual IRenderTargetBuffer* CreateRenderTargetBuffer(unsigned int width, unsigned int height, int hWindow);
+	virtual IScreenRenderTarget* CreateScreenRenderTarget(unsigned int width, unsigned int height, int hWindow, bool depthTestEnabled);
 
-	virtual IRenderTarget* CreateRenderTarget(unsigned int width, unsigned int height);
-	virtual IDepthStencil* CreateDepthStencil(unsigned int width, unsigned int height);
+	virtual IRenderTargetTexture* CreateRenderTargetTexture(unsigned int width, unsigned int height, bool depthTestEnabled);
+	//virtual IDepthStencil* CreateDepthStencil(unsigned int width, unsigned int height);
 
-	virtual ITexture* CreateTexture(void* pBitmap, unsigned int width, unsigned int height, ITexture::WrapStyle wrapStyle = ITexture::TILE, ITexture::BitDepth bitDepth = ITexture::BIT32);
+	virtual IBitmapTexture* CreateBitmapTexture(void* pBitmap, unsigned int width, unsigned int height, ITexture::WrapStyle wrapStyle = ITexture::TILE, IBitmapTexture::BitDepth bitDepth = IBitmapTexture::BIT32);
 
 	virtual IVertexBuffer* CreateVertexBuffer(void* pVertices, unsigned int count, const VertexDeclaration& vertexDeclaration);
 	virtual IIndexBuffer* CreateIndexBuffer(int* pIndices, unsigned int count);
