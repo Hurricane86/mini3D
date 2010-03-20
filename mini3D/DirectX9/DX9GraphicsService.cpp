@@ -28,7 +28,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "support/D3DSetupManager.h"
 
 DX9GraphicsService::DX9GraphicsService(const GraphicsSettings& graphicsSettings, int hWindow) :
-	pDevice(0), hWindow(hWindow), graphicsSettings(graphicsSettings), pCurrentDepthStencil(0)
+	pDevice(0), hWindow(hWindow), graphicsSettings(graphicsSettings), pCurrentDepthStencilBuffer(0)
 {
 
 	pD3D = Direct3DCreate9(D3D_SDK_VERSION);
@@ -262,17 +262,17 @@ void DX9GraphicsService::SetRenderTarget(IRenderTarget* pRenderTarget)
 	IDirect3DSurface9* pDepthStencilBuffer = pDX9RenderTarget->GetDepthStencilBuffer();
 	
 	// clear the current assigned depth stencil if we are setting a rendertarget without depth stencil
-	if (pDepthStencilBuffer == 0 && pCurrentDepthStencil != 0)
+	if (pDepthStencilBuffer == 0 && pCurrentDepthStencilBuffer != 0)
 	{
 		pDevice->SetDepthStencilSurface(0);
 		pDevice->SetRenderState(D3DRS_ZENABLE, false);
-		pCurrentDepthStencil = 0;
+		pCurrentDepthStencilBuffer = 0;
 	}
-	else if (pDepthStencilBuffer != 0 && pCurrentDepthStencil != pDepthStencilBuffer)
+	else if (pDepthStencilBuffer != 0 && pCurrentDepthStencilBuffer != pDepthStencilBuffer)
 	{
 		pDevice->SetDepthStencilSurface(pDepthStencilBuffer);
 		pDevice->SetRenderState(D3DRS_ZENABLE, true);
-		pCurrentDepthStencil = pDepthStencilBuffer;
+		pCurrentDepthStencilBuffer = pDepthStencilBuffer;
 	}
 
 }
@@ -281,29 +281,6 @@ IRenderTarget* DX9GraphicsService::GetRenderTarget(void)
 {
 	return pCurrentRenderTarget;
 }
-
-//void DX9GraphicsService::SetDepthStencil(IDepthStencil* pDepthStencil)
-//{
-//	DX9DepthStencil* pDX9DepthStencil = (DX9DepthStencil*)pDepthStencil;
-//	if (pDX9DepthStencil != pCurrentDepthStencil && pDX9DepthStencil->GetDepthStencilBuffer() != 0 && pDevice != 0)
-//	{
-//		pDevice->SetDepthStencilSurface(pDX9DepthStencil->GetDepthStencilBuffer());
-//		pCurrentDepthStencil = pDX9DepthStencil;
-//		
-//		if (pCurrentDepthStencil != 0)
-//		{
-//		}
-//		else
-//		{
-//		}
-//	}
-//}
-
-//IDepthStencil* DX9GraphicsService::GetDepthStencil(void)
-//{
-//	return pCurrentDepthStencil;
-//}
-
 
 // Get Graphics Card Capabilities
 int DX9GraphicsService::GetMaxTextures()
@@ -441,17 +418,12 @@ void DX9GraphicsService::ClearRenderTarget(int color)
 	DWORD flags = D3DCLEAR_TARGET;
 	
 	// if we have a depthstencil we need to clear that too
-	if (pCurrentDepthStencil != 0)
+	if (pCurrentDepthStencilBuffer != 0)
 	{
 		flags |= D3DCLEAR_ZBUFFER;
 	}
 	pDevice->Clear(0, 0, flags, (DWORD)color, 1.0f, 0);
 }
-// TODO: Depricated
-//void DX9GraphicsService::ClearDepthStencil(void)
-//{
-//	pDevice->Clear(0, 0, D3DCLEAR_ZBUFFER, 0, 1.0f, 0);
-//}
 
 
 // Create Resources
@@ -464,11 +436,6 @@ IRenderTargetTexture* DX9GraphicsService::CreateRenderTargetTexture(unsigned int
 {
 	return new DX9RenderTargetTexture(this, width, height, depthTestEnabled);
 }
-
-//IDepthStencil* DX9GraphicsService::CreateDepthStencil(unsigned int width, unsigned int height)
-//{
-//	return new DX9DepthStencil(this, width, height);
-//}
 
 IBitmapTexture* DX9GraphicsService::CreateBitmapTexture(void* pBitmap, unsigned int width, unsigned int height, ITexture::WrapStyle wrapStyle, IBitmapTexture::BitDepth bitDepth)
 {

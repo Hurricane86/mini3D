@@ -85,7 +85,9 @@ private:
 	ITexture::WrapStyle* currentWrapStyles;
 	
 	IRenderTarget* pCurrentRenderTarget;
-	IDirect3DSurface9* pCurrentDepthStencil;
+	
+	IDirect3DSurface9* pCurrentDepthStencilBuffer;
+	
 	IVertexBuffer* pCurrentVertexBuffer;
 	IIndexBuffer* pCurrentIndexBuffer;
 
