@@ -24,40 +24,49 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "../IVertexShader.h"
-#include "DX9GraphicsService.h"
+#ifndef AURORA_DX9ScreenRenderTarget_H
+#define AURORA_DX9ScreenRenderTarget_H
 
-class DX9VertexShader : IVertexShader, IDX9Resource
+#include "../IScreenRenderTarget.h"
+#include "DX9GraphicsService.h"
+#include "IDX9Resource.h"
+
+class DX9ScreenRenderTarget : public IScreenRenderTarget, public IDX9Resource
 {
 friend class DX9GraphicsService;
 
 private:
-	// Indices
-	void* pShaderBytes;
-	unsigned int sizeInBytes;
-	
-	// Buffer
-	IDirect3DVertexShader9* pShaderBuffer;
+	// Bitmap
+	unsigned int width;
+	unsigned int height;
+	int hWindow;
 	bool isDirty;
 
+	// Buffer
+	unsigned int bufferWidth;
+	unsigned int bufferHeight;
+	int hBufferWindow;
+	IDirect3DSwapChain9* pScreenRenderTarget;
+	
 	// GraphicsDevice link
 	DX9GraphicsService* pGraphicsService;
 
-public:
-	DX9VertexShader(DX9GraphicsService* graphicsService, void* pShaderBytes, unsigned int sizeInBytes);
-	~DX9VertexShader(void);
-
-	virtual void SetVertexShader(void* pShaderBytes, unsigned int sizeInBytes);
-	virtual void* GetVertexShader(unsigned int& sizeInBytes);
-	
-
-	virtual unsigned int GetSizeInBytes();
-
 private:
-	void UnloadVertexShader(void);
+	virtual IDirect3DSurface9* GetBackBuffer(void);
+
+public:
+	DX9ScreenRenderTarget(DX9GraphicsService* graphicsService, unsigned int width, unsigned int height, int hWindow);
+	~DX9ScreenRenderTarget(void);
+
+	void SetScreenRenderTarget(unsigned int width, unsigned int height, int hWindow);
+	virtual unsigned int GetWidth(void);
+	virtual unsigned int GetHeight(void);
 
 	// IDX9Resource
 	virtual void LoadResource(void);
 	virtual void UnloadResource(void);
 	virtual bool GetIsDirty(void);
+
 };
+
+#endif

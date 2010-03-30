@@ -40,77 +40,37 @@ void DX9VertexBuffer::SetVertices(void* pVertices, unsigned int count, const Ver
 }
 void DX9VertexBuffer::SetVertexDeclaration(const VertexDeclaration& vertexDeclaration)
 {
+	// if we already have a vertex declaration, release it from the graphics service pool
+	if (this->vertexDeclaration.GetSizeInBytes() != 0)
+		pGraphicsService->ReleaseVertexDeclaration(vertexDeclaration);
 	
-	int count = vertexDeclaration.GetSizeInBytes() / sizeof(VertexDeclaration::VertexDataType) + 1;
+	// pool the new one
+	pGraphicsService->PoolVertexDeclaration(vertexDeclaration);
 
-	D3DVERTEXELEMENT9* pVertexElements = new D3DVERTEXELEMENT9[count];
-	
-	// cumulative offset for the vertexelements
-	int offset = 0;
-	int textureUsageIndex = 0;
-	int uvStream = 0;
-	int positionUsageIndex = 0;
-	int colorUsageIndex = 0;
-
-	unsigned int sizeInBytes;
+	vertexSizeInBytes = 0;
+	int count = vertexDeclaration.GetSizeInBytes() / sizeof(VertexDeclaration::VertexDataType);
 	for (int i = 0; i < count; i++)
 	{
 		switch (vertexDeclaration.GetVertexDataTypes(sizeInBytes)[i])
 		{
 				
 		case vertexDeclaration.POSITION:
-			pVertexElements[i].Method = D3DDECLMETHOD_DEFAULT;
-			pVertexElements[i].Offset = offset;
-			pVertexElements[i].Stream = 0;
-			pVertexElements[i].Type = D3DDECLTYPE_FLOAT3;
-			pVertexElements[i].Usage = D3DDECLUSAGE_POSITION;
-			pVertexElements[i].UsageIndex = positionUsageIndex;
-			
-			positionUsageIndex++;
-			offset += 12;
+			vertexSizeInBytes += 12;
 			break;
 		case vertexDeclaration.COLOR:
-			pVertexElements[i].Method = D3DDECLMETHOD_DEFAULT;
-			pVertexElements[i].Offset = offset;
-			pVertexElements[i].Stream = 0;
-			pVertexElements[i].Type = D3DDECLTYPE_D3DCOLOR;
-			pVertexElements[i].Usage = D3DDECLUSAGE_COLOR;
-			pVertexElements[i].UsageIndex = colorUsageIndex;
-			
-			colorUsageIndex++;
-			offset += 4;
+			vertexSizeInBytes += 4;
 			break;
 		case vertexDeclaration.TEXTURECOORDINATE:
-			pVertexElements[i].Method = D3DDECLMETHOD_DEFAULT;
-			pVertexElements[i].Offset = offset;
-			pVertexElements[i].Stream = 0;
-			pVertexElements[i].Type = D3DDECLTYPE_FLOAT2;
-			pVertexElements[i].Usage = D3DDECLUSAGE_TEXCOORD;
-			pVertexElements[i].UsageIndex = textureUsageIndex;
-			
-			textureUsageIndex++;
-			offset += 8;
+			vertexSizeInBytes += 8;
 			break;
 		}
 	}
-	
-	vertexSizeInBytes = offset;
-
-	D3DVERTEXELEMENT9 end = D3DDECL_END();
-	pVertexElements[count - 1] = end;
-
-	if (pVertexDeclaration != 0)
-		pVertexDeclaration->Release();
-
-	IDirect3DDevice9* pDevice = pGraphicsService->GetDevice();
-	pDevice->CreateVertexDeclaration(pVertexElements, &pVertexDeclaration);
-
-	delete pVertexElements;
 }
 unsigned int DX9VertexBuffer::GetVertexSizeInBytes(void)
 {
 	return vertexSizeInBytes;
 }
+
 void DX9VertexBuffer::UnloadVertices(void)
 {
 	if (pVertices != 0)

@@ -24,40 +24,55 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "../IVertexShader.h"
-#include "DX9GraphicsService.h"
+#ifndef AURORA_DX9RENDERTARGETTEXTURE_H
+#define AURORA_DX9RENDERTARGETTEXTURE_H
 
-class DX9VertexShader : IVertexShader, IDX9Resource
+#include "../IRenderTargetTexture.h"
+#include "DX9GraphicsService.h"
+#include "IDX9Resource.h"
+
+class DX9DepthStencil;
+
+class DX9RenderTargetTexture : public IRenderTargetTexture, public IDX9Texture, public IDX9RenderTarget, public IDX9Resource
 {
 friend class DX9GraphicsService;
 
 private:
-	// Indices
-	void* pShaderBytes;
-	unsigned int sizeInBytes;
-	
-	// Buffer
-	IDirect3DVertexShader9* pShaderBuffer;
+	// Bitmap
+	unsigned int width;
+	unsigned int height;
+	bool depthTestEnabled;
 	bool isDirty;
 
+	// Buffer
+	unsigned int bufferWidth;
+	unsigned int bufferHeight;
+	IDirect3DTexture9* pRenderTarget;
+	DX9DepthStencil* pDepthStencil;
+	
 	// GraphicsDevice link
 	DX9GraphicsService* pGraphicsService;
 
-public:
-	DX9VertexShader(DX9GraphicsService* graphicsService, void* pShaderBytes, unsigned int sizeInBytes);
-	~DX9VertexShader(void);
-
-	virtual void SetVertexShader(void* pShaderBytes, unsigned int sizeInBytes);
-	virtual void* GetVertexShader(unsigned int& sizeInBytes);
-	
-
-	virtual unsigned int GetSizeInBytes();
-
 private:
-	void UnloadVertexShader(void);
+	virtual IDirect3DSurface9* GetRenderTargetBuffer(void);
+	virtual IDirect3DTexture9* GetTextureBuffer(void);
+
+public:
+	DX9RenderTargetTexture(DX9GraphicsService* graphicsService, unsigned int width, unsigned int height, bool depthTestEnabled);
+	~DX9RenderTargetTexture(void);
+
+	void SetRenderTarget(unsigned int width, unsigned int height, bool depthTestEnabled);
+	virtual unsigned int GetWidth(void);
+	virtual unsigned int GetHeight(void);
+	virtual bool GetDepthTestEnabled(void);
+	virtual IDepthStencil* GetDepthStencil(void);
+	virtual WrapStyle GetWrapStyle(void);
 
 	// IDX9Resource
 	virtual void LoadResource(void);
 	virtual void UnloadResource(void);
 	virtual bool GetIsDirty(void);
+
 };
+
+#endif

@@ -24,40 +24,23 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "../IVertexShader.h"
-#include "DX9GraphicsService.h"
+#ifndef AURORA_IScreenRenderTarget_H
+#define AURORA_IScreenRenderTarget_H
 
-class DX9VertexShader : IVertexShader, IDX9Resource
+#include "internal/IRenderTarget.h"
+
+class IScreenRenderTarget : public virtual IRenderTarget
 {
-friend class DX9GraphicsService;
-
-private:
-	// Indices
-	void* pShaderBytes;
-	unsigned int sizeInBytes;
-	
-	// Buffer
-	IDirect3DVertexShader9* pShaderBuffer;
-	bool isDirty;
-
-	// GraphicsDevice link
-	DX9GraphicsService* pGraphicsService;
-
 public:
-	DX9VertexShader(DX9GraphicsService* graphicsService, void* pShaderBytes, unsigned int sizeInBytes);
-	~DX9VertexShader(void);
 
-	virtual void SetVertexShader(void* pShaderBytes, unsigned int sizeInBytes);
-	virtual void* GetVertexShader(unsigned int& sizeInBytes);
-	
+	virtual ~IScreenRenderTarget(void) {};
 
-	virtual unsigned int GetSizeInBytes();
+	virtual void SetScreenRenderTarget(unsigned int width, unsigned int height, int hWindow, bool depthTestEnabled) = 0;
+	virtual unsigned int GetWidth(void) = 0;
+	virtual unsigned int GetHeight(void) = 0;
+	virtual bool GetDepthTestEnabled(void) = 0;
 
-private:
-	void UnloadVertexShader(void);
-
-	// IDX9Resource
-	virtual void LoadResource(void);
-	virtual void UnloadResource(void);
-	virtual bool GetIsDirty(void);
+	virtual void Display(void) = 0;
 };
+
+#endif

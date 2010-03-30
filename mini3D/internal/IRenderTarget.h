@@ -24,40 +24,18 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "../IVertexShader.h"
-#include "DX9GraphicsService.h"
+#ifndef AURORA_IRENDERTARGET_H
+#define AURORA_IRENDERTARGET_H
 
-class DX9VertexShader : IVertexShader, IDX9Resource
+class IRenderTarget
 {
-friend class DX9GraphicsService;
-
-private:
-	// Indices
-	void* pShaderBytes;
-	unsigned int sizeInBytes;
-	
-	// Buffer
-	IDirect3DVertexShader9* pShaderBuffer;
-	bool isDirty;
-
-	// GraphicsDevice link
-	DX9GraphicsService* pGraphicsService;
-
 public:
-	DX9VertexShader(DX9GraphicsService* graphicsService, void* pShaderBytes, unsigned int sizeInBytes);
-	~DX9VertexShader(void);
 
-	virtual void SetVertexShader(void* pShaderBytes, unsigned int sizeInBytes);
-	virtual void* GetVertexShader(unsigned int& sizeInBytes);
-	
+	virtual ~IRenderTarget(void) {};
 
-	virtual unsigned int GetSizeInBytes();
-
-private:
-	void UnloadVertexShader(void);
-
-	// IDX9Resource
-	virtual void LoadResource(void);
-	virtual void UnloadResource(void);
-	virtual bool GetIsDirty(void);
+	virtual unsigned int GetWidth(void) = 0;
+	virtual unsigned int GetHeight(void) = 0;
+	virtual bool GetDepthTestEnabled(void) = 0;
 };
+
+#endif

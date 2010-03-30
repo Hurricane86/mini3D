@@ -84,6 +84,109 @@ void DX9GraphicsService::RemoveResource(IDX9Resource* resource)
 {
 	resourceList.erase(resource);
 }
+void DX9GraphicsService::PoolVertexDeclaration(const VertexDeclaration& vertexDeclaration)
+{
+	std::string key = CreateVertexDeclarationKey(vertexDeclaration);
+
+	// if the declaration is already pooled, just increase the counter
+	if (vertexDeclarationPool.find(key) != vertexDeclarationPool.end())
+	{
+		vertexDeclarationPool[key].first++;
+		return;
+	}
+
+	// It is not already pooled, we need to create a new one
+	int count = vertexDeclaration.GetSizeInBytes() / sizeof(VertexDeclaration::VertexDataType) + 1;
+	D3DVERTEXELEMENT9* pVertexElements = new D3DVERTEXELEMENT9[count];
+	
+	// cumulative offset for the vertexelements
+	int offset = 0;
+	int textureUsageIndex = 0;
+	int uvStream = 0;
+	int positionUsageIndex = 0;
+	int colorUsageIndex = 0;
+
+	unsigned int sizeInBytes;
+	for (int i = 0; i < count; i++)
+	{
+		// these are the same for all
+		pVertexElements[i].Offset = offset;
+		pVertexElements[i].Stream = 0;
+		
+		// set the specific parameters
+		switch (vertexDeclaration.GetVertexDataTypes(sizeInBytes)[i])
+		{
+				
+		case vertexDeclaration.POSITION:
+			pVertexElements[i].Method = D3DDECLMETHOD_DEFAULT;
+			pVertexElements[i].Type = D3DDECLTYPE_FLOAT3;
+			pVertexElements[i].Usage = D3DDECLUSAGE_POSITION;
+			pVertexElements[i].UsageIndex = positionUsageIndex++;
+			offset += 12;
+			break;
+		case vertexDeclaration.COLOR:
+			pVertexElements[i].Method = D3DDECLMETHOD_DEFAULT;
+			pVertexElements[i].Type = D3DDECLTYPE_D3DCOLOR;
+			pVertexElements[i].Usage = D3DDECLUSAGE_COLOR;
+			pVertexElements[i].UsageIndex = colorUsageIndex++;
+			offset += 4;
+			break;
+		case vertexDeclaration.TEXTURECOORDINATE:
+			pVertexElements[i].Method = D3DDECLMETHOD_DEFAULT;
+			pVertexElements[i].Type = D3DDECLTYPE_FLOAT2;
+			pVertexElements[i].Usage = D3DDECLUSAGE_TEXCOORD;
+			pVertexElements[i].UsageIndex = textureUsageIndex++;
+			offset += 8;
+			break;
+		}
+	}
+
+	D3DVERTEXELEMENT9 end = D3DDECL_END();
+	pVertexElements[count - 1] = end;
+
+	IDirect3DVertexDeclaration9* pVertexDeclaration;
+	pDevice->CreateVertexDeclaration(pVertexElements, &pVertexDeclaration);
+
+	// pool the vertex declaration
+	vertexDeclarationPool[key] = counterPair(1, pVertexDeclaration);
+
+	delete pVertexElements;
+}
+void DX9GraphicsService::ReleaseVertexDeclaration(const VertexDeclaration& vertexDeclaration)
+{
+	std::string key = CreateVertexDeclarationKey(vertexDeclaration);
+	
+	if (--vertexDeclarationPool[key].first == 0)
+	{
+		((IDirect3DVertexDeclaration9*)vertexDeclarationPool[key].second)->Release();
+		vertexDeclarationPool.erase(key);
+	}
+
+	// if the declaration is already pooled, just increase the counter
+	if (vertexDeclarationPool.find(key) != vertexDeclarationPool.end())
+	{
+		vertexDeclarationPool[key].first++;
+		return;
+	}
+
+}
+
+std::string DX9GraphicsService::CreateVertexDeclarationKey(const VertexDeclaration& vertexDeclaration)
+{
+	std::string key = "";
+	
+	unsigned int size;
+	VertexDeclaration::VertexDataType* vertexDataTypes = vertexDeclaration.GetVertexDataTypes(size);
+	int count = size / sizeof(VertexDeclaration::VertexDataType);
+	for (int i = 0; i < count; i++)
+	{
+		key += char(vertexDataTypes[i]);
+	}
+	return key;
+}
+
+
+
 void DX9GraphicsService::CreateDevice(void)
 {
 	// get the display mode
@@ -259,8 +362,31 @@ void DX9GraphicsService::SetRenderTarget(IRenderTarget* pRenderTarget)
 		pDevice->SetRenderTarget(0,  (IDirect3DSurface9*)pDX9RenderTarget->GetRenderTargetBuffer());
 		pCurrentRenderTarget = pDX9RenderTarget;
 	}
-	IDirect3DSurface9* pDepthStencilBuffer = pDX9RenderTarget->GetDepthStencilBuffer();
 	
+	if (pRenderTarget->GetDepthTestEnabled() == true)
+	{
+		SetDepthStencil(pDX9RenderTarget->GetDepthStencil());
+	}
+}
+
+IDepthStencil* DX9GraphicsService::GetDepthStencil(void)
+{
+	return 0;
+}
+void DX9GraphicsService::SetDepthStencil(IDepthStencil* pDepthStencil)
+{
+	DX9DepthStencil* pDX9DepthStencil = (DX9DepthStencil*)pDepthStencil;
+
+	IDirect3DSurface9* pDepthStencilBuffer;
+	if (pDepthStencil != 0)
+	{
+		pDepthStencilBuffer	= pDX9DepthStencil->GetDepthStencilBuffer();
+	}
+	else
+	{
+		pDepthStencilBuffer = 0;
+	}
+
 	// clear the current assigned depth stencil if we are setting a rendertarget without depth stencil
 	if (pDepthStencilBuffer == 0 && pCurrentDepthStencilBuffer != 0)
 	{
@@ -274,7 +400,6 @@ void DX9GraphicsService::SetRenderTarget(IRenderTarget* pRenderTarget)
 		pDevice->SetRenderState(D3DRS_ZENABLE, true);
 		pCurrentDepthStencilBuffer = pDepthStencilBuffer;
 	}
-
 }
 
 IRenderTarget* DX9GraphicsService::GetRenderTarget(void)
@@ -393,10 +518,12 @@ IVertexBuffer* DX9GraphicsService::GetVertexBuffer(void)
 void DX9GraphicsService::SetVertexBuffer(IVertexBuffer* pVertexBuffer)
 {
 	DX9VertexBuffer* pDX9VertexBuffer = (DX9VertexBuffer*)pVertexBuffer;
-	
 	pDevice->SetStreamSource(0, pDX9VertexBuffer->GetVertexBuffer(), 0, pDX9VertexBuffer->GetVertexSizeInBytes());
-	pDevice->SetVertexDeclaration(pDX9VertexBuffer->GetVertexDeclarationBuffer());
 	pCurrentVertexBuffer = pDX9VertexBuffer;
+	
+	IDirect3DVertexDeclaration9* pVD = vertexDeclarationPool[CreateVertexDeclarationKey(pDX9VertexBuffer->GetVertexDeclaration())].second;
+	pDevice->SetVertexDeclaration(pVD);
+
 }
 
 

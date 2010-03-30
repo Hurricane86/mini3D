@@ -65,8 +65,8 @@ public:
 	virtual IRenderTarget* GetRenderTarget(void) = 0;
 	virtual void SetRenderTarget(IRenderTarget* pRenderTarget) = 0;
 
-//	virtual IDepthStencil* GetDepthStencil(void) = 0;
-//	virtual void SetDepthStencil(IDepthStencil* pDepthStencil) = 0;
+	virtual IDepthStencil* GetDepthStencil(void) = 0;
+	virtual void SetDepthStencil(IDepthStencil* pDepthStencil) = 0;
 
 	// Get Graphics Card Capabilities
 	virtual int GetMaxTextures() = 0;

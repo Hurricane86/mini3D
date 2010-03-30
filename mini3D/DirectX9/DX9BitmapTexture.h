@@ -24,40 +24,58 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "../IVertexShader.h"
-#include "DX9GraphicsService.h"
+#ifndef AURORA_DX9BITMAPTEXTURE_H
+#define AURORA_DX9BITMAPTEXTURE_H
 
-class DX9VertexShader : IVertexShader, IDX9Resource
+#include "../IBitmapTexture.h"
+#include "IDX9Texture.h"
+#include "DX9GraphicsService.h"
+#include "IDX9Resource.h"
+
+class DX9BitmapTexture : public IBitmapTexture, public IDX9Texture, public IDX9Resource
 {
 friend class DX9GraphicsService;
 
 private:
-	// Indices
-	void* pShaderBytes;
-	unsigned int sizeInBytes;
+	// Bitmap
+	void* pBitmap;
+	int width;
+	int height;
+	ITexture::WrapStyle wrapStyle;
+	IBitmapTexture::BitDepth bitDepth;
 	
 	// Buffer
-	IDirect3DVertexShader9* pShaderBuffer;
+	IDirect3DTexture9* pTexture;
+	
+	// TODO: Fix this with power of 2 comparison agains width, height...
+	int bufferWidth;
+	int bufferHeight;
 	bool isDirty;
 
 	// GraphicsDevice link
 	DX9GraphicsService* pGraphicsService;
 
-public:
-	DX9VertexShader(DX9GraphicsService* graphicsService, void* pShaderBytes, unsigned int sizeInBytes);
-	~DX9VertexShader(void);
-
-	virtual void SetVertexShader(void* pShaderBytes, unsigned int sizeInBytes);
-	virtual void* GetVertexShader(unsigned int& sizeInBytes);
-	
-
-	virtual unsigned int GetSizeInBytes();
-
 private:
-	void UnloadVertexShader(void);
+	virtual IDirect3DTexture9* GetTextureBuffer(void);
+	void UnloadBitmap(void);
 
 	// IDX9Resource
 	virtual void LoadResource(void);
 	virtual void UnloadResource(void);
 	virtual bool GetIsDirty(void);
+
+public:
+	DX9BitmapTexture(DX9GraphicsService* graphicsService, void* pBitmap, unsigned int width, unsigned int height, ITexture::WrapStyle wrapStyle = ITexture::TILE, IBitmapTexture::BitDepth bitDepth = IBitmapTexture::BIT32);
+	~DX9BitmapTexture(void);
+
+	virtual void* GetBitmap(unsigned int& width, unsigned int& height, ITexture::WrapStyle& wrapStyle, IBitmapTexture::BitDepth& bitDepth);
+	virtual void SetBitmap(void* pBitmap, unsigned int width, unsigned int height, ITexture::WrapStyle wrapStyle = ITexture::TILE, IBitmapTexture::BitDepth bitDepth = IBitmapTexture::BIT32);
+
+	virtual unsigned int GetWidth(void);
+	virtual unsigned int GetHeight(void);
+
+	virtual WrapStyle GetWrapStyle(void);
+	virtual BitDepth GetBitDepth(void);
 };
+
+#endif

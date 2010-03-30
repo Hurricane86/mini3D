@@ -29,6 +29,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 #include <d3d9.h>
 #include <set>
+#include <map>
+#include <string>
+#include "support/pool.h"
 #include "../GraphicsSettings.h"
 #include "../IGraphicsService.h"
 
@@ -65,10 +68,16 @@ public:
 	~DX9GraphicsService(void);
 
 private:
-	// Member variables
-
+	
+	// These member variables are accessed by the friend classes
 	typedef std::set<IDX9Resource*> ResourceContainer;
 	private: ResourceContainer resourceList;
+
+	typedef std::pair<unsigned int, IDirect3DVertexDeclaration9*> counterPair;
+	typedef std::map<std::string, counterPair> VertexDeclarationPool;
+	private: VertexDeclarationPool vertexDeclarationPool;
+
+	// Member variables
 
 	D3DCAPS9 deviceCaps;
 
@@ -106,6 +115,9 @@ private:
 	void UpdateResources(void);
 	void AddResource(IDX9Resource* resource);
 	void RemoveResource(IDX9Resource* resource);
+	void PoolVertexDeclaration(const VertexDeclaration& vertexDeclaration);
+	void ReleaseVertexDeclaration(const VertexDeclaration& vertexDeclaration);
+	std::string CreateVertexDeclarationKey(const VertexDeclaration& vertexDeclaration);
 
 public:
 	// IGraphicsService
@@ -127,8 +139,8 @@ public:
 	virtual IRenderTarget* GetRenderTarget(void);
 	virtual void SetRenderTarget(IRenderTarget* pRenderTarget);
 	
-//private: virtual IDepthStencil* GetDepthStencil(void);
-//private: virtual void SetDepthStencil(IDepthStencil* pDepthStencil);
+	virtual IDepthStencil* GetDepthStencil(void);
+	virtual void SetDepthStencil(IDepthStencil* pDepthStencil);
 //
 //public:
 

@@ -38,15 +38,16 @@ public:
 
 	enum VertexDataType
 	{
-		POSITION,
-		COLOR,
-		TEXTURECOORDINATE,
-		NORMAL,
-		BINORMAL,
-		TANGENT,
-		BLENDWEIGHT,
-		BLENDINDICES
+		POSITION = 0,
+		COLOR = 1,
+		TEXTURECOORDINATE = 2,
+		NORMAL = 3,
+		BINORMAL = 4,
+		TANGENT = 5,
+		BLENDWEIGHT = 6,
+		BLENDINDICES = 7
 	};
+
 
 public: VertexDeclaration& operator=(const VertexDeclaration &rhs)
 	{
@@ -63,13 +64,13 @@ public: VertexDeclaration& operator=(const VertexDeclaration &rhs)
 
 		return *this;
 	}
-	VertexDeclaration(const VertexDeclaration& vertexDeclaration) : vertexDataTypes(0)
+	VertexDeclaration(const VertexDeclaration& vertexDeclaration) : vertexDataTypes(0), sizeInBytes(0)
 	{
 		sizeInBytes = vertexDeclaration.sizeInBytes;
 		vertexDataTypes = new VertexDataType[sizeInBytes / sizeof(VertexDataType)];
 		memcpy(&vertexDataTypes[0], &vertexDeclaration.vertexDataTypes[0], sizeInBytes);
 	}
-	VertexDeclaration(void) : vertexDataTypes(0)
+	VertexDeclaration(void) : vertexDataTypes(0), sizeInBytes(0)
 	{
 	}
 	VertexDeclaration(const VertexDataType* vertexDataTypes, unsigned int sizeInBytes) :
