@@ -58,6 +58,7 @@ void* DX9VertexShader::GetVertexShader(unsigned int& sizeInBytes)
 void DX9VertexShader::SetVertexShader(void* pShaderBytes, unsigned int sizeInBytes, const VertexDeclaration& vertexDeclaration)
 {
 	UnloadVertexShader();
+	SetVertexDeclaration(vertexDeclaration);
 	
 	this->pShaderBytes = pShaderBytes;
 	this->sizeInBytes = sizeInBytes;
@@ -70,7 +71,9 @@ void DX9VertexShader::SetVertexDeclaration(const VertexDeclaration& vertexDeclar
 	// if we already have a vertex declaration, release it from the graphics service pool
 	if (this->vertexDeclaration.GetCount() != 0)
 		pGraphicsService->ReleaseVertexDeclaration(vertexDeclaration);
-	
+
+	this->vertexDeclaration = vertexDeclaration;
+
 	// pool the new one
 	pGraphicsService->PoolVertexDeclaration(vertexDeclaration);
 }

@@ -41,11 +41,11 @@ void DX9VertexBuffer::SetVertices(void* pVertices, unsigned int count, const Ver
 void DX9VertexBuffer::SetVertexDeclaration(const VertexDeclaration& vertexDeclaration)
 {
 	// if we already have a vertex declaration, release it from the graphics service pool
-	if (this->vertexDeclaration.GetCount() != 0)
-		pGraphicsService->ReleaseVertexDeclaration(vertexDeclaration);
+	//if (this->vertexDeclaration.GetCount() != 0)
+		//pGraphicsService->ReleaseVertexDeclaration(vertexDeclaration);
 	
 	// pool the new one
-	pGraphicsService->PoolVertexDeclaration(vertexDeclaration);
+	//pGraphicsService->PoolVertexDeclaration(vertexDeclaration);
 
 	vertexSizeInBytes = 0;
 	int count = vertexDeclaration.GetCount();

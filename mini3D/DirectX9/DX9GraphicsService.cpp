@@ -286,6 +286,9 @@ void DX9GraphicsService::SetVertexShader(IVertexShader* pVertexShader)
 		pDevice->SetVertexShader((IDirect3DVertexShader9*)pDX9VertexShader->GetVertexShaderBuffer());
 		pCurrentVertexShader = pDX9VertexShader;
 	}
+
+	IDirect3DVertexDeclaration9* pVD = vertexDeclarationPool[CreateVertexDeclarationKey(pDX9VertexShader->GetVertexDeclaration())].second;
+	pDevice->SetVertexDeclaration(pVD);
 }
 
 IVertexShader* DX9GraphicsService::GetVertexShader(void)
@@ -520,10 +523,6 @@ void DX9GraphicsService::SetVertexBuffer(IVertexBuffer* pVertexBuffer)
 	DX9VertexBuffer* pDX9VertexBuffer = (DX9VertexBuffer*)pVertexBuffer;
 	pDevice->SetStreamSource(0, pDX9VertexBuffer->GetVertexBuffer(), 0, pDX9VertexBuffer->GetVertexSizeInBytes());
 	pCurrentVertexBuffer = pDX9VertexBuffer;
-	
-	IDirect3DVertexDeclaration9* pVD = vertexDeclarationPool[CreateVertexDeclarationKey(pDX9VertexBuffer->GetVertexDeclaration())].second;
-	pDevice->SetVertexDeclaration(pVD);
-
 }
 
 
