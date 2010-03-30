@@ -31,7 +31,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include <set>
 #include <map>
 #include <string>
-#include "support/pool.h"
 #include "../GraphicsSettings.h"
 #include "../IGraphicsService.h"
 
@@ -184,7 +183,7 @@ public:
 	virtual IIndexBuffer* CreateIndexBuffer(int* pIndices, unsigned int count);
 
 	virtual IPixelShader* CreatePixelShader(char* pShaderBytes, unsigned int sizeInBytes);
-	virtual IVertexShader* CreateVertexShader(char* pShaderBytes, unsigned int sizeInBytes);
+	virtual IVertexShader* CreateVertexShader(char* pShaderBytes, unsigned int sizeInBytes, const VertexDeclaration& vertexDeclaration);
 };
 
 #endif

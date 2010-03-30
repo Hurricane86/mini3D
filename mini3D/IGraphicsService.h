@@ -108,7 +108,7 @@ public:
 	virtual IIndexBuffer* CreateIndexBuffer(int* pIndices, unsigned int count) = 0;
 
 	virtual IPixelShader* CreatePixelShader(char* pShaderBytes, unsigned int sizeInBytes) = 0;
-	virtual IVertexShader* CreateVertexShader(char* pShaderBytes, unsigned int sizeInBytes) = 0;
+	virtual IVertexShader* CreateVertexShader(char* pShaderBytes, unsigned int sizeInBytes, const VertexDeclaration& vertexDeclaration) = 0;
 
 };
 

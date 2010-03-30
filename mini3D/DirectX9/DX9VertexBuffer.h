@@ -32,7 +32,6 @@ private:
 	IDirect3DVertexDeclaration9* GetVertexDeclarationBuffer();
 	void SetVertexDeclaration(const VertexDeclaration& vertexDeclaration);
 	unsigned int GetVertexSizeInBytes(void);
-	std::string CreateKey(const VertexDeclaration& declaration);
 
 public:
 	DX9VertexBuffer(void);

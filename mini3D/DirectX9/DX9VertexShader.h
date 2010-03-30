@@ -26,6 +26,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 #include "../IVertexShader.h"
 #include "DX9GraphicsService.h"
+#include <vector>
 
 class DX9VertexShader : IVertexShader, IDX9Resource
 {
@@ -35,6 +36,7 @@ private:
 	// Indices
 	void* pShaderBytes;
 	unsigned int sizeInBytes;
+	VertexDeclaration vertexDeclaration;
 	
 	// Buffer
 	IDirect3DVertexShader9* pShaderBuffer;
@@ -44,16 +46,18 @@ private:
 	DX9GraphicsService* pGraphicsService;
 
 public:
-	DX9VertexShader(DX9GraphicsService* graphicsService, void* pShaderBytes, unsigned int sizeInBytes);
+	DX9VertexShader(DX9GraphicsService* graphicsService, void* pShaderBytes, unsigned int sizeInBytes, const VertexDeclaration& vertexDeclaration);
 	~DX9VertexShader(void);
 
-	virtual void SetVertexShader(void* pShaderBytes, unsigned int sizeInBytes);
+	virtual void SetVertexShader(void* pShaderBytes, unsigned int sizeInBytes, const VertexDeclaration& vertexDeclaration);
 	virtual void* GetVertexShader(unsigned int& sizeInBytes);
-	
+	virtual unsigned int GetSizeInBytes() { return sizeInBytes; };
 
-	virtual unsigned int GetSizeInBytes();
+	virtual VertexDeclaration GetVertexDeclaration();
 
 private:
+	void SetVertexDeclaration(const VertexDeclaration& vertexDeclaration);
+	virtual IDirect3DVertexShader9* GetVertexShaderBuffer(void);
 	void UnloadVertexShader(void);
 
 	// IDX9Resource

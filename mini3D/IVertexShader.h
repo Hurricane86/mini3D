@@ -27,13 +27,15 @@ OTHER DEALINGS IN THE SOFTWARE.
 #ifndef AURORA_IVERTEXSHADER_H
 #define AURORA_IVERTEXSHADER_H
 
+#include "VertexDeclaration.h"
+
 class IVertexShader
 {
 public:
 	virtual ~IVertexShader(void) {};
 
 	virtual void* GetVertexShader(unsigned int& sizeInBytes) = 0;
-	virtual void SetVertexShader(void* pShaderBytes, unsigned int sizeInBytes) = 0;
+	virtual void SetVertexShader(void* pShaderBytes, unsigned int sizeInBytes, const VertexDeclaration& vertexDeclaration) = 0;
 	virtual unsigned int GetSizeInBytes(void) = 0;
 };
 

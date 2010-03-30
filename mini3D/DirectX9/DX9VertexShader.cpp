@@ -28,10 +28,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include <d3d9.h>
 
 
-DX9VertexShader::DX9VertexShader(DX9GraphicsService* pGraphicsService, void* pShaderBytes, unsigned int sizeInBytes) :
+DX9VertexShader::DX9VertexShader(DX9GraphicsService* pGraphicsService, void* pShaderBytes, unsigned int sizeInBytes, const VertexDeclaration& vertexDeclaration) :
 	pGraphicsService(pGraphicsService), pShaderBytes(0), pShaderBuffer(0)
 {
-	SetVertexShader(pShaderBytes, sizeInBytes);
+	SetVertexShader(pShaderBytes, sizeInBytes, vertexDeclaration);
 	LoadResource();
 }
 
@@ -54,7 +54,8 @@ void* DX9VertexShader::GetVertexShader(unsigned int& sizeInBytes)
 
 	return pReturnShaderBytes;
 }
-void DX9VertexShader::SetVertexShader(void* pShaderBytes, unsigned int sizeInBytes)
+
+void DX9VertexShader::SetVertexShader(void* pShaderBytes, unsigned int sizeInBytes, const VertexDeclaration& vertexDeclaration)
 {
 	UnloadVertexShader();
 	
@@ -63,18 +64,30 @@ void DX9VertexShader::SetVertexShader(void* pShaderBytes, unsigned int sizeInByt
 
 	isDirty = true;
 }
+
+void DX9VertexShader::SetVertexDeclaration(const VertexDeclaration& vertexDeclaration)
+{
+	// if we already have a vertex declaration, release it from the graphics service pool
+	if (this->vertexDeclaration.GetCount() != 0)
+		pGraphicsService->ReleaseVertexDeclaration(vertexDeclaration);
+	
+	// pool the new one
+	pGraphicsService->PoolVertexDeclaration(vertexDeclaration);
+}
+
+VertexDeclaration DX9VertexShader::GetVertexDeclaration()
+{
+	return vertexDeclaration;	
+}
+
 void DX9VertexShader::UnloadVertexShader(void)
 {
-	if (pShaderBytes != 0)
-		operator delete(pShaderBytes);
-
+	operator delete(pShaderBytes);
+	pGraphicsService->ReleaseVertexDeclaration(vertexDeclaration);
 	pShaderBytes = 0;
 	sizeInBytes = 0;
 }
-unsigned int DX9VertexShader::GetSizeInBytes()
-{
-	return sizeInBytes;
-}
+
 IDirect3DVertexShader9* DX9VertexShader::GetVertexShaderBuffer(void)
 {
 	return pShaderBuffer;

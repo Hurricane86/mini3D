@@ -35,76 +35,41 @@ struct VertexDeclaration
 {
 
 public:
+	// VertexDataType ENUM
+	enum VertexDataType { POSITION = 0, COLOR = 1, TEXTURECOORDINATE = 2, NORMAL = 3, BINORMAL = 4, TANGENT = 5, BLENDWEIGHT = 6, BLENDINDICES = 7 };
 
-	enum VertexDataType
-	{
-		POSITION = 0,
-		COLOR = 1,
-		TEXTURECOORDINATE = 2,
-		NORMAL = 3,
-		BINORMAL = 4,
-		TANGENT = 5,
-		BLENDWEIGHT = 6,
-		BLENDINDICES = 7
-	};
+	// operator overloading
+	VertexDeclaration& operator=(const VertexDeclaration &rhs) { copyVertexDeclaration(rhs.vertexDataTypes_, rhs.count_); return *this; }
+	VertexDataType operator[](int i) { return vertexDataTypes_[i]; }
 
-
-public: VertexDeclaration& operator=(const VertexDeclaration &rhs)
-	{
-		sizeInBytes = rhs.sizeInBytes;
-		
-		if (vertexDataTypes != 0)
-		{
-			delete[] vertexDataTypes;
-			vertexDataTypes = 0;
-		}
-		
-		vertexDataTypes = new VertexDataType[sizeInBytes / sizeof(VertexDataType)];
-		memcpy(&vertexDataTypes[0], &rhs.vertexDataTypes[0], sizeInBytes);
-
-		return *this;
-	}
-	VertexDeclaration(const VertexDeclaration& vertexDeclaration) : vertexDataTypes(0), sizeInBytes(0)
-	{
-		sizeInBytes = vertexDeclaration.sizeInBytes;
-		vertexDataTypes = new VertexDataType[sizeInBytes / sizeof(VertexDataType)];
-		memcpy(&vertexDataTypes[0], &vertexDeclaration.vertexDataTypes[0], sizeInBytes);
-	}
-	VertexDeclaration(void) : vertexDataTypes(0), sizeInBytes(0)
-	{
-	}
-	VertexDeclaration(const VertexDataType* vertexDataTypes, unsigned int sizeInBytes) :
-		sizeInBytes(sizeInBytes), vertexDataTypes(0)
-	{
-		// copy the vertexdatatypes to a member pointer
-		this->vertexDataTypes = new VertexDataType[sizeInBytes / sizeof(VertexDataType)];
-		memcpy(this->vertexDataTypes, vertexDataTypes, sizeInBytes);
-	};
-
-	~VertexDeclaration(void)
-	{
-		if (vertexDataTypes != 0)
-		{
-			delete[] vertexDataTypes;
-			vertexDataTypes = 0;
-		}
-	};
-
-	VertexDataType* GetVertexDataTypes(unsigned int& sizeInBytes) const
-	{
-		sizeInBytes = this->sizeInBytes;
-		return vertexDataTypes;
-	};
-
-	inline int GetSizeInBytes(void) const
-	{
-		return sizeInBytes;
-	};
+	// Constructors
+	VertexDeclaration(void) : vertexDataTypes_(0), count_(0) { }
+	VertexDeclaration(const VertexDeclaration& vertexDeclaration) : vertexDataTypes_(0), count_(0)	{ (*this) = vertexDeclaration;	}
+	VertexDeclaration(const VertexDataType* vertexDataTypes, unsigned int count) : vertexDataTypes_(0), count_(count) { copyVertexDeclaration(vertexDataTypes, count); };
+	
+	// Destructor
+	~VertexDeclaration(void) { delete[] vertexDataTypes_; };
+	
+	inline VertexDataType* GetVertexDataTypes(unsigned int& count) const { count = count_; return vertexDataTypes_; };
+	inline int GetCount(void) const { return count_; };
 
 private:
 
-	VertexDataType* vertexDataTypes;
-	int sizeInBytes;
+	void copyVertexDeclaration(const VertexDataType* vertexDataTypes, unsigned int count)
+	{
+		count_ = count;
+		delete[] vertexDataTypes_;
+		vertexDataTypes_ = 0;
+
+		if (count_ == 0)
+			return;
+
+		vertexDataTypes_ = new VertexDataType[count_];
+		memcpy(&vertexDataTypes_[0], &vertexDataTypes[0], count_ * sizeof(VertexDataType));
+	}
+
+	VertexDataType* vertexDataTypes_;
+	int count_;
 };
 
 

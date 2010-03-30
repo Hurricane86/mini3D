@@ -96,7 +96,7 @@ void DX9GraphicsService::PoolVertexDeclaration(const VertexDeclaration& vertexDe
 	}
 
 	// It is not already pooled, we need to create a new one
-	int count = vertexDeclaration.GetSizeInBytes() / sizeof(VertexDeclaration::VertexDataType) + 1;
+	int count = vertexDeclaration.GetCount() + 1;
 	D3DVERTEXELEMENT9* pVertexElements = new D3DVERTEXELEMENT9[count];
 	
 	// cumulative offset for the vertexelements
@@ -177,7 +177,7 @@ std::string DX9GraphicsService::CreateVertexDeclarationKey(const VertexDeclarati
 	
 	unsigned int size;
 	VertexDeclaration::VertexDataType* vertexDataTypes = vertexDeclaration.GetVertexDataTypes(size);
-	int count = size / sizeof(VertexDeclaration::VertexDataType);
+	int count = size;
 	for (int i = 0; i < count; i++)
 	{
 		key += char(vertexDataTypes[i]);
@@ -584,8 +584,8 @@ IPixelShader* DX9GraphicsService::CreatePixelShader(char* shaderBytes, unsigned 
 	return new DX9PixelShader(this, shaderBytes, sizeInBytes);
 }
 
-IVertexShader* DX9GraphicsService::CreateVertexShader(char* shaderBytes, unsigned int sizeInBytes)
+IVertexShader* DX9GraphicsService::CreateVertexShader(char* shaderBytes, unsigned int sizeInBytes, const VertexDeclaration& vertexDeclaration)
 {
-	return new DX9VertexShader(this, shaderBytes, sizeInBytes);
+	return new DX9VertexShader(this, shaderBytes, sizeInBytes, vertexDeclaration);
 }
 
