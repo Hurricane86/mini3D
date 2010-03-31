@@ -36,7 +36,7 @@ private:
 	// Indices
 	void* pShaderBytes;
 	unsigned int sizeInBytes;
-	VertexDeclaration vertexDeclaration;
+	VertexDeclarationVector vertexDeclaration;
 	
 	// Buffer
 	IDirect3DVertexShader9* pShaderBuffer;
@@ -46,17 +46,17 @@ private:
 	DX9GraphicsService* pGraphicsService;
 
 public:
-	DX9VertexShader(DX9GraphicsService* graphicsService, void* pShaderBytes, unsigned int sizeInBytes, const VertexDeclaration& vertexDeclaration);
+	DX9VertexShader(DX9GraphicsService* graphicsService, void* pShaderBytes, unsigned int sizeInBytes, const VertexDeclarationVector& vertexDeclaration);
 	~DX9VertexShader(void);
 
-	virtual void SetVertexShader(void* pShaderBytes, unsigned int sizeInBytes, const VertexDeclaration& vertexDeclaration);
+	virtual void SetVertexShader(void* pShaderBytes, unsigned int sizeInBytes, const VertexDeclarationVector& vertexDeclaration);
 	virtual void* GetVertexShader(unsigned int& sizeInBytes);
 	virtual unsigned int GetSizeInBytes() { return sizeInBytes; };
 
-	virtual VertexDeclaration GetVertexDeclaration();
+	virtual VertexDeclarationVector GetVertexDeclaration();
 
 private:
-	void SetVertexDeclaration(const VertexDeclaration& vertexDeclaration);
+	void SetVertexDeclaration(const VertexDeclarationVector& vertexDeclaration);
 	virtual IDirect3DVertexShader9* GetVertexShaderBuffer(void);
 	void UnloadVertexShader(void);
 

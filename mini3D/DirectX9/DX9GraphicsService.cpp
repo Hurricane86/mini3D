@@ -84,7 +84,7 @@ void DX9GraphicsService::RemoveResource(IDX9Resource* resource)
 {
 	resourceList.erase(resource);
 }
-void DX9GraphicsService::PoolVertexDeclaration(const VertexDeclaration& vertexDeclaration)
+void DX9GraphicsService::PoolVertexDeclaration(const IVertexShader::VertexDeclarationVector& vertexDeclaration)
 {
 	std::string key = CreateVertexDeclarationKey(vertexDeclaration);
 
@@ -96,8 +96,8 @@ void DX9GraphicsService::PoolVertexDeclaration(const VertexDeclaration& vertexDe
 	}
 
 	// It is not already pooled, we need to create a new one
-	int count = vertexDeclaration.GetCount() + 1;
-	D3DVERTEXELEMENT9* pVertexElements = new D3DVERTEXELEMENT9[count];
+	int count = vertexDeclaration.size();
+	D3DVERTEXELEMENT9* pVertexElements = new D3DVERTEXELEMENT9[count + 1];
 	
 	// cumulative offset for the vertexelements
 	int offset = 0;
@@ -106,7 +106,6 @@ void DX9GraphicsService::PoolVertexDeclaration(const VertexDeclaration& vertexDe
 	int positionUsageIndex = 0;
 	int colorUsageIndex = 0;
 
-	unsigned int sizeInBytes;
 	for (int i = 0; i < count; i++)
 	{
 		// these are the same for all
@@ -114,24 +113,24 @@ void DX9GraphicsService::PoolVertexDeclaration(const VertexDeclaration& vertexDe
 		pVertexElements[i].Stream = 0;
 		
 		// set the specific parameters
-		switch (vertexDeclaration.GetVertexDataTypes(sizeInBytes)[i])
+		switch (vertexDeclaration[i])
 		{
 				
-		case vertexDeclaration.POSITION:
+		case IVertexShader::POSITION:
 			pVertexElements[i].Method = D3DDECLMETHOD_DEFAULT;
 			pVertexElements[i].Type = D3DDECLTYPE_FLOAT3;
 			pVertexElements[i].Usage = D3DDECLUSAGE_POSITION;
 			pVertexElements[i].UsageIndex = positionUsageIndex++;
 			offset += 12;
 			break;
-		case vertexDeclaration.COLOR:
+		case IVertexShader::COLOR:
 			pVertexElements[i].Method = D3DDECLMETHOD_DEFAULT;
 			pVertexElements[i].Type = D3DDECLTYPE_D3DCOLOR;
 			pVertexElements[i].Usage = D3DDECLUSAGE_COLOR;
 			pVertexElements[i].UsageIndex = colorUsageIndex++;
 			offset += 4;
 			break;
-		case vertexDeclaration.TEXTURECOORDINATE:
+		case IVertexShader::TEXTURECOORDINATE:
 			pVertexElements[i].Method = D3DDECLMETHOD_DEFAULT;
 			pVertexElements[i].Type = D3DDECLTYPE_FLOAT2;
 			pVertexElements[i].Usage = D3DDECLUSAGE_TEXCOORD;
@@ -142,7 +141,7 @@ void DX9GraphicsService::PoolVertexDeclaration(const VertexDeclaration& vertexDe
 	}
 
 	D3DVERTEXELEMENT9 end = D3DDECL_END();
-	pVertexElements[count - 1] = end;
+	pVertexElements[count] = end;
 
 	IDirect3DVertexDeclaration9* pVertexDeclaration;
 	pDevice->CreateVertexDeclaration(pVertexElements, &pVertexDeclaration);
@@ -152,7 +151,7 @@ void DX9GraphicsService::PoolVertexDeclaration(const VertexDeclaration& vertexDe
 
 	delete pVertexElements;
 }
-void DX9GraphicsService::ReleaseVertexDeclaration(const VertexDeclaration& vertexDeclaration)
+void DX9GraphicsService::ReleaseVertexDeclaration(const IVertexShader::VertexDeclarationVector& vertexDeclaration)
 {
 	std::string key = CreateVertexDeclarationKey(vertexDeclaration);
 	
@@ -171,16 +170,13 @@ void DX9GraphicsService::ReleaseVertexDeclaration(const VertexDeclaration& verte
 
 }
 
-std::string DX9GraphicsService::CreateVertexDeclarationKey(const VertexDeclaration& vertexDeclaration)
+std::string DX9GraphicsService::CreateVertexDeclarationKey(const IVertexShader::VertexDeclarationVector& vertexDeclaration)
 {
 	std::string key = "";
 	
-	unsigned int size;
-	VertexDeclaration::VertexDataType* vertexDataTypes = vertexDeclaration.GetVertexDataTypes(size);
-	int count = size;
-	for (int i = 0; i < count; i++)
+	for (unsigned int i = 0; i < vertexDeclaration.size(); i++)
 	{
-		key += char(vertexDataTypes[i]);
+		key += char(vertexDeclaration[i]);
 	}
 	return key;
 }
@@ -563,9 +559,9 @@ IRenderTargetTexture* DX9GraphicsService::CreateRenderTargetTexture(unsigned int
 	return new DX9RenderTargetTexture(this, width, height, depthTestEnabled);
 }
 
-IBitmapTexture* DX9GraphicsService::CreateBitmapTexture(void* pBitmap, unsigned int width, unsigned int height, ITexture::WrapStyle wrapStyle, IBitmapTexture::BitDepth bitDepth)
+IBitmapTexture* DX9GraphicsService::CreateBitmapTexture(void* pBitmap, unsigned int width, unsigned int height, IBitmapTexture::BitDepth bitDepth, ITexture::WrapStyle wrapStyle)
 {
-	return new DX9BitmapTexture(this, pBitmap, width, height, wrapStyle, bitDepth);
+	return new DX9BitmapTexture(this, pBitmap, width, height, bitDepth, wrapStyle);
 }
 
 IVertexBuffer* DX9GraphicsService::CreateVertexBuffer(void* vertices, unsigned int count, const VertexDeclaration& vertexDeclaration)
@@ -583,7 +579,7 @@ IPixelShader* DX9GraphicsService::CreatePixelShader(char* shaderBytes, unsigned 
 	return new DX9PixelShader(this, shaderBytes, sizeInBytes);
 }
 
-IVertexShader* DX9GraphicsService::CreateVertexShader(char* shaderBytes, unsigned int sizeInBytes, const VertexDeclaration& vertexDeclaration)
+IVertexShader* DX9GraphicsService::CreateVertexShader(char* shaderBytes, unsigned int sizeInBytes, const IVertexShader::VertexDeclarationVector& vertexDeclaration)
 {
 	return new DX9VertexShader(this, shaderBytes, sizeInBytes, vertexDeclaration);
 }

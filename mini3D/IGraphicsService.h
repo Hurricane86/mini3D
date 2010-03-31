@@ -102,13 +102,13 @@ public:
 	virtual IRenderTargetTexture* CreateRenderTargetTexture(unsigned int width, unsigned int height, bool depthTestEnabled) = 0;
 	//virtual IDepthStencil* CreateDepthStencil(unsigned int width, unsigned int height) = 0;
 
-	virtual IBitmapTexture* CreateBitmapTexture(void* pBitmap, unsigned int width, unsigned int height, ITexture::WrapStyle wrapStyle = ITexture::TILE, IBitmapTexture::BitDepth bitDepth = IBitmapTexture::BIT32) = 0;
+	virtual IBitmapTexture* CreateBitmapTexture(void* pBitmap, unsigned int width, unsigned int height, IBitmapTexture::BitDepth bitDepth = IBitmapTexture::BIT32, ITexture::WrapStyle wrapStyle = ITexture::TILE) = 0;
 
 	virtual IVertexBuffer* CreateVertexBuffer(void* pVertices, unsigned int count, const VertexDeclaration& vertexDeclaration) = 0;
 	virtual IIndexBuffer* CreateIndexBuffer(int* pIndices, unsigned int count) = 0;
 
 	virtual IPixelShader* CreatePixelShader(char* pShaderBytes, unsigned int sizeInBytes) = 0;
-	virtual IVertexShader* CreateVertexShader(char* pShaderBytes, unsigned int sizeInBytes, const VertexDeclaration& vertexDeclaration) = 0;
+	virtual IVertexShader* CreateVertexShader(char* pShaderBytes, unsigned int sizeInBytes, const IVertexShader::VertexDeclarationVector& vertexDeclaration) = 0;
 
 };
 

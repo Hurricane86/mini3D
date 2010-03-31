@@ -28,7 +28,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include <d3d9.h>
 
 
-DX9VertexShader::DX9VertexShader(DX9GraphicsService* pGraphicsService, void* pShaderBytes, unsigned int sizeInBytes, const VertexDeclaration& vertexDeclaration) :
+DX9VertexShader::DX9VertexShader(DX9GraphicsService* pGraphicsService, void* pShaderBytes, unsigned int sizeInBytes, const VertexDeclarationVector& vertexDeclaration) :
 	pGraphicsService(pGraphicsService), pShaderBytes(0), pShaderBuffer(0)
 {
 	SetVertexShader(pShaderBytes, sizeInBytes, vertexDeclaration);
@@ -55,7 +55,7 @@ void* DX9VertexShader::GetVertexShader(unsigned int& sizeInBytes)
 	return pReturnShaderBytes;
 }
 
-void DX9VertexShader::SetVertexShader(void* pShaderBytes, unsigned int sizeInBytes, const VertexDeclaration& vertexDeclaration)
+void DX9VertexShader::SetVertexShader(void* pShaderBytes, unsigned int sizeInBytes, const VertexDeclarationVector& vertexDeclaration)
 {
 	UnloadVertexShader();
 	SetVertexDeclaration(vertexDeclaration);
@@ -66,10 +66,10 @@ void DX9VertexShader::SetVertexShader(void* pShaderBytes, unsigned int sizeInByt
 	isDirty = true;
 }
 
-void DX9VertexShader::SetVertexDeclaration(const VertexDeclaration& vertexDeclaration)
+void DX9VertexShader::SetVertexDeclaration(const VertexDeclarationVector& vertexDeclaration)
 {
 	// if we already have a vertex declaration, release it from the graphics service pool
-	if (this->vertexDeclaration.GetCount() != 0)
+	if (this->vertexDeclaration.size() != 0)
 		pGraphicsService->ReleaseVertexDeclaration(vertexDeclaration);
 
 	this->vertexDeclaration = vertexDeclaration;
@@ -78,7 +78,7 @@ void DX9VertexShader::SetVertexDeclaration(const VertexDeclaration& vertexDeclar
 	pGraphicsService->PoolVertexDeclaration(vertexDeclaration);
 }
 
-VertexDeclaration DX9VertexShader::GetVertexDeclaration()
+IVertexShader::VertexDeclarationVector DX9VertexShader::GetVertexDeclaration()
 {
 	return vertexDeclaration;	
 }

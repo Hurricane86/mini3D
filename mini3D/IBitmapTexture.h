@@ -42,8 +42,8 @@ public:
 
 	virtual ~IBitmapTexture(void) {};
 
-	virtual void* GetBitmap(unsigned int& width, unsigned int& height, ITexture::WrapStyle& wrapStyle, IBitmapTexture::BitDepth& bitDepth) = 0;
-	virtual void SetBitmap(void* pBitmap, unsigned int width, unsigned int height, ITexture::WrapStyle wrapStyle = ITexture::TILE, IBitmapTexture::BitDepth bitDepth = IBitmapTexture::BIT32) = 0;
+	virtual void* GetBitmap(unsigned int& width, unsigned int& height, IBitmapTexture::BitDepth& bitDepth, ITexture::WrapStyle& wrapStyle) = 0;
+	virtual void SetBitmap(void* pBitmap, unsigned int width, unsigned int height, IBitmapTexture::BitDepth bitDepth = IBitmapTexture::BIT32, ITexture::WrapStyle wrapStyle = ITexture::TILE) = 0;
 	
 	virtual unsigned int GetWidth(void) = 0;
 	virtual unsigned int GetHeight(void) = 0;

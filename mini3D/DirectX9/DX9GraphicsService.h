@@ -114,9 +114,9 @@ private:
 	void UpdateResources(void);
 	void AddResource(IDX9Resource* resource);
 	void RemoveResource(IDX9Resource* resource);
-	void PoolVertexDeclaration(const VertexDeclaration& vertexDeclaration);
-	void ReleaseVertexDeclaration(const VertexDeclaration& vertexDeclaration);
-	std::string CreateVertexDeclarationKey(const VertexDeclaration& vertexDeclaration);
+	void PoolVertexDeclaration(const IVertexShader::VertexDeclarationVector& vertexDeclaration);
+	void ReleaseVertexDeclaration(const IVertexShader::VertexDeclarationVector& vertexDeclaration);
+	std::string CreateVertexDeclarationKey(const IVertexShader::VertexDeclarationVector& vertexDeclaration);
 
 public:
 	// IGraphicsService
@@ -177,13 +177,13 @@ public:
 	virtual IRenderTargetTexture* CreateRenderTargetTexture(unsigned int width, unsigned int height, bool depthTestEnabled);
 	//virtual IDepthStencil* CreateDepthStencil(unsigned int width, unsigned int height);
 
-	virtual IBitmapTexture* CreateBitmapTexture(void* pBitmap, unsigned int width, unsigned int height, ITexture::WrapStyle wrapStyle = ITexture::TILE, IBitmapTexture::BitDepth bitDepth = IBitmapTexture::BIT32);
+	virtual IBitmapTexture* CreateBitmapTexture(void* pBitmap, unsigned int width, unsigned int height, IBitmapTexture::BitDepth bitDepth = IBitmapTexture::BIT32, ITexture::WrapStyle wrapStyle = ITexture::TILE);
 
 	virtual IVertexBuffer* CreateVertexBuffer(void* pVertices, unsigned int count, const VertexDeclaration& vertexDeclaration);
 	virtual IIndexBuffer* CreateIndexBuffer(int* pIndices, unsigned int count);
 
 	virtual IPixelShader* CreatePixelShader(char* pShaderBytes, unsigned int sizeInBytes);
-	virtual IVertexShader* CreateVertexShader(char* pShaderBytes, unsigned int sizeInBytes, const VertexDeclaration& vertexDeclaration);
+	virtual IVertexShader* CreateVertexShader(char* pShaderBytes, unsigned int sizeInBytes, const IVertexShader::VertexDeclarationVector& vertexDeclaration);
 };
 
 #endif

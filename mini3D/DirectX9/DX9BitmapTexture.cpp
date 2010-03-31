@@ -27,7 +27,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "DX9BitmapTexture.h"
 #include <d3d9.h>
 
-DX9BitmapTexture::DX9BitmapTexture(DX9GraphicsService* pGraphicsService, void* pBitmap, unsigned int width, unsigned int height, ITexture::WrapStyle wrapStyle, IBitmapTexture::BitDepth bitDepth) :
+DX9BitmapTexture::DX9BitmapTexture(DX9GraphicsService* pGraphicsService, void* pBitmap, unsigned int width, unsigned int height, IBitmapTexture::BitDepth bitDepth, ITexture::WrapStyle wrapStyle) :
 	pGraphicsService(pGraphicsService), bufferWidth(0), bufferHeight(0), pBitmap(0), pTexture(0)
 {
 	SetBitmap(pBitmap, width, height);
@@ -44,7 +44,7 @@ IDirect3DTexture9* DX9BitmapTexture::GetTextureBuffer(void)
 {
 	return pTexture;
 }
-void* DX9BitmapTexture::GetBitmap(unsigned int& width, unsigned int& height, ITexture::WrapStyle& wrapStyle, IBitmapTexture::BitDepth& bitDepth)
+void* DX9BitmapTexture::GetBitmap(unsigned int& width, unsigned int& height, IBitmapTexture::BitDepth& bitDepth, ITexture::WrapStyle& wrapStyle)
 {
 	void* pReturnBitmap = pBitmap;
 	width = this->width;
@@ -65,7 +65,7 @@ void* DX9BitmapTexture::GetBitmap(unsigned int& width, unsigned int& height, ITe
 
 	return pReturnBitmap;
 }
-void DX9BitmapTexture::SetBitmap(void* pBitmap, unsigned int width, unsigned int height, ITexture::WrapStyle wrapStyle, IBitmapTexture::BitDepth bitDepth)
+void DX9BitmapTexture::SetBitmap(void* pBitmap, unsigned int width, unsigned int height, IBitmapTexture::BitDepth bitDepth, ITexture::WrapStyle wrapStyle)
 {
 	UnloadBitmap();
 	

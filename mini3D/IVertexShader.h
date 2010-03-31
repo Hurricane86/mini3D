@@ -28,14 +28,21 @@ OTHER DEALINGS IN THE SOFTWARE.
 #define AURORA_IVERTEXSHADER_H
 
 #include "VertexDeclaration.h"
+#include <vector>
 
 class IVertexShader
 {
 public:
+	enum VertexDataType { POSITION = 0, COLOR = 1, TEXTURECOORDINATE = 2, NORMAL = 3, BINORMAL = 4, TANGENT = 5, BLENDWEIGHT = 6, BLENDINDICES = 7 };
+	
+	// Typedefs
+	typedef std::vector<int> VertexDeclarationVector;
+
+public:
 	virtual ~IVertexShader(void) {};
 
 	virtual void* GetVertexShader(unsigned int& sizeInBytes) = 0;
-	virtual void SetVertexShader(void* pShaderBytes, unsigned int sizeInBytes, const VertexDeclaration& vertexDeclaration) = 0;
+	virtual void SetVertexShader(void* pShaderBytes, unsigned int sizeInBytes, const VertexDeclarationVector& vertexDeclaration) = 0;
 	virtual unsigned int GetSizeInBytes(void) = 0;
 };
 

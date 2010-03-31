@@ -36,6 +36,36 @@ class DX9BitmapTexture : public IBitmapTexture, public IDX9Texture, public IDX9R
 {
 friend class DX9GraphicsService;
 
+public:
+	// IBitmapTexture
+	virtual void* GetBitmap(unsigned int& width, unsigned int& height, IBitmapTexture::BitDepth& bitDepth, ITexture::WrapStyle& wrapStyle);
+	virtual void SetBitmap(void* pBitmap, unsigned int width, unsigned int height, IBitmapTexture::BitDepth bitDepth = IBitmapTexture::BIT32, ITexture::WrapStyle wrapStyle = ITexture::TILE);
+	
+	virtual unsigned int GetWidth(void);
+	virtual unsigned int GetHeight(void);
+	virtual WrapStyle GetWrapStyle(void);
+	virtual BitDepth GetBitDepth(void);
+
+	//Constructor
+	DX9BitmapTexture(DX9GraphicsService* graphicsService, void* pBitmap, unsigned int width, unsigned int height, IBitmapTexture::BitDepth bitDepth = IBitmapTexture::BIT32, ITexture::WrapStyle wrapStyle = ITexture::TILE);
+
+	// Destructor
+	~DX9BitmapTexture(void);
+
+
+
+private:
+	// Accessed by Graphics Service	
+	virtual IDirect3DTexture9* GetTextureBuffer(void);
+	
+	// unload the bitmap data
+	void UnloadBitmap(void);
+
+	// IDX9Resource
+	virtual void LoadResource(void);
+	virtual void UnloadResource(void);
+	virtual bool GetIsDirty(void);
+
 private:
 	// Bitmap
 	void* pBitmap;
@@ -55,27 +85,6 @@ private:
 	// GraphicsDevice link
 	DX9GraphicsService* pGraphicsService;
 
-private:
-	virtual IDirect3DTexture9* GetTextureBuffer(void);
-	void UnloadBitmap(void);
-
-	// IDX9Resource
-	virtual void LoadResource(void);
-	virtual void UnloadResource(void);
-	virtual bool GetIsDirty(void);
-
-public:
-	DX9BitmapTexture(DX9GraphicsService* graphicsService, void* pBitmap, unsigned int width, unsigned int height, ITexture::WrapStyle wrapStyle = ITexture::TILE, IBitmapTexture::BitDepth bitDepth = IBitmapTexture::BIT32);
-	~DX9BitmapTexture(void);
-
-	virtual void* GetBitmap(unsigned int& width, unsigned int& height, ITexture::WrapStyle& wrapStyle, IBitmapTexture::BitDepth& bitDepth);
-	virtual void SetBitmap(void* pBitmap, unsigned int width, unsigned int height, ITexture::WrapStyle wrapStyle = ITexture::TILE, IBitmapTexture::BitDepth bitDepth = IBitmapTexture::BIT32);
-
-	virtual unsigned int GetWidth(void);
-	virtual unsigned int GetHeight(void);
-
-	virtual WrapStyle GetWrapStyle(void);
-	virtual BitDepth GetBitDepth(void);
 };
 
 #endif

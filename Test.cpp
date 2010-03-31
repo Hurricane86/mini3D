@@ -163,7 +163,13 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	IPixelShader* pPixelShader = graphics->CreatePixelShader(shaderBytes, sizeInBytes);
 
 	shaderBytes = ShaderBytesFromFile(L"testVertexShader.fxo", sizeInBytes);
-	IVertexShader* pVertexShader = graphics->CreateVertexShader(shaderBytes, sizeInBytes, vd);
+
+	IVertexShader::VertexDeclarationVector vx;
+	vx.push_back(VertexDeclaration::POSITION);
+	vx.push_back(VertexDeclaration::COLOR);
+	vx.push_back(VertexDeclaration::TEXTURECOORDINATE);
+
+	IVertexShader* pVertexShader = graphics->CreateVertexShader(shaderBytes, sizeInBytes, vx);
 
 	D3DXMATRIX viewMatrix;
 	D3DXMATRIX projectionMatrix;
