@@ -564,7 +564,7 @@ IBitmapTexture* DX9GraphicsService::CreateBitmapTexture(void* pBitmap, unsigned 
 	return new DX9BitmapTexture(this, pBitmap, width, height, bitDepth, wrapStyle);
 }
 
-IVertexBuffer* DX9GraphicsService::CreateVertexBuffer(void* vertices, unsigned int count, const VertexDeclaration& vertexDeclaration)
+IVertexBuffer* DX9GraphicsService::CreateVertexBuffer(void* vertices, unsigned int count, const IVertexBuffer::VertexDeclarationVector& vertexDeclaration)
 {
 	return new DX9VertexBuffer(this, vertices, count, vertexDeclaration);
 }

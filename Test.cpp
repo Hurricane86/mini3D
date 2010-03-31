@@ -130,9 +130,10 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	ShowWindow(hWindow, SW_SHOW);
 	UpdateWindow(hWindow);
 
-	VertexDeclaration::VertexDataType vdt[] = {VertexDeclaration::POSITION, VertexDeclaration::COLOR, VertexDeclaration::TEXTURECOORDINATE};
-	int size = sizeof(vdt);
-	VertexDeclaration vd(vdt, 3);
+	IVertexShader::VertexDeclarationVector vd;
+	vd.push_back(IVertexShader::POSITION);
+	vd.push_back(IVertexShader::COLOR);
+	vd.push_back(IVertexShader::TEXTURECOORDINATE);
 
 	GraphicsSettings gs;
 	gs.multisampleFormat = GraphicsSettings::SIXTEEN_SAMPLES;
@@ -164,12 +165,7 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 
 	shaderBytes = ShaderBytesFromFile(L"testVertexShader.fxo", sizeInBytes);
 
-	IVertexShader::VertexDeclarationVector vx;
-	vx.push_back(VertexDeclaration::POSITION);
-	vx.push_back(VertexDeclaration::COLOR);
-	vx.push_back(VertexDeclaration::TEXTURECOORDINATE);
-
-	IVertexShader* pVertexShader = graphics->CreateVertexShader(shaderBytes, sizeInBytes, vx);
+	IVertexShader* pVertexShader = graphics->CreateVertexShader(shaderBytes, sizeInBytes, vd);
 
 	D3DXMATRIX viewMatrix;
 	D3DXMATRIX projectionMatrix;

@@ -1,7 +1,6 @@
 
 #include "../DX9VertexBuffer.h"
 #include <d3d9.h>
-#include "../../VertexDeclaration.h"
 
 DX9VertexBuffer::DX9VertexBuffer(void) :
 	pGraphicsService(pGraphicsService), bufferSizeInBytes(0), pVertices(0), pVertexBuffer(0), pVertexDeclaration(0), sizeInBytes(0)
@@ -9,7 +8,7 @@ DX9VertexBuffer::DX9VertexBuffer(void) :
 }
 
 
-DX9VertexBuffer::DX9VertexBuffer(DX9GraphicsService* pGraphicsService, void* pVertices, unsigned int count, const VertexDeclaration& vertexDeclaration) :
+DX9VertexBuffer::DX9VertexBuffer(DX9GraphicsService* pGraphicsService, void* pVertices, unsigned int count, const VertexDeclarationVector& vertexDeclaration) :
 	pGraphicsService(pGraphicsService), bufferSizeInBytes(0), pVertices(0), pVertexBuffer(0), pVertexDeclaration(0), sizeInBytes(0)
 {
 	SetVertices(pVertices, count, vertexDeclaration);
@@ -23,7 +22,7 @@ DX9VertexBuffer::~DX9VertexBuffer(void)
 	pGraphicsService->RemoveResource(this);
 }
 
-void DX9VertexBuffer::SetVertices(void* pVertices, unsigned int count, const VertexDeclaration& vertexDeclaration)
+void DX9VertexBuffer::SetVertices(void* pVertices, unsigned int count, const VertexDeclarationVector& vertexDeclaration)
 {
 	UnloadVertices();
 
@@ -38,7 +37,7 @@ void DX9VertexBuffer::SetVertices(void* pVertices, unsigned int count, const Ver
 
 	isDirty = true;
 }
-void DX9VertexBuffer::SetVertexDeclaration(const VertexDeclaration& vertexDeclaration)
+void DX9VertexBuffer::SetVertexDeclaration(const VertexDeclarationVector& vertexDeclaration)
 {
 	// if we already have a vertex declaration, release it from the graphics service pool
 	//if (this->vertexDeclaration.GetCount() != 0)
@@ -48,19 +47,19 @@ void DX9VertexBuffer::SetVertexDeclaration(const VertexDeclaration& vertexDeclar
 	//pGraphicsService->PoolVertexDeclaration(vertexDeclaration);
 
 	vertexSizeInBytes = 0;
-	int count = vertexDeclaration.GetCount();
+	int count = vertexDeclaration.size();
 	for (int i = 0; i < count; i++)
 	{
-		switch (vertexDeclaration.GetVertexDataTypes(sizeInBytes)[i])
+		switch (vertexDeclaration[i])
 		{
 				
-		case vertexDeclaration.POSITION:
+		case IVertexBuffer::POSITION:
 			vertexSizeInBytes += 12;
 			break;
-		case vertexDeclaration.COLOR:
+		case IVertexBuffer::COLOR:
 			vertexSizeInBytes += 4;
 			break;
-		case vertexDeclaration.TEXTURECOORDINATE:
+		case IVertexBuffer::TEXTURECOORDINATE:
 			vertexSizeInBytes += 8;
 			break;
 		}
@@ -79,7 +78,7 @@ void DX9VertexBuffer::UnloadVertices(void)
 	pVertices = 0;
 	sizeInBytes = 0;
 }
-void* DX9VertexBuffer::GetVertices(unsigned int& count, VertexDeclaration& vertexDeclaration)
+void* DX9VertexBuffer::GetVertices(unsigned int& count, VertexDeclarationVector& vertexDeclaration)
 {
 	void* pReturnVertices = pVertices;
 	count = GetVertexCount();
@@ -88,7 +87,7 @@ void* DX9VertexBuffer::GetVertices(unsigned int& count, VertexDeclaration& verte
 	// reset the data because we are "removing it" when we do a GetVertices!
 	pVertices = 0;
 	sizeInBytes = 0;
-	vertexDeclaration = VertexDeclaration();
+	vertexDeclaration = VertexDeclarationVector();
 
 	isDirty = true;
 
@@ -98,7 +97,7 @@ unsigned int DX9VertexBuffer::GetVertexCount()
 {
 	return this->sizeInBytes / GetVertexSizeInBytes();
 }
-VertexDeclaration DX9VertexBuffer::GetVertexDeclaration()
+IVertexBuffer::VertexDeclarationVector DX9VertexBuffer::GetVertexDeclaration()
 {
 	return vertexDeclaration;
 }

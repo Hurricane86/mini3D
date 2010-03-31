@@ -15,7 +15,7 @@ private:
 	void* pVertices;
 	unsigned int sizeInBytes;
 	unsigned int vertexSizeInBytes;
-	VertexDeclaration vertexDeclaration;
+	VertexDeclarationVector vertexDeclaration;
 	
 	// Buffer
 	IDirect3DVertexBuffer9* pVertexBuffer;
@@ -30,19 +30,19 @@ private:
 	void UnloadVertices(void);
 	IDirect3DVertexBuffer9* GetVertexBuffer();
 	IDirect3DVertexDeclaration9* GetVertexDeclarationBuffer();
-	void SetVertexDeclaration(const VertexDeclaration& vertexDeclaration);
+	void SetVertexDeclaration(const VertexDeclarationVector& vertexDeclaration);
 	unsigned int GetVertexSizeInBytes(void);
 
 public:
 	DX9VertexBuffer(void);
-	DX9VertexBuffer(DX9GraphicsService* pGraphicsService, void* pVertices, unsigned int count, const VertexDeclaration& vertexDeclaration);
+	DX9VertexBuffer(DX9GraphicsService* pGraphicsService, void* pVertices, unsigned int count, const VertexDeclarationVector& vertexDeclaration);
 	~DX9VertexBuffer(void);
 
-	virtual void SetVertices(void* vertices, unsigned int count,const VertexDeclaration& vertexDeclaration);
-	virtual void* GetVertices(unsigned int& count, VertexDeclaration& vertexDeclaration);
+	virtual void SetVertices(void* vertices, unsigned int count,const VertexDeclarationVector& vertexDeclaration);
+	virtual void* GetVertices(unsigned int& count, VertexDeclarationVector& vertexDeclaration);
 	
 	unsigned int GetVertexCount(void);
-	virtual VertexDeclaration GetVertexDeclaration();
+	virtual VertexDeclarationVector GetVertexDeclaration();
 
 	// IResource
 	virtual void LoadResource(void);

@@ -27,7 +27,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 #ifndef AURORA_IVERTEXSHADER_H
 #define AURORA_IVERTEXSHADER_H
 
-#include "VertexDeclaration.h"
 #include <vector>
 
 class IVertexShader

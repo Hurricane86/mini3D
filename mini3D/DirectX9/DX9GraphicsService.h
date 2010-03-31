@@ -178,7 +178,7 @@ public:
 
 	virtual IBitmapTexture* CreateBitmapTexture(void* pBitmap, unsigned int width, unsigned int height, IBitmapTexture::BitDepth bitDepth = IBitmapTexture::BIT32, ITexture::WrapStyle wrapStyle = ITexture::TILE);
 
-	virtual IVertexBuffer* CreateVertexBuffer(void* pVertices, unsigned int count, const VertexDeclaration& vertexDeclaration);
+	virtual IVertexBuffer* CreateVertexBuffer(void* pVertices, unsigned int count, const IVertexBuffer::VertexDeclarationVector& vertexDeclaration);
 	virtual IIndexBuffer* CreateIndexBuffer(int* pIndices, unsigned int count);
 
 	virtual IPixelShader* CreatePixelShader(char* pShaderBytes, unsigned int sizeInBytes);

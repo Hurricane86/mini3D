@@ -27,18 +27,23 @@ OTHER DEALINGS IN THE SOFTWARE.
 #ifndef AURORA_IVERTEXBUFFER_H
 #define AURORA_IVERTEXBUFFER_H
 
-#include "VertexDeclaration.h"
+#include <vector>
 
 class IVertexBuffer
 {
 public:
+	enum VertexDataType { POSITION = 0, COLOR = 1, TEXTURECOORDINATE = 2, NORMAL = 3, BINORMAL = 4, TANGENT = 5, BLENDWEIGHT = 6, BLENDINDICES = 7 };
+	
+	// Typedefs
+	typedef std::vector<int> VertexDeclarationVector;
+
 	virtual ~IVertexBuffer(void) {};
 
-	virtual void SetVertices(void* pVertices, unsigned int count, const VertexDeclaration& vertexDeclaration) = 0;
-	virtual void* GetVertices(unsigned int& count, VertexDeclaration& vertexDeclaration) = 0;
+	virtual void SetVertices(void* pVertices, unsigned int count, const VertexDeclarationVector& vertexDeclaration) = 0;
+	virtual void* GetVertices(unsigned int& count, VertexDeclarationVector& vertexDeclaration) = 0;
 
 	virtual unsigned int GetVertexCount() = 0;
-	virtual VertexDeclaration GetVertexDeclaration() = 0;
+	virtual VertexDeclarationVector GetVertexDeclaration() = 0;
 };
 
 #endif
