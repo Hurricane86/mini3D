@@ -24,7 +24,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "DX9DepthStencil.h"
+#include "../DX9DepthStencil.h"
 #include <d3d9.h>
 
 DX9DepthStencil::DX9DepthStencil(DX9GraphicsService* pGraphicsService, unsigned int width, unsigned int height) : 

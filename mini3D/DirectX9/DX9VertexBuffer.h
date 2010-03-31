@@ -4,7 +4,7 @@
 
 #include "../IVertexBuffer.h"
 #include "DX9GraphicsService.h"
-#include "IDX9Resource.h"
+#include "internal/IDX9Resource.h"
 
 class DX9VertexBuffer :	public IVertexBuffer, public IDX9Resource
 {

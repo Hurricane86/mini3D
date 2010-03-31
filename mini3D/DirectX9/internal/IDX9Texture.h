@@ -24,25 +24,27 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef AURORA_DX9RENDERTARGET_H
-#define AURORA_DX9RENDERTARGET_H
+#ifndef AURORA_DX9TEXTURE_H
+#define AURORA_DX9TEXTURE_H
 
-#include "../internal/IRenderTarget.h"
+#include "../../internal/ITexture.h"
+#include <d3d9.h>
 
-class IDX9RenderTarget: public virtual IRenderTarget
+class IDX9Texture: public virtual ITexture
 {
 friend class DX9GraphicsService;
 
 private:
-	virtual IDirect3DSurface9* GetRenderTargetBuffer(void) = 0;
+	virtual IDirect3DTexture9* GetTextureBuffer(void) = 0;
 
 public:
-	virtual ~IDX9RenderTarget(void) {};
+
+	virtual ~IDX9Texture(void) {};
 
 	virtual unsigned int GetWidth(void) = 0;
 	virtual unsigned int GetHeight(void) = 0;
-	virtual bool GetDepthTestEnabled(void) = 0;
-	virtual IDepthStencil* GetDepthStencil(void) = 0;
+
+	virtual WrapStyle GetWrapStyle(void) = 0;
 };
 
 #endif

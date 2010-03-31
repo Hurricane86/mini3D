@@ -1,7 +1,7 @@
 
-#include "DX9VertexBuffer.h"
+#include "../DX9VertexBuffer.h"
 #include <d3d9.h>
-#include "../VertexDeclaration.h"
+#include "../../VertexDeclaration.h"
 
 DX9VertexBuffer::DX9VertexBuffer(void) :
 	pGraphicsService(pGraphicsService), bufferSizeInBytes(0), pVertices(0), pVertexBuffer(0), pVertexDeclaration(0), sizeInBytes(0)

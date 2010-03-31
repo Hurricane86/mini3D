@@ -34,11 +34,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "../GraphicsSettings.h"
 #include "../IGraphicsService.h"
 
-#include "IDX9RenderTarget.h"
-#include "IDX9Texture.h"
+#include "internal/IDX9RenderTarget.h"
+#include "internal/IDX9Texture.h"
+#include "internal/IDX9Resource.h"
 
-#include "IDX9Resource.h"
-#include "IDX9Texture.h"
 #include "DX9BitmapTexture.h"
 #include "DX9IndexBuffer.h"
 #include "DX9PixelShader.h"

@@ -24,7 +24,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "DX9VertexBuffer.h"
+#include "../DX9VertexBuffer.h"
 #include <d3d9.h>
 
 DX9IndexBuffer::DX9IndexBuffer(DX9GraphicsService* pGraphicsService, void* pIndices, unsigned int count) : 

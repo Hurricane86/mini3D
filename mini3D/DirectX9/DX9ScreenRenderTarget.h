@@ -29,7 +29,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 #include "../IScreenRenderTarget.h"
 #include "DX9GraphicsService.h"
-#include "IDX9Resource.h"
+#include "internal/IDX9Resource.h"
 
 class DX9DepthStencil;
 

@@ -28,9 +28,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 #define AURORA_DX9BITMAPTEXTURE_H
 
 #include "../IBitmapTexture.h"
-#include "IDX9Texture.h"
+#include "internal/IDX9Texture.h"
 #include "DX9GraphicsService.h"
-#include "IDX9Resource.h"
+#include "internal/IDX9Resource.h"
 
 class DX9BitmapTexture : public IBitmapTexture, public IDX9Texture, public IDX9Resource
 {

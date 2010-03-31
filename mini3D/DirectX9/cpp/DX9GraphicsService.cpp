@@ -24,8 +24,8 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "DX9GraphicsService.h"
-#include "support/D3DSetupManager.h"
+#include "../DX9GraphicsService.h"
+#include "../support/D3DSetupManager.h"
 
 DX9GraphicsService::DX9GraphicsService(const GraphicsSettings& graphicsSettings, int hWindow) :
 	pDevice(0), hWindow(hWindow), graphicsSettings(graphicsSettings), pCurrentDepthStencilBuffer(0)

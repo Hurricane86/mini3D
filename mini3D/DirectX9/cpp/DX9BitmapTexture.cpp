@@ -24,7 +24,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "DX9BitmapTexture.h"
+#include "../DX9BitmapTexture.h"
 #include <d3d9.h>
 
 DX9BitmapTexture::DX9BitmapTexture(DX9GraphicsService* pGraphicsService, void* pBitmap, unsigned int width, unsigned int height, IBitmapTexture::BitDepth bitDepth, ITexture::WrapStyle wrapStyle) :
