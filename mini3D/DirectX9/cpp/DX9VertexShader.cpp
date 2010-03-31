@@ -28,105 +28,46 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include <d3d9.h>
 
 
-DX9VertexShader::DX9VertexShader(DX9GraphicsService* pGraphicsService, void* pShaderBytes, unsigned int sizeInBytes, const VertexDeclarationVector& vertexDeclaration) :
-	pGraphicsService(pGraphicsService), pShaderBytes(0), pShaderBuffer(0)
+DX9VertexShader::DX9VertexShader(DX9GraphicsService* pGraphicsService, const ShaderBytes& shaderBytes, const VertexDeclarationVector& vertexDeclaration) :
+	pGraphicsService_(pGraphicsService), shaderBytes_(shaderBytes), pShaderBuffer_(0), vertexDeclaration_(vertexDeclaration)
 {
-	SetVertexShader(pShaderBytes, sizeInBytes, vertexDeclaration);
+	pGraphicsService_->PoolVertexDeclaration(vertexDeclaration);
 	LoadResource();
 }
 
 DX9VertexShader::~DX9VertexShader(void)
 {
+	pGraphicsService_->ReleaseVertexDeclaration(vertexDeclaration_);
 	UnloadResource();
-	UnloadVertexShader();
-	pGraphicsService->RemoveResource(this);
+	pGraphicsService_->RemoveResource(this);
 }
 
-void* DX9VertexShader::GetVertexShader(unsigned int& sizeInBytes)
-{
-	void* pReturnShaderBytes = pShaderBytes;
-	sizeInBytes = this->sizeInBytes;
-
-	// reset the data because we are "removing it" when we do a GetVertexShader!
-	this->pShaderBytes = 0;
-	this->sizeInBytes = 0;
-	this->isDirty = true;
-
-	return pReturnShaderBytes;
-}
-
-void DX9VertexShader::SetVertexShader(void* pShaderBytes, unsigned int sizeInBytes, const VertexDeclarationVector& vertexDeclaration)
-{
-	UnloadVertexShader();
-	SetVertexDeclaration(vertexDeclaration);
-	
-	this->pShaderBytes = pShaderBytes;
-	this->sizeInBytes = sizeInBytes;
-
-	isDirty = true;
-}
-
-void DX9VertexShader::SetVertexDeclaration(const VertexDeclarationVector& vertexDeclaration)
-{
-	// if we already have a vertex declaration, release it from the graphics service pool
-	if (this->vertexDeclaration.size() != 0)
-		pGraphicsService->ReleaseVertexDeclaration(vertexDeclaration);
-
-	this->vertexDeclaration = vertexDeclaration;
-
-	// pool the new one
-	pGraphicsService->PoolVertexDeclaration(vertexDeclaration);
-}
-
-IVertexShader::VertexDeclarationVector DX9VertexShader::GetVertexDeclaration()
-{
-	return vertexDeclaration;	
-}
-
-void DX9VertexShader::UnloadVertexShader(void)
-{
-	operator delete(pShaderBytes);
-	pGraphicsService->ReleaseVertexDeclaration(vertexDeclaration);
-	pShaderBytes = 0;
-	sizeInBytes = 0;
-}
-
-IDirect3DVertexShader9* DX9VertexShader::GetVertexShaderBuffer(void)
-{
-	return pShaderBuffer;
-}
 void DX9VertexShader::LoadResource(void)
 {
-	IDirect3DDevice9* pDevice = pGraphicsService->GetDevice();
+	IDirect3DDevice9* pDevice = pGraphicsService_->GetDevice();
 	if (pDevice == 0)
 		return;
 
 	// If the buffer exists tear it down.
-	if (pShaderBuffer != 0)
+	if (pShaderBuffer_ != 0)
 	{
 		UnloadResource();
 	}
 
-	if( FAILED( pDevice->CreateVertexShader((DWORD*)pShaderBytes, &pShaderBuffer)))
+	if( FAILED( pDevice->CreateVertexShader((DWORD*)&shaderBytes_[0], &pShaderBuffer_)))
 	{
-		isDirty = true;
+		isDirty_ = true;
 		return;
 	}
 
-	isDirty = false;
+	isDirty_ = false;
 }
 
 void DX9VertexShader::UnloadResource(void)
 {
-	if (pShaderBuffer != 0)
+	if (pShaderBuffer_ != 0)
 	{
-		pShaderBuffer->Release();
-		pShaderBuffer = 0;
+		pShaderBuffer_->Release();
+		pShaderBuffer_ = 0;
 	}
-
-	isDirty = true;
-}
-bool DX9VertexShader::GetIsDirty(void)
-{
-	return isDirty;
 }

@@ -34,34 +34,28 @@ friend class DX9GraphicsService;
 
 private:
 	// Indices
-	void* pShaderBytes;
-	unsigned int sizeInBytes;
-	VertexDeclarationVector vertexDeclaration;
+	ShaderBytes shaderBytes_;
+	VertexDeclarationVector vertexDeclaration_;
 	
 	// Buffer
-	IDirect3DVertexShader9* pShaderBuffer;
-	bool isDirty;
+	IDirect3DVertexShader9* pShaderBuffer_;
+	bool isDirty_;
 
 	// GraphicsDevice link
-	DX9GraphicsService* pGraphicsService;
+	DX9GraphicsService* pGraphicsService_;
 
 public:
-	DX9VertexShader(DX9GraphicsService* graphicsService, void* pShaderBytes, unsigned int sizeInBytes, const VertexDeclarationVector& vertexDeclaration);
+	DX9VertexShader(DX9GraphicsService* pGraphicsService, const ShaderBytes& shaderBytes, const VertexDeclarationVector& vertexDeclaration);
 	~DX9VertexShader(void);
 
-	virtual void SetVertexShader(void* pShaderBytes, unsigned int sizeInBytes, const VertexDeclarationVector& vertexDeclaration);
-	virtual void* GetVertexShader(unsigned int& sizeInBytes);
-	virtual unsigned int GetSizeInBytes() { return sizeInBytes; };
-
-	virtual VertexDeclarationVector GetVertexDeclaration();
+	virtual ShaderBytes GetVertexShader(void) { return shaderBytes_; };
+	virtual VertexDeclarationVector GetVertexDeclaration(void) { return vertexDeclaration_; };
 
 private:
-	void SetVertexDeclaration(const VertexDeclarationVector& vertexDeclaration);
-	virtual IDirect3DVertexShader9* GetVertexShaderBuffer(void);
-	void UnloadVertexShader(void);
+	virtual IDirect3DVertexShader9* GetVertexShaderBuffer(void) { return pShaderBuffer_; };
 
 	// IDX9Resource
 	virtual void LoadResource(void);
 	virtual void UnloadResource(void);
-	virtual bool GetIsDirty(void);
+	virtual bool GetIsDirty(void) { return isDirty_; };
 };

@@ -27,17 +27,19 @@ OTHER DEALINGS IN THE SOFTWARE.
 #ifndef AURORA_IPIXELSHADER_H
 #define AURORA_IPIXELSHADER_H
 
+#include <vector>
+
 class IPixelShader
 {
 	friend class IGraphicsDevice;
 
 public:
+	// Typedefs
+	typedef std::vector<char> ShaderBytes;
+	
+	// Methods
 	virtual ~IPixelShader(void) {};
-
-	virtual void* GetPixelShader(unsigned int& sizeInBytes) = 0;
-	virtual void SetPixelShader(void* pShaderBytes, unsigned int sizeInBytes) = 0;
-	virtual unsigned int GetSizeInBytes(void) = 0;
-
+	virtual ShaderBytes GetPixelShader() = 0;
 };
 
 #endif

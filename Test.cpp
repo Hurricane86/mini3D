@@ -75,6 +75,26 @@ char* ShaderBytesFromFile(wstring file, long& sizeInBytes)
 	return 0;
 }
 
+IPixelShader::ShaderBytes PixelShaderBytesFromFile(wstring file)
+{
+	
+	IPixelShader::ShaderBytes shaderBytes;
+
+	fstream fileStream(file.c_str(), ios_base::binary | ios_base::in);
+	if (fileStream)
+	{
+		fileStream.seekg(0, ios::end);
+		long fileSize = fileStream.tellg();
+		fileStream.seekg(0, ios::beg);
+
+		shaderBytes.resize(fileSize);
+
+		fileStream.read(&shaderBytes[0], fileSize);
+		fileStream.close();
+	}
+	return shaderBytes;
+}
+
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch(msg)
@@ -159,13 +179,13 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	}
 	IBitmapTexture* pTexture = graphics->CreateBitmapTexture(pBitmap, 512, 512);
 	
-	long sizeInBytes;
-	char* shaderBytes = ShaderBytesFromFile(L"testPixelShader.fxo", sizeInBytes);
-	IPixelShader* pPixelShader = graphics->CreatePixelShader(shaderBytes, sizeInBytes);
+	IPixelShader::ShaderBytes shaderBytes = PixelShaderBytesFromFile(L"testPixelShader.fxo");
+	IPixelShader* pPixelShader = graphics->CreatePixelShader(shaderBytes);
 
-	shaderBytes = ShaderBytesFromFile(L"testVertexShader.fxo", sizeInBytes);
+	std::vector<char> shaderBytes2;
+	shaderBytes2 = PixelShaderBytesFromFile(L"testVertexShader.fxo");
 
-	IVertexShader* pVertexShader = graphics->CreateVertexShader(shaderBytes, sizeInBytes, vd);
+	IVertexShader* pVertexShader = graphics->CreateVertexShader(shaderBytes2, vd);
 
 	D3DXMATRIX viewMatrix;
 	D3DXMATRIX projectionMatrix;

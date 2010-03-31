@@ -574,13 +574,13 @@ IIndexBuffer* DX9GraphicsService::CreateIndexBuffer(int* indices, unsigned int c
 	return new DX9IndexBuffer(this, indices, count);
 }
 
-IPixelShader* DX9GraphicsService::CreatePixelShader(char* shaderBytes, unsigned int sizeInBytes)
+IPixelShader* DX9GraphicsService::CreatePixelShader(const IPixelShader::ShaderBytes& shaderBytes)
 {
-	return new DX9PixelShader(this, shaderBytes, sizeInBytes);
+	return new DX9PixelShader(this, shaderBytes);
 }
 
-IVertexShader* DX9GraphicsService::CreateVertexShader(char* shaderBytes, unsigned int sizeInBytes, const IVertexShader::VertexDeclarationVector& vertexDeclaration)
+IVertexShader* DX9GraphicsService::CreateVertexShader(const IVertexShader::ShaderBytes& shaderBytes, const IVertexShader::VertexDeclarationVector& vertexDeclaration)
 {
-	return new DX9VertexShader(this, shaderBytes, sizeInBytes, vertexDeclaration);
+	return new DX9VertexShader(this, shaderBytes, vertexDeclaration);
 }
 

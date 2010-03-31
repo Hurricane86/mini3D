@@ -36,13 +36,12 @@ public:
 	
 	// Typedefs
 	typedef std::vector<int> VertexDeclarationVector;
+	typedef std::vector<char> ShaderBytes;
 
 public:
 	virtual ~IVertexShader(void) {};
-
-	virtual void* GetVertexShader(unsigned int& sizeInBytes) = 0;
-	virtual void SetVertexShader(void* pShaderBytes, unsigned int sizeInBytes, const VertexDeclarationVector& vertexDeclaration) = 0;
-	virtual unsigned int GetSizeInBytes(void) = 0;
+	virtual ShaderBytes GetVertexShader(void) = 0;
+	virtual VertexDeclarationVector GetVertexDeclaration(void) = 0;
 };
 
 #endif

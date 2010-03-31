@@ -25,40 +25,35 @@ OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include "../IPixelShader.h"
-#include "DX9GraphicsService.h"
+#include <vector>
 
+class DX9GraphicsService;
 class DX9PixelShader : IPixelShader, IDX9Resource
 {
-
 	friend class DX9GraphicsService;
 
 private:
 	// Indices
-	void* pShaderBytes;
-	unsigned int sizeInBytes;
-	
+	ShaderBytes shaderBytes_;
+
 	// Buffer
-	IDirect3DPixelShader9* pShaderBuffer;
-	bool isDirty;
+	IDirect3DPixelShader9* pShaderBuffer_;
+	bool isDirty_;
 
 	// GraphicsDevice link
-	DX9GraphicsService* pGraphicsService;
+	DX9GraphicsService* pGraphicsService_;
 
 public:
-	DX9PixelShader(DX9GraphicsService* graphicsService, void* pShaderBytes, unsigned int sizeInBytes);
+	DX9PixelShader(DX9GraphicsService* graphicsService, const ShaderBytes& shaderBytes);
 	~DX9PixelShader(void);
 
-	virtual void SetPixelShader(void* pShaderBytes, unsigned int sizeInBytes);
-	virtual void* GetPixelShader(unsigned int& sizeInBytes);
-	virtual unsigned int GetSizeInBytes();
+	ShaderBytes GetPixelShader() { return shaderBytes_; };
 
 private:
-
-	virtual IDirect3DPixelShader9* GetPixelShaderBuffer(void);
-	void UnloadPixelShader(void);
+	inline IDirect3DPixelShader9* GetPixelShaderBuffer(void) { return pShaderBuffer_; }
 
 	// IDX9Resource
 	void LoadResource(void);
 	void UnloadResource(void);
-	bool GetIsDirty(void);
+	bool GetIsDirty(void) { return isDirty_; };
 };

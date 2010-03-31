@@ -25,92 +25,47 @@ OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include "../DX9VertexBuffer.h"
+#include "../DX9GraphicsService.h"
 #include <d3d9.h>
 
-DX9PixelShader::DX9PixelShader(DX9GraphicsService* pGraphicsService, void* pShaderBytes, unsigned int sizeInBytes) :
-	pGraphicsService(pGraphicsService), pShaderBytes(0), pShaderBuffer(0)
+DX9PixelShader::DX9PixelShader(DX9GraphicsService* pGraphicsService, const ShaderBytes& shaderBytes) :
+	pGraphicsService_(pGraphicsService), shaderBytes_(shaderBytes), pShaderBuffer_(0)
 {
-	SetPixelShader(pShaderBytes, sizeInBytes);
 	LoadResource();
 }
 
 DX9PixelShader::~DX9PixelShader(void)
 {
 	UnloadResource();
-	UnloadPixelShader();
-	pGraphicsService->RemoveResource(this);
+	pGraphicsService_->RemoveResource(this);
 }
 
-void* DX9PixelShader::GetPixelShader(unsigned int& sizeInBytes)
-{
-	void* pReturnShaderBytes = pShaderBytes;
-	sizeInBytes = this->sizeInBytes;
-
-	// reset the data because we are "removing it" when we do a GetPixelShader!
-	this->pShaderBytes = 0;
-	this->sizeInBytes = 0;
-	this->isDirty = true;
-
-
-	return pReturnShaderBytes;
-}
-void DX9PixelShader::SetPixelShader(void* pShaderBytes, unsigned int sizeInBytes)
-{
-	UnloadPixelShader();
-	
-	this->pShaderBytes = pShaderBytes;
-	this->sizeInBytes = sizeInBytes;
-
-	isDirty = true;
-}
-IDirect3DPixelShader9* DX9PixelShader::GetPixelShaderBuffer(void)
-{
-	return pShaderBuffer;
-}
-void DX9PixelShader::UnloadPixelShader(void)
-{
-	if (pShaderBytes != 0)
-		operator delete(pShaderBytes);
-
-	pShaderBytes = 0;
-	sizeInBytes = 0;
-}
-unsigned int DX9PixelShader::GetSizeInBytes()
-{
-	return sizeInBytes;
-}
 void DX9PixelShader::LoadResource(void)
 {
-	IDirect3DDevice9* pDevice = pGraphicsService->GetDevice();
+	IDirect3DDevice9* pDevice = pGraphicsService_->GetDevice();
 	if (pDevice == 0)
 		return;
 
 	// If the buffer exists tear it down.
-	if (pShaderBuffer != 0)
+	if (pShaderBuffer_ != 0)
 	{
 		UnloadResource();
 	}
 
-	if( FAILED( pDevice->CreatePixelShader((DWORD*)pShaderBytes, &pShaderBuffer)))
+	if( FAILED( pDevice->CreatePixelShader((DWORD*)&shaderBytes_[0], &pShaderBuffer_)))
 	{
-		isDirty = true;
+		isDirty_ = true;
 		return;
 	}
 
-	isDirty = false;
+	isDirty_ = false;
 }
 
 void DX9PixelShader::UnloadResource(void)
 {
-	if (pShaderBuffer != 0)
+	if (pShaderBuffer_ != 0)
 	{
-		pShaderBuffer->Release();
-		pShaderBuffer = 0;
+		pShaderBuffer_->Release();
+		pShaderBuffer_ = 0;
 	}
-
-	isDirty = true;
-}
-bool DX9PixelShader::GetIsDirty(void)
-{
-	return isDirty;
 }
