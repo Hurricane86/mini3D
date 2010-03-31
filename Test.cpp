@@ -53,28 +53,6 @@ VertexPCT vertices[] = {{-5.0f,-5.0f, 0.0f,   (DWORD)D3DCOLOR_ARGB(255,128,128,1
 
 int indices[] = {0, 1, 2, 0, 2, 3};
 
-char* ShaderBytesFromFile(wstring file, long& sizeInBytes)
-{
-	
-	sizeInBytes = 0;
-
-	fstream fileStream(file.c_str(), ios_base::binary | ios_base::in);
-	if (fileStream)
-	{
-		fileStream.seekg(0, ios::end);
-		long fileSize = fileStream.tellg();
-		fileStream.seekg(0, ios::beg);
-
-		char* shaderBytes = new char[fileSize];
-
-		fileStream.read(shaderBytes, fileSize);
-		fileStream.close();
-		sizeInBytes = fileSize;
-		return shaderBytes;
-	}
-	return 0;
-}
-
 mini3d::IPixelShader::ShaderBytes PixelShaderBytesFromFile(wstring file)
 {
 	
@@ -111,9 +89,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
-INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
+HWND createWindow(void)
 {
-	
 	HINSTANCE hInstance = GetModuleHandle(NULL);
 
     WNDCLASSEX wc;
@@ -147,46 +124,59 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
         CW_USEDEFAULT, CW_USEDEFAULT, 512, 512,
         NULL, NULL, hInstance, NULL);
 
-	ShowWindow(hWindow, SW_SHOW);
-	UpdateWindow(hWindow);
+	return hWindow;
+}
 
+INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
+{
+	// create a window
+	HWND hWindow = createWindow();
+		ShowWindow(hWindow, SW_SHOW);
+		UpdateWindow(hWindow);
+
+	// create a vertex declaration for the vertex buffer and the vertex shader
 	mini3d::IVertexShader::VertexDeclarationVector vd;
-	vd.push_back(mini3d::IVertexShader::POSITION);
-	vd.push_back(mini3d::IVertexShader::COLOR);
-	vd.push_back(mini3d::IVertexShader::TEXTURECOORDINATE);
+		vd.push_back(mini3d::IVertexShader::POSITION); vd.push_back(mini3d::IVertexShader::COLOR); vd.push_back(mini3d::IVertexShader::TEXTURECOORDINATE);
 
+	// create a graphics settings structure for initialising the graphics services
 	mini3d::GraphicsSettings gs;
-	gs.multisampleFormat = mini3d::GraphicsSettings::SIXTEEN_SAMPLES;
-	gs.fullscreen = false;
+		gs.multisampleFormat = mini3d::GraphicsSettings::SIXTEEN_SAMPLES;
+		gs.fullscreen = false;
 
+	// create a graphics service
 	mini3d::IGraphicsService* graphics = new mini3d::DX9GraphicsService(gs, (int)hWindow);
-
+	
+	// create a render target (mini3d does not have a default render target)
 	mini3d::IScreenRenderTarget* pScreenRenderTarget = graphics->CreateScreenRenderTarget(512,512,(int)hWindow, true);
 
+	// create index buffer
 	int* pIndices = new int[6];
-	VertexPCT* pVertices = new VertexPCT[4];
-
 	memcpy(pIndices, &indices, sizeof(indices));
-	memcpy(pVertices, &vertices, sizeof(vertices));
-	
 	mini3d::IIndexBuffer* iBuffer = graphics->CreateIndexBuffer(pIndices, 6);
-	mini3d::IVertexBuffer* vBuffer = graphics->CreateVertexBuffer(pVertices, 4, vd);
 
+	// create vertex buffer
+	VertexPCT* pVertices = new VertexPCT[4];
+	memcpy(pVertices, &vertices, sizeof(vertices));
+	mini3d::IVertexBuffer* vBuffer = graphics->CreateVertexBuffer(pVertices, 4, vd);
+	
+	// create texture
 	int* pBitmap = new int[512 * 512 * 4];
 	for(int i = 0; i < 512 * 512; i++)
 	{
 		pBitmap[i] = 0xFFFFFFFF * ((i / 128) % 2);
 	}
 	mini3d::IBitmapTexture* pTexture = graphics->CreateBitmapTexture(pBitmap, 512, 512);
-	
+
+	// create pixel shader
 	mini3d::IPixelShader::ShaderBytes shaderBytes = PixelShaderBytesFromFile(L"testPixelShader.fxo");
 	mini3d::IPixelShader* pPixelShader = graphics->CreatePixelShader(shaderBytes);
 
-	std::vector<char> shaderBytes2;
-	shaderBytes2 = PixelShaderBytesFromFile(L"testVertexShader.fxo");
-
+	// create vertex shader
+	mini3d::IVertexShader::ShaderBytes shaderBytes2 = PixelShaderBytesFromFile(L"testVertexShader.fxo");
 	mini3d::IVertexShader* pVertexShader = graphics->CreateVertexShader(shaderBytes2, vd);
 
+	// create a view projection matrix
+	// no matrix math in mini3d, so we use the d3dx stuff... could be any other lib here just as well...
 	D3DXMATRIX viewMatrix;
 	D3DXMATRIX projectionMatrix;
 		
@@ -196,36 +186,42 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	D3DXMATRIX viewProjectionMatrix = viewMatrix * projectionMatrix;
 	D3DXMATRIX viewProjectionMatrixTranspose;
 	D3DXMatrixTranspose(&viewProjectionMatrixTranspose, &viewProjectionMatrix);
-	
-	graphics->SetRenderTarget(pScreenRenderTarget);
 
+	// set render prarameters
+	graphics->SetRenderTarget(pScreenRenderTarget);
 	graphics->SetIndexBuffer(iBuffer);
 	graphics->SetVertexBuffer(vBuffer);
 	graphics->SetPixelShader(pPixelShader);
 	graphics->SetVertexShader(pVertexShader);
 	graphics->SetTexture(pTexture, 0);
 
-
+	// run the message loop
 	MSG Msg;
 	while(true)
 	{
 	    while(GetMessage(&Msg, NULL, 0, 0) > 0)
 		{
+			// draw the frame
 			graphics->BeginFrame();
-			graphics->BeginDraw();
-			graphics->SetShaderParameterFloat(0, &viewProjectionMatrixTranspose._11, 4);
-			graphics->ClearRenderTarget(0xFFDDCCFF);
-			graphics->Draw();
-			graphics->EndDraw();
+				graphics->BeginDraw();
+					// set a shader parameter
+					graphics->SetShaderParameterFloat(0, &viewProjectionMatrixTranspose._11, 4);
+					// clear render target with color
+					graphics->ClearRenderTarget(0xFFDDCCFF);
+					// run the rendering pipeline
+					graphics->Draw();
+				graphics->EndDraw();
 			graphics->EndFrame();
+			
+			// do a flip
 			pScreenRenderTarget->Display();
 
+			// windows message stuff
 			TranslateMessage(&Msg);
 			DispatchMessage(&Msg);
 		}
 
 		delete vBuffer;
-	
 		return Msg.wParam;
 	}
 
