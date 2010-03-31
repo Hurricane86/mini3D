@@ -29,6 +29,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 #include <vector>
 
+namespace mini3d
+{
 class IVertexBuffer
 {
 public:
@@ -45,5 +47,6 @@ public:
 	virtual unsigned int GetVertexCount() = 0;
 	virtual VertexDeclarationVector GetVertexDeclaration() = 0;
 };
+}
 
 #endif

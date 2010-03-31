@@ -27,6 +27,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 #ifndef AURORA_GRAPHICSSETTINGS_H
 #define AURORA_GRAPHICSSETTINGS_H
 
+namespace mini3d
+{
 struct GraphicsSettings
 {
 	enum MultisampleFormat
@@ -74,6 +76,7 @@ struct GraphicsSettings
 		}
 	};
 };
+}
 
 
 

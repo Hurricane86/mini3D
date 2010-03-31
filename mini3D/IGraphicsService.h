@@ -40,6 +40,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "IIndexBuffer.h"
 #include "IScreenRenderTarget.h"
 
+namespace mini3d
+{
 class IGraphicsService
 {
 public:
@@ -111,5 +113,6 @@ public:
 	virtual IVertexShader* CreateVertexShader(const IVertexShader::ShaderBytes& shaderBytes, const IVertexShader::VertexDeclarationVector& vertexDeclaration) = 0;
 
 };
+}
 
 #endif

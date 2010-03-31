@@ -27,6 +27,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 #ifndef AURORA_IRENDERTARGET_H
 #define AURORA_IRENDERTARGET_H
 
+
+namespace mini3d
+{
 class IRenderTarget
 {
 public:
@@ -37,5 +40,6 @@ public:
 	virtual unsigned int GetHeight(void) = 0;
 	virtual bool GetDepthTestEnabled(void) = 0;
 };
+}
 
 #endif

@@ -1,6 +1,6 @@
 #include "D3DSetupManager.h"
 
-D3DFORMAT D3DSetupManager::GetCorrectBackBufferFormat(GraphicsSettings& graphicsSettings, IDirect3D9* pD3D)
+D3DFORMAT mini3d::D3DSetupManager::GetCorrectBackBufferFormat(GraphicsSettings& graphicsSettings, IDirect3D9* pD3D)
 {
 	D3DDISPLAYMODE displayMode;
 	pD3D->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &displayMode);
@@ -15,7 +15,7 @@ D3DFORMAT D3DSetupManager::GetCorrectBackBufferFormat(GraphicsSettings& graphics
 }
 
 
-D3DFORMAT D3DSetupManager::GetCorrectDepthStencilFormat(GraphicsSettings& graphicsSettings, IDirect3D9* pD3D)
+D3DFORMAT mini3d::D3DSetupManager::GetCorrectDepthStencilFormat(GraphicsSettings& graphicsSettings, IDirect3D9* pD3D)
 {
 	// TODO: This similar to the ogre initialization code! Look this over and assert all assumptions!
 
@@ -52,7 +52,7 @@ D3DFORMAT D3DSetupManager::GetCorrectDepthStencilFormat(GraphicsSettings& graphi
 			
 }
 
-void D3DSetupManager::CheckMultisampleFormat(GraphicsSettings& graphicsSettings, IDirect3D9* pD3D)
+void mini3d::D3DSetupManager::CheckMultisampleFormat(GraphicsSettings& graphicsSettings, IDirect3D9* pD3D)
 {
 
 	D3DDISPLAYMODE displayMode;
@@ -72,7 +72,7 @@ void D3DSetupManager::CheckMultisampleFormat(GraphicsSettings& graphicsSettings,
 	}
 }
 
-D3DMULTISAMPLE_TYPE D3DSetupManager::FromMultisampleFormat(GraphicsSettings::MultisampleFormat multisampleFormat)
+D3DMULTISAMPLE_TYPE mini3d::D3DSetupManager::FromMultisampleFormat(GraphicsSettings::MultisampleFormat multisampleFormat)
 {
 	switch(multisampleFormat)
 	{

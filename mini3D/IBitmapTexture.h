@@ -29,6 +29,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 #include "internal/ITexture.h"
 
+namespace mini3d
+{
 class IBitmapTexture : public virtual ITexture
 {
 public:
@@ -51,5 +53,6 @@ public:
 	virtual WrapStyle GetWrapStyle(void) = 0;
 	virtual BitDepth GetBitDepth(void) = 0;
 };
+}
 
 #endif

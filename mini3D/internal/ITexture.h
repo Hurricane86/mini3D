@@ -27,6 +27,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 #ifndef AURORA_ITEXTURE_H
 #define AURORA_ITEXTURE_H
 
+namespace mini3d
+{
 class ITexture
 {
 public:
@@ -45,5 +47,6 @@ public:
 
 	virtual WrapStyle GetWrapStyle(void) = 0;
 };
+}
 
 #endif

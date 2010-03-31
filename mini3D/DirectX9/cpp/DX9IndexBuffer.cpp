@@ -27,21 +27,21 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "../DX9VertexBuffer.h"
 #include <d3d9.h>
 
-DX9IndexBuffer::DX9IndexBuffer(DX9GraphicsService* pGraphicsService, void* pIndices, unsigned int count) : 
+mini3d::DX9IndexBuffer::DX9IndexBuffer(DX9GraphicsService* pGraphicsService, void* pIndices, unsigned int count) : 
 	pGraphicsService(pGraphicsService), bufferSizeInBytes(0), pIndices(0), pIndexBuffer(0)
 {
 	SetIndices(pIndices, count);
 	LoadResource();	
 }
 
-DX9IndexBuffer::~DX9IndexBuffer(void)
+mini3d::DX9IndexBuffer::~DX9IndexBuffer(void)
 {
 	UnloadResource();
 	UnloadIndices();
 	pGraphicsService->RemoveResource(this);
 }
 
-void DX9IndexBuffer::SetIndices(void* pIndices, unsigned int count)
+void mini3d::DX9IndexBuffer::SetIndices(void* pIndices, unsigned int count)
 {
 	UnloadIndices();
 
@@ -51,7 +51,7 @@ void DX9IndexBuffer::SetIndices(void* pIndices, unsigned int count)
 
 	isDirty = true;
 }
-void* DX9IndexBuffer::GetIndices(unsigned int& count)
+void* mini3d::DX9IndexBuffer::GetIndices(unsigned int& count)
 {
 	void* pReturnIndices = pIndices;
 	count = GetIndexCount(); // TODO: depends on index type
@@ -64,15 +64,15 @@ void* DX9IndexBuffer::GetIndices(unsigned int& count)
 
 	return pReturnIndices;
 }
-unsigned int DX9IndexBuffer::GetIndexCount(void)
+unsigned int mini3d::DX9IndexBuffer::GetIndexCount(void)
 {
 	return sizeInBytes / 4;
 }
-IDirect3DIndexBuffer9* DX9IndexBuffer::GetIndexBuffer(void)
+IDirect3DIndexBuffer9* mini3d::DX9IndexBuffer::GetIndexBuffer(void)
 {
 	return pIndexBuffer;
 }
-void DX9IndexBuffer::UnloadIndices(void)
+void mini3d::DX9IndexBuffer::UnloadIndices(void)
 {
 	if (pIndices != 0)
 		operator delete(pIndices);
@@ -82,7 +82,7 @@ void DX9IndexBuffer::UnloadIndices(void)
 
 	isDirty = true;
 }
-void DX9IndexBuffer::LoadResource(void)
+void mini3d::DX9IndexBuffer::LoadResource(void)
 {
 	/// Allocate buffer on the graphics card and add index data.
 	IDirect3DDevice9* pDevice = pGraphicsService->GetDevice();
@@ -127,7 +127,7 @@ void DX9IndexBuffer::LoadResource(void)
 	isDirty = false;
 }
 
-void DX9IndexBuffer::UnloadResource(void)
+void mini3d::DX9IndexBuffer::UnloadResource(void)
 {
 	if (pIndexBuffer != 0)
 	{
@@ -137,7 +137,7 @@ void DX9IndexBuffer::UnloadResource(void)
 
 	isDirty = true;
 }
-bool DX9IndexBuffer::GetIsDirty(void)
+bool mini3d::DX9IndexBuffer::GetIsDirty(void)
 {
 	return isDirty;
 }

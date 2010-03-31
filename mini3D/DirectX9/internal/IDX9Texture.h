@@ -30,6 +30,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "../../internal/ITexture.h"
 #include <d3d9.h>
 
+namespace mini3d
+{
 class IDX9Texture: public virtual ITexture
 {
 friend class DX9GraphicsService;
@@ -46,5 +48,6 @@ public:
 
 	virtual WrapStyle GetWrapStyle(void) = 0;
 };
+}
 
 #endif

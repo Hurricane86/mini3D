@@ -27,6 +27,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 #ifndef AURORA_IDEPTHSTENCIL_H
 #define AURORA_IDEPTHSTENCIL_H
 
+namespace mini3d
+{
 class IDepthStencil
 {
 public:
@@ -37,5 +39,6 @@ public:
 	virtual unsigned int GetWidth(void) = 0;
 	virtual unsigned int GetHeight(void) = 0;
 };
+}
 
 #endif

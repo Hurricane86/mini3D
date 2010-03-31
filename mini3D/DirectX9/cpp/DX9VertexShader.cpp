@@ -28,21 +28,21 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include <d3d9.h>
 
 
-DX9VertexShader::DX9VertexShader(DX9GraphicsService* pGraphicsService, const ShaderBytes& shaderBytes, const VertexDeclarationVector& vertexDeclaration) :
+mini3d::DX9VertexShader::DX9VertexShader(DX9GraphicsService* pGraphicsService, const ShaderBytes& shaderBytes, const VertexDeclarationVector& vertexDeclaration) :
 	pGraphicsService_(pGraphicsService), shaderBytes_(shaderBytes), pShaderBuffer_(0), vertexDeclaration_(vertexDeclaration)
 {
 	pGraphicsService_->PoolVertexDeclaration(vertexDeclaration);
 	LoadResource();
 }
 
-DX9VertexShader::~DX9VertexShader(void)
+mini3d::DX9VertexShader::~DX9VertexShader(void)
 {
 	pGraphicsService_->ReleaseVertexDeclaration(vertexDeclaration_);
 	UnloadResource();
 	pGraphicsService_->RemoveResource(this);
 }
 
-void DX9VertexShader::LoadResource(void)
+void mini3d::DX9VertexShader::LoadResource(void)
 {
 	IDirect3DDevice9* pDevice = pGraphicsService_->GetDevice();
 	if (pDevice == 0)
@@ -63,7 +63,7 @@ void DX9VertexShader::LoadResource(void)
 	isDirty_ = false;
 }
 
-void DX9VertexShader::UnloadResource(void)
+void mini3d::DX9VertexShader::UnloadResource(void)
 {
 	if (pShaderBuffer_ != 0)
 	{

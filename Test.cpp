@@ -75,10 +75,10 @@ char* ShaderBytesFromFile(wstring file, long& sizeInBytes)
 	return 0;
 }
 
-IPixelShader::ShaderBytes PixelShaderBytesFromFile(wstring file)
+mini3d::IPixelShader::ShaderBytes PixelShaderBytesFromFile(wstring file)
 {
 	
-	IPixelShader::ShaderBytes shaderBytes;
+	mini3d::IPixelShader::ShaderBytes shaderBytes;
 
 	fstream fileStream(file.c_str(), ios_base::binary | ios_base::in);
 	if (fileStream)
@@ -150,18 +150,18 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	ShowWindow(hWindow, SW_SHOW);
 	UpdateWindow(hWindow);
 
-	IVertexShader::VertexDeclarationVector vd;
-	vd.push_back(IVertexShader::POSITION);
-	vd.push_back(IVertexShader::COLOR);
-	vd.push_back(IVertexShader::TEXTURECOORDINATE);
+	mini3d::IVertexShader::VertexDeclarationVector vd;
+	vd.push_back(mini3d::IVertexShader::POSITION);
+	vd.push_back(mini3d::IVertexShader::COLOR);
+	vd.push_back(mini3d::IVertexShader::TEXTURECOORDINATE);
 
-	GraphicsSettings gs;
-	gs.multisampleFormat = GraphicsSettings::SIXTEEN_SAMPLES;
+	mini3d::GraphicsSettings gs;
+	gs.multisampleFormat = mini3d::GraphicsSettings::SIXTEEN_SAMPLES;
 	gs.fullscreen = false;
 
-	IGraphicsService* graphics = new DX9GraphicsService(gs, (int)hWindow);
+	mini3d::IGraphicsService* graphics = new mini3d::DX9GraphicsService(gs, (int)hWindow);
 
-	IScreenRenderTarget* pScreenRenderTarget = graphics->CreateScreenRenderTarget(512,512,(int)hWindow, true);
+	mini3d::IScreenRenderTarget* pScreenRenderTarget = graphics->CreateScreenRenderTarget(512,512,(int)hWindow, true);
 
 	int* pIndices = new int[6];
 	VertexPCT* pVertices = new VertexPCT[4];
@@ -169,23 +169,23 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	memcpy(pIndices, &indices, sizeof(indices));
 	memcpy(pVertices, &vertices, sizeof(vertices));
 	
-	IIndexBuffer* iBuffer = graphics->CreateIndexBuffer(pIndices, 6);
-	IVertexBuffer* vBuffer = graphics->CreateVertexBuffer(pVertices, 4, vd);
+	mini3d::IIndexBuffer* iBuffer = graphics->CreateIndexBuffer(pIndices, 6);
+	mini3d::IVertexBuffer* vBuffer = graphics->CreateVertexBuffer(pVertices, 4, vd);
 
 	int* pBitmap = new int[512 * 512 * 4];
 	for(int i = 0; i < 512 * 512; i++)
 	{
 		pBitmap[i] = 0xFFFFFFFF * ((i / 128) % 2);
 	}
-	IBitmapTexture* pTexture = graphics->CreateBitmapTexture(pBitmap, 512, 512);
+	mini3d::IBitmapTexture* pTexture = graphics->CreateBitmapTexture(pBitmap, 512, 512);
 	
-	IPixelShader::ShaderBytes shaderBytes = PixelShaderBytesFromFile(L"testPixelShader.fxo");
-	IPixelShader* pPixelShader = graphics->CreatePixelShader(shaderBytes);
+	mini3d::IPixelShader::ShaderBytes shaderBytes = PixelShaderBytesFromFile(L"testPixelShader.fxo");
+	mini3d::IPixelShader* pPixelShader = graphics->CreatePixelShader(shaderBytes);
 
 	std::vector<char> shaderBytes2;
 	shaderBytes2 = PixelShaderBytesFromFile(L"testVertexShader.fxo");
 
-	IVertexShader* pVertexShader = graphics->CreateVertexShader(shaderBytes2, vd);
+	mini3d::IVertexShader* pVertexShader = graphics->CreateVertexShader(shaderBytes2, vd);
 
 	D3DXMATRIX viewMatrix;
 	D3DXMATRIX projectionMatrix;

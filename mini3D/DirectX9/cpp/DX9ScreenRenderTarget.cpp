@@ -28,7 +28,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "../DX9DepthStencil.h"
 #include <d3d9.h>
 
-DX9ScreenRenderTarget::DX9ScreenRenderTarget(DX9GraphicsService* pGraphicsService, unsigned int width, unsigned int height, int hWindow, bool depthTestEnabled) : 
+mini3d::DX9ScreenRenderTarget::DX9ScreenRenderTarget(DX9GraphicsService* pGraphicsService, unsigned int width, unsigned int height, int hWindow, bool depthTestEnabled) : 
 	pGraphicsService(pGraphicsService), pScreenRenderTarget(0), pDepthStencil(0)
 {
 	if (depthTestEnabled == true)
@@ -40,7 +40,7 @@ DX9ScreenRenderTarget::DX9ScreenRenderTarget(DX9GraphicsService* pGraphicsServic
 	LoadResource();	
 }
 
-DX9ScreenRenderTarget::~DX9ScreenRenderTarget(void)
+mini3d::DX9ScreenRenderTarget::~DX9ScreenRenderTarget(void)
 {
 	UnloadResource();
 	pGraphicsService->RemoveResource(this);
@@ -49,7 +49,7 @@ DX9ScreenRenderTarget::~DX9ScreenRenderTarget(void)
 		delete pDepthStencil;
 }
 
-void DX9ScreenRenderTarget::SetScreenRenderTarget(unsigned int width, unsigned int height, int hWindow, bool depthTestEnabled)
+void mini3d::DX9ScreenRenderTarget::SetScreenRenderTarget(unsigned int width, unsigned int height, int hWindow, bool depthTestEnabled)
 {
 	this->hWindow = hWindow;
 	this->width = width;
@@ -57,19 +57,19 @@ void DX9ScreenRenderTarget::SetScreenRenderTarget(unsigned int width, unsigned i
 	this->depthTestEnabled = depthTestEnabled;
 	this->isDirty = true;
 }
-unsigned int DX9ScreenRenderTarget::GetWidth(void)
+unsigned int mini3d::DX9ScreenRenderTarget::GetWidth(void)
 {
 	return width;
 }
-unsigned int DX9ScreenRenderTarget::GetHeight(void)
+unsigned int mini3d::DX9ScreenRenderTarget::GetHeight(void)
 {
 	return height;
 }
-bool DX9ScreenRenderTarget::GetDepthTestEnabled(void)
+bool mini3d::DX9ScreenRenderTarget::GetDepthTestEnabled(void)
 {
 	return depthTestEnabled;
 }
-void DX9ScreenRenderTarget::Display(void)
+void mini3d::DX9ScreenRenderTarget::Display(void)
 {
 	if (pScreenRenderTarget == 0)
 		return;
@@ -78,17 +78,17 @@ void DX9ScreenRenderTarget::Display(void)
 
 	pScreenRenderTarget->Present(0,0,0,0,0);
 }
-IDirect3DSurface9*  DX9ScreenRenderTarget::GetRenderTargetBuffer(void)
+IDirect3DSurface9*  mini3d::DX9ScreenRenderTarget::GetRenderTargetBuffer(void)
 {
 	IDirect3DSurface9* pRenderSurface;
 	pScreenRenderTarget->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &pRenderSurface);
 	return pRenderSurface;
 }
-IDepthStencil*  DX9ScreenRenderTarget::GetDepthStencil(void)
+mini3d::IDepthStencil*  mini3d::DX9ScreenRenderTarget::GetDepthStencil(void)
 {
 	return pDepthStencil;
 }
-void DX9ScreenRenderTarget::LoadResource(void)
+void mini3d::DX9ScreenRenderTarget::LoadResource(void)
 {
 	/// Allocate buffer on the graphics card and add index data.
 	IDirect3DDevice9* pDevice = pGraphicsService->GetDevice();
@@ -126,7 +126,7 @@ void DX9ScreenRenderTarget::LoadResource(void)
 	isDirty = false;
 }
 
-void DX9ScreenRenderTarget::UnloadResource(void)
+void mini3d::DX9ScreenRenderTarget::UnloadResource(void)
 {
 	if (pScreenRenderTarget != 0)
 	{
@@ -137,7 +137,7 @@ void DX9ScreenRenderTarget::UnloadResource(void)
 	isDirty = true;
 }
 
-bool DX9ScreenRenderTarget::GetIsDirty(void)
+bool mini3d::DX9ScreenRenderTarget::GetIsDirty(void)
 {
 	return isDirty;
 }

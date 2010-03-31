@@ -28,7 +28,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "../DX9DepthStencil.h"
 #include <d3d9.h>
 
-DX9RenderTargetTexture::DX9RenderTargetTexture(DX9GraphicsService* pGraphicsService, unsigned int width, unsigned int height, bool depthTestEnabled) : 
+mini3d::DX9RenderTargetTexture::DX9RenderTargetTexture(DX9GraphicsService* pGraphicsService, unsigned int width, unsigned int height, bool depthTestEnabled) : 
 	pGraphicsService(pGraphicsService), pDepthStencil(0)
 {
 	SetRenderTarget(width, height, depthTestEnabled);
@@ -38,7 +38,7 @@ DX9RenderTargetTexture::DX9RenderTargetTexture(DX9GraphicsService* pGraphicsServ
 		pDepthStencil = new DX9DepthStencil(pGraphicsService, width, height);
 }
 
-DX9RenderTargetTexture::~DX9RenderTargetTexture(void)
+mini3d::DX9RenderTargetTexture::~DX9RenderTargetTexture(void)
 {
 	UnloadResource();
 	pGraphicsService->RemoveResource(this);
@@ -47,45 +47,45 @@ DX9RenderTargetTexture::~DX9RenderTargetTexture(void)
 		delete pDepthStencil;
 }
 
-void DX9RenderTargetTexture::SetRenderTarget(unsigned int width, unsigned int height, bool depthTestEnabled)
+void mini3d::DX9RenderTargetTexture::SetRenderTarget(unsigned int width, unsigned int height, bool depthTestEnabled)
 {
 	this->width = width;
 	this->height = height;
 	this->depthTestEnabled = depthTestEnabled;
 	this->isDirty = true;
 }
-unsigned int DX9RenderTargetTexture::GetWidth(void)
+unsigned int mini3d::DX9RenderTargetTexture::GetWidth(void)
 {
 	return width;
 }
-unsigned int DX9RenderTargetTexture::GetHeight(void)
+unsigned int mini3d::DX9RenderTargetTexture::GetHeight(void)
 {
 	return height;
 }
-bool DX9RenderTargetTexture::GetDepthTestEnabled(void)
+bool mini3d::DX9RenderTargetTexture::GetDepthTestEnabled(void)
 {
 	return depthTestEnabled;
 }
-ITexture::WrapStyle DX9RenderTargetTexture::GetWrapStyle(void)
+mini3d::ITexture::WrapStyle mini3d::DX9RenderTargetTexture::GetWrapStyle(void)
 {
 	return WrapStyle::CLAMP;
 }
-IDirect3DSurface9*  DX9RenderTargetTexture::GetRenderTargetBuffer(void)
+IDirect3DSurface9*  mini3d::DX9RenderTargetTexture::GetRenderTargetBuffer(void)
 {
 	IDirect3DSurface9* pSurface;
 	pRenderTarget->GetSurfaceLevel(0, &pSurface);
 
 	return pSurface;
 }
-IDepthStencil*  DX9RenderTargetTexture::GetDepthStencil(void)
+mini3d::IDepthStencil*  mini3d::DX9RenderTargetTexture::GetDepthStencil(void)
 {
 	return pDepthStencil;
 }
-IDirect3DTexture9*  DX9RenderTargetTexture::GetTextureBuffer(void)
+IDirect3DTexture9*  mini3d::DX9RenderTargetTexture::GetTextureBuffer(void)
 {
 	return pRenderTarget;
 }
-void DX9RenderTargetTexture::LoadResource(void)
+void mini3d::DX9RenderTargetTexture::LoadResource(void)
 {
 	/// Allocate buffer on the graphics card and add index data.
 	IDirect3DDevice9* pDevice = pGraphicsService->GetDevice();
@@ -116,7 +116,7 @@ void DX9RenderTargetTexture::LoadResource(void)
 	isDirty = false;
 }
 
-void DX9RenderTargetTexture::UnloadResource(void)
+void mini3d::DX9RenderTargetTexture::UnloadResource(void)
 {
 	if (pRenderTarget != 0)
 	{
@@ -127,7 +127,7 @@ void DX9RenderTargetTexture::UnloadResource(void)
 	isDirty = true;
 }
 
-bool DX9RenderTargetTexture::GetIsDirty(void)
+bool mini3d::DX9RenderTargetTexture::GetIsDirty(void)
 {
 	return isDirty;
 }

@@ -29,6 +29,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 #include <vector>
 
+namespace mini3d
+{
 class IVertexShader
 {
 public:
@@ -43,5 +45,6 @@ public:
 	virtual ShaderBytes GetVertexShader(void) = 0;
 	virtual VertexDeclarationVector GetVertexDeclaration(void) = 0;
 };
+}
 
 #endif

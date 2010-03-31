@@ -29,6 +29,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 #include "internal/IRenderTarget.h"
 
+namespace mini3d
+{
 class IScreenRenderTarget : public virtual IRenderTarget
 {
 public:
@@ -42,5 +44,6 @@ public:
 
 	virtual void Display(void) = 0;
 };
+}
 
 #endif

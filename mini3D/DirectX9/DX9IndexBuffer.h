@@ -31,6 +31,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "DX9GraphicsService.h"
 #include "internal/IDX9Resource.h"
 
+namespace mini3d
+{
 class DX9IndexBuffer : IIndexBuffer, IDX9Resource
 {
 
@@ -67,5 +69,6 @@ public:
 	virtual void UnloadResource(void);
 	virtual bool GetIsDirty(void);
 };
+}
 
 #endif

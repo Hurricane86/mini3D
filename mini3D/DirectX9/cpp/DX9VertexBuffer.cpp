@@ -1,28 +1,53 @@
+/*
+This source file is part of mini3D. 
+Copyright (c) <2010> <www.mini3d.org>
+
+Permission is hereby granted, free of charge, to any person
+obtaining a copy of this software and associated documentation
+files (the "Software"), to deal in the Software without
+restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the
+Software is furnished to do so, subject to the following
+conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+OTHER DEALINGS IN THE SOFTWARE.
+*/
 
 #include "../DX9VertexBuffer.h"
 #include <d3d9.h>
 
-DX9VertexBuffer::DX9VertexBuffer(void) :
+mini3d::DX9VertexBuffer::DX9VertexBuffer(void) :
 	pGraphicsService(pGraphicsService), bufferSizeInBytes(0), pVertices(0), pVertexBuffer(0), pVertexDeclaration(0), sizeInBytes(0)
 {
 }
 
 
-DX9VertexBuffer::DX9VertexBuffer(DX9GraphicsService* pGraphicsService, void* pVertices, unsigned int count, const VertexDeclarationVector& vertexDeclaration) :
+mini3d::DX9VertexBuffer::DX9VertexBuffer(DX9GraphicsService* pGraphicsService, void* pVertices, unsigned int count, const VertexDeclarationVector& vertexDeclaration) :
 	pGraphicsService(pGraphicsService), bufferSizeInBytes(0), pVertices(0), pVertexBuffer(0), pVertexDeclaration(0), sizeInBytes(0)
 {
 	SetVertices(pVertices, count, vertexDeclaration);
 	LoadResource();	
 }
 
-DX9VertexBuffer::~DX9VertexBuffer(void)
+mini3d::DX9VertexBuffer::~DX9VertexBuffer(void)
 {
 	UnloadResource();
 	UnloadVertices();
 	pGraphicsService->RemoveResource(this);
 }
 
-void DX9VertexBuffer::SetVertices(void* pVertices, unsigned int count, const VertexDeclarationVector& vertexDeclaration)
+void mini3d::DX9VertexBuffer::SetVertices(void* pVertices, unsigned int count, const VertexDeclarationVector& vertexDeclaration)
 {
 	UnloadVertices();
 
@@ -37,7 +62,7 @@ void DX9VertexBuffer::SetVertices(void* pVertices, unsigned int count, const Ver
 
 	isDirty = true;
 }
-void DX9VertexBuffer::SetVertexDeclaration(const VertexDeclarationVector& vertexDeclaration)
+void mini3d::DX9VertexBuffer::SetVertexDeclaration(const VertexDeclarationVector& vertexDeclaration)
 {
 	// if we already have a vertex declaration, release it from the graphics service pool
 	//if (this->vertexDeclaration.GetCount() != 0)
@@ -65,12 +90,12 @@ void DX9VertexBuffer::SetVertexDeclaration(const VertexDeclarationVector& vertex
 		}
 	}
 }
-unsigned int DX9VertexBuffer::GetVertexSizeInBytes(void)
+unsigned int mini3d::DX9VertexBuffer::GetVertexSizeInBytes(void)
 {
 	return vertexSizeInBytes;
 }
 
-void DX9VertexBuffer::UnloadVertices(void)
+void mini3d::DX9VertexBuffer::UnloadVertices(void)
 {
 	if (pVertices != 0)
 		operator delete(pVertices);
@@ -78,7 +103,7 @@ void DX9VertexBuffer::UnloadVertices(void)
 	pVertices = 0;
 	sizeInBytes = 0;
 }
-void* DX9VertexBuffer::GetVertices(unsigned int& count, VertexDeclarationVector& vertexDeclaration)
+void* mini3d::DX9VertexBuffer::GetVertices(unsigned int& count, VertexDeclarationVector& vertexDeclaration)
 {
 	void* pReturnVertices = pVertices;
 	count = GetVertexCount();
@@ -93,23 +118,23 @@ void* DX9VertexBuffer::GetVertices(unsigned int& count, VertexDeclarationVector&
 
 	return pReturnVertices;
 }
-unsigned int DX9VertexBuffer::GetVertexCount()
+unsigned int mini3d::DX9VertexBuffer::GetVertexCount()
 {
 	return this->sizeInBytes / GetVertexSizeInBytes();
 }
-IVertexBuffer::VertexDeclarationVector DX9VertexBuffer::GetVertexDeclaration()
+mini3d::IVertexBuffer::VertexDeclarationVector mini3d::DX9VertexBuffer::GetVertexDeclaration()
 {
 	return vertexDeclaration;
 }
-IDirect3DVertexBuffer9* DX9VertexBuffer::GetVertexBuffer()
+IDirect3DVertexBuffer9* mini3d::DX9VertexBuffer::GetVertexBuffer()
 {
 	return pVertexBuffer;
 }
-IDirect3DVertexDeclaration9* DX9VertexBuffer::GetVertexDeclarationBuffer()
+IDirect3DVertexDeclaration9* mini3d::DX9VertexBuffer::GetVertexDeclarationBuffer()
 {
 	return pVertexDeclaration;
 }
-void DX9VertexBuffer::LoadResource(void)
+void mini3d::DX9VertexBuffer::LoadResource(void)
 {
 	/// Allocate buffer on the graphics card and add index data.
 	IDirect3DDevice9* pDevice = pGraphicsService->GetDevice();
@@ -154,7 +179,7 @@ void DX9VertexBuffer::LoadResource(void)
 	isDirty = false;
 }
 
-void DX9VertexBuffer::UnloadResource(void)
+void mini3d::DX9VertexBuffer::UnloadResource(void)
 {
 	if (pVertexBuffer != 0)
 	{
@@ -164,7 +189,7 @@ void DX9VertexBuffer::UnloadResource(void)
 
 	isDirty = true;
 }
-bool DX9VertexBuffer::GetIsDirty(void)
+bool mini3d::DX9VertexBuffer::GetIsDirty(void)
 {
 	return isDirty;
 }

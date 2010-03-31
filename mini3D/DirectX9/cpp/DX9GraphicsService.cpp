@@ -27,7 +27,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "../DX9GraphicsService.h"
 #include "../support/D3DSetupManager.h"
 
-DX9GraphicsService::DX9GraphicsService(const GraphicsSettings& graphicsSettings, int hWindow) :
+mini3d::DX9GraphicsService::DX9GraphicsService(const GraphicsSettings& graphicsSettings, int hWindow) :
 	pDevice(0), hWindow(hWindow), graphicsSettings(graphicsSettings), pCurrentDepthStencilBuffer(0)
 {
 
@@ -53,19 +53,19 @@ DX9GraphicsService::DX9GraphicsService(const GraphicsSettings& graphicsSettings,
 	CreateDevice();
 }
 
-DX9GraphicsService::~DX9GraphicsService(void)
+mini3d::DX9GraphicsService::~DX9GraphicsService(void)
 {
 
 }
 
-IDirect3DDevice9* DX9GraphicsService::GetDevice(void)
+IDirect3DDevice9* mini3d::DX9GraphicsService::GetDevice(void)
 {
 	DX9GraphicsService* gs = this;
 	return pDevice;
 }
 
 
-void DX9GraphicsService::UpdateResources(void)
+void mini3d::DX9GraphicsService::UpdateResources(void)
 {
 	for(ResourceContainer::iterator it = resourceList.begin(); it != resourceList.end(); it++)
 	{
@@ -76,15 +76,15 @@ void DX9GraphicsService::UpdateResources(void)
 	}
 }
 
-void DX9GraphicsService::AddResource(IDX9Resource* resource)
+void mini3d::DX9GraphicsService::AddResource(IDX9Resource* resource)
 {
 	resourceList.insert(resource);
 }
-void DX9GraphicsService::RemoveResource(IDX9Resource* resource)
+void mini3d::DX9GraphicsService::RemoveResource(IDX9Resource* resource)
 {
 	resourceList.erase(resource);
 }
-void DX9GraphicsService::PoolVertexDeclaration(const IVertexShader::VertexDeclarationVector& vertexDeclaration)
+void mini3d::DX9GraphicsService::PoolVertexDeclaration(const IVertexShader::VertexDeclarationVector& vertexDeclaration)
 {
 	std::string key = CreateVertexDeclarationKey(vertexDeclaration);
 
@@ -151,7 +151,7 @@ void DX9GraphicsService::PoolVertexDeclaration(const IVertexShader::VertexDeclar
 
 	delete pVertexElements;
 }
-void DX9GraphicsService::ReleaseVertexDeclaration(const IVertexShader::VertexDeclarationVector& vertexDeclaration)
+void mini3d::DX9GraphicsService::ReleaseVertexDeclaration(const IVertexShader::VertexDeclarationVector& vertexDeclaration)
 {
 	std::string key = CreateVertexDeclarationKey(vertexDeclaration);
 	
@@ -170,7 +170,7 @@ void DX9GraphicsService::ReleaseVertexDeclaration(const IVertexShader::VertexDec
 
 }
 
-std::string DX9GraphicsService::CreateVertexDeclarationKey(const IVertexShader::VertexDeclarationVector& vertexDeclaration)
+std::string mini3d::DX9GraphicsService::CreateVertexDeclarationKey(const IVertexShader::VertexDeclarationVector& vertexDeclaration)
 {
 	std::string key = "";
 	
@@ -183,7 +183,7 @@ std::string DX9GraphicsService::CreateVertexDeclarationKey(const IVertexShader::
 
 
 
-void DX9GraphicsService::CreateDevice(void)
+void mini3d::DX9GraphicsService::CreateDevice(void)
 {
 	// get the display mode
 	D3DDISPLAYMODE d3ddm;
@@ -228,7 +228,7 @@ void DX9GraphicsService::CreateDevice(void)
 
 }
 
-void DX9GraphicsService::Release(void)
+void mini3d::DX9GraphicsService::Release(void)
 {
 
 	pDevice->SetRenderTarget(0, pDefaultRenderTarget);
@@ -240,7 +240,7 @@ void DX9GraphicsService::Release(void)
 		pD3D->Release();
 }
 
-void DX9GraphicsService::SetSettings(const GraphicsSettings& graphicsSettings)
+void mini3d::DX9GraphicsService::SetSettings(const GraphicsSettings& graphicsSettings)
 {
 	if (this->graphicsSettings == graphicsSettings)
 		return;
@@ -249,17 +249,17 @@ void DX9GraphicsService::SetSettings(const GraphicsSettings& graphicsSettings)
 	CreateDevice();
 }
 
-GraphicsSettings DX9GraphicsService::GetSettings(void)
+mini3d::GraphicsSettings mini3d::DX9GraphicsService::GetSettings(void)
 {
 	return graphicsSettings;
 }
-D3DPRESENT_PARAMETERS DX9GraphicsService::GetPresentationParameters(void)
+D3DPRESENT_PARAMETERS mini3d::DX9GraphicsService::GetPresentationParameters(void)
 {
 	return presentationParameters;
 }
 
 // States
-void DX9GraphicsService::SetPixelShader(IPixelShader* pPixelShader)
+void mini3d::DX9GraphicsService::SetPixelShader(IPixelShader* pPixelShader)
 {
 	DX9PixelShader* pDX9PixelShader = (DX9PixelShader*)pPixelShader;
 	if (pDX9PixelShader != pCurrentPixelShader && pDX9PixelShader->GetPixelShaderBuffer() != 0 && pDevice != 0)
@@ -269,12 +269,12 @@ void DX9GraphicsService::SetPixelShader(IPixelShader* pPixelShader)
 	}
 }
 
-IPixelShader* DX9GraphicsService::GetPixelShader(void)
+mini3d::IPixelShader* mini3d::DX9GraphicsService::GetPixelShader(void)
 {
 	return pCurrentPixelShader;
 }
 
-void DX9GraphicsService::SetVertexShader(IVertexShader* pVertexShader)
+void mini3d::DX9GraphicsService::SetVertexShader(IVertexShader* pVertexShader)
 {
 	DX9VertexShader* pDX9VertexShader = (DX9VertexShader*)pVertexShader;
 	if (pDX9VertexShader != pCurrentVertexShader && pDX9VertexShader->GetVertexShaderBuffer() != 0 && pDevice != 0)
@@ -287,12 +287,12 @@ void DX9GraphicsService::SetVertexShader(IVertexShader* pVertexShader)
 	pDevice->SetVertexDeclaration(pVD);
 }
 
-IVertexShader* DX9GraphicsService::GetVertexShader(void)
+mini3d::IVertexShader* mini3d::DX9GraphicsService::GetVertexShader(void)
 {
 	return pCurrentVertexShader;
 }
 
-void DX9GraphicsService::SetTexture(ITexture* pTexture, unsigned int index)
+void mini3d::DX9GraphicsService::SetTexture(ITexture* pTexture, unsigned int index)
 {	
 
 	if (index > deviceCaps.MaxSimultaneousTextures)
@@ -339,7 +339,7 @@ void DX9GraphicsService::SetTexture(ITexture* pTexture, unsigned int index)
 	}
 }
 
-ITexture* DX9GraphicsService::GetTexture(unsigned int index)
+mini3d::ITexture* mini3d::DX9GraphicsService::GetTexture(unsigned int index)
 {
 	if (index > deviceCaps.MaxSimultaneousTextures)
 	{
@@ -350,7 +350,7 @@ ITexture* DX9GraphicsService::GetTexture(unsigned int index)
 	return currentITextures[index];
 }
 
-void DX9GraphicsService::SetRenderTarget(IRenderTarget* pRenderTarget)
+void mini3d::DX9GraphicsService::SetRenderTarget(IRenderTarget* pRenderTarget)
 {
 	if (pDevice == 0)
 		return;
@@ -368,11 +368,11 @@ void DX9GraphicsService::SetRenderTarget(IRenderTarget* pRenderTarget)
 	}
 }
 
-IDepthStencil* DX9GraphicsService::GetDepthStencil(void)
+mini3d::IDepthStencil* mini3d::DX9GraphicsService::GetDepthStencil(void)
 {
 	return 0;
 }
-void DX9GraphicsService::SetDepthStencil(IDepthStencil* pDepthStencil)
+void mini3d::DX9GraphicsService::SetDepthStencil(IDepthStencil* pDepthStencil)
 {
 	DX9DepthStencil* pDX9DepthStencil = (DX9DepthStencil*)pDepthStencil;
 
@@ -401,35 +401,35 @@ void DX9GraphicsService::SetDepthStencil(IDepthStencil* pDepthStencil)
 	}
 }
 
-IRenderTarget* DX9GraphicsService::GetRenderTarget(void)
+mini3d::IRenderTarget* mini3d::DX9GraphicsService::GetRenderTarget(void)
 {
 	return pCurrentRenderTarget;
 }
 
 // Get Graphics Card Capabilities
-int DX9GraphicsService::GetMaxTextures()
+int mini3d::DX9GraphicsService::GetMaxTextures()
 {
 	return 1;
 }
 
-int DX9GraphicsService::GetMaxTextureSize()
+int mini3d::DX9GraphicsService::GetMaxTextureSize()
 {
 	return 1024;
 }
 
-int DX9GraphicsService::GetPixelShaderVersion()
+int mini3d::DX9GraphicsService::GetPixelShaderVersion()
 {
 	return 2;
 }
 
-int DX9GraphicsService::GetVertexShaderVersion()
+int mini3d::DX9GraphicsService::GetVertexShaderVersion()
 {
 	return 2;
 }
 
 
 // Drawing Graphics
-void DX9GraphicsService::BeginFrame(void)
+void mini3d::DX9GraphicsService::BeginFrame(void)
 {
 	if (pDevice == 0)
 		return;
@@ -465,56 +465,56 @@ void DX9GraphicsService::BeginFrame(void)
 }
 
 // before frame is started, resources will be updated
-void DX9GraphicsService::EndFrame(void)
+void mini3d::DX9GraphicsService::EndFrame(void)
 {
 
 }
 
-void DX9GraphicsService::BeginDraw(void)
+void mini3d::DX9GraphicsService::BeginDraw(void)
 {
 	// TODO: pDevice->BeginStateBlock(); ???
 	pDevice->BeginScene();
 }
 
-void DX9GraphicsService::EndDraw(void)
+void mini3d::DX9GraphicsService::EndDraw(void)
 {
 	pDevice->EndScene();
 }
 
 
-void DX9GraphicsService::SetShaderParameterFloat(unsigned int index, const float* pData, unsigned int count)
+void mini3d::DX9GraphicsService::SetShaderParameterFloat(unsigned int index, const float* pData, unsigned int count)
 {
 	pDevice->SetVertexShaderConstantF(index, pData, count);
 }
 
-void DX9GraphicsService::SetShaderParameterInt(unsigned int index, const int* pData, unsigned int count)
+void mini3d::DX9GraphicsService::SetShaderParameterInt(unsigned int index, const int* pData, unsigned int count)
 {
 	pDevice->SetVertexShaderConstantI(index, pData, count);
 }
 
-void DX9GraphicsService::SetShaderParameterBool(unsigned int index, const bool* pData, unsigned int count)
+void mini3d::DX9GraphicsService::SetShaderParameterBool(unsigned int index, const bool* pData, unsigned int count)
 {
 	pDevice->SetVertexShaderConstantB(index, (BOOL*)pData, count);
 }
 
-IIndexBuffer* DX9GraphicsService::GetIndexBuffer(void)
+mini3d::IIndexBuffer* mini3d::DX9GraphicsService::GetIndexBuffer(void)
 {	
 	return 0;
 }
 
-void DX9GraphicsService::SetIndexBuffer(IIndexBuffer* pIndexBuffer)
+void mini3d::DX9GraphicsService::SetIndexBuffer(IIndexBuffer* pIndexBuffer)
 {
 	DX9IndexBuffer* pDX9IndexBuffer = (DX9IndexBuffer*)pIndexBuffer;
 	pDevice->SetIndices(pDX9IndexBuffer->GetIndexBuffer());
 	pCurrentIndexBuffer = pDX9IndexBuffer;
 }
 
-IVertexBuffer* DX9GraphicsService::GetVertexBuffer(void)
+mini3d::IVertexBuffer* mini3d::DX9GraphicsService::GetVertexBuffer(void)
 {
 	return 0;
 }
 
-void DX9GraphicsService::SetVertexBuffer(IVertexBuffer* pVertexBuffer)
+void mini3d::DX9GraphicsService::SetVertexBuffer(IVertexBuffer* pVertexBuffer)
 {
 	DX9VertexBuffer* pDX9VertexBuffer = (DX9VertexBuffer*)pVertexBuffer;
 	pDevice->SetStreamSource(0, pDX9VertexBuffer->GetVertexBuffer(), 0, pDX9VertexBuffer->GetVertexSizeInBytes());
@@ -522,19 +522,19 @@ void DX9GraphicsService::SetVertexBuffer(IVertexBuffer* pVertexBuffer)
 }
 
 
-void DX9GraphicsService::Draw(void)
+void mini3d::DX9GraphicsService::Draw(void)
 {
 	pDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, pCurrentVertexBuffer->GetVertexCount(), 0, pCurrentIndexBuffer->GetIndexCount() / 3);
 }
 
-void DX9GraphicsService::DrawIndices(unsigned int startIndex, unsigned int numIndices)
+void mini3d::DX9GraphicsService::DrawIndices(unsigned int startIndex, unsigned int numIndices)
 {
 	DX9VertexBuffer* pDX9VertexBuffer = (DX9VertexBuffer*)pCurrentVertexBuffer;
 	pDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, pCurrentVertexBuffer->GetVertexCount(), startIndex, numIndices);
 }
 
 
-void DX9GraphicsService::ClearRenderTarget(int color)
+void mini3d::DX9GraphicsService::ClearRenderTarget(int color)
 {
 
 	DWORD flags = D3DCLEAR_TARGET;
@@ -549,37 +549,37 @@ void DX9GraphicsService::ClearRenderTarget(int color)
 
 
 // Create Resources
-IScreenRenderTarget* DX9GraphicsService::CreateScreenRenderTarget(unsigned int width, unsigned int height, int hWindow, bool depthTestEnabled)
+mini3d::IScreenRenderTarget* mini3d::DX9GraphicsService::CreateScreenRenderTarget(unsigned int width, unsigned int height, int hWindow, bool depthTestEnabled)
 {
 	return new DX9ScreenRenderTarget(this, width, height, hWindow, depthTestEnabled);
 }
 
-IRenderTargetTexture* DX9GraphicsService::CreateRenderTargetTexture(unsigned int width, unsigned int height, bool depthTestEnabled)
+mini3d::IRenderTargetTexture* mini3d::DX9GraphicsService::CreateRenderTargetTexture(unsigned int width, unsigned int height, bool depthTestEnabled)
 {
 	return new DX9RenderTargetTexture(this, width, height, depthTestEnabled);
 }
 
-IBitmapTexture* DX9GraphicsService::CreateBitmapTexture(void* pBitmap, unsigned int width, unsigned int height, IBitmapTexture::BitDepth bitDepth, ITexture::WrapStyle wrapStyle)
+mini3d::IBitmapTexture* mini3d::DX9GraphicsService::CreateBitmapTexture(void* pBitmap, unsigned int width, unsigned int height, IBitmapTexture::BitDepth bitDepth, ITexture::WrapStyle wrapStyle)
 {
 	return new DX9BitmapTexture(this, pBitmap, width, height, bitDepth, wrapStyle);
 }
 
-IVertexBuffer* DX9GraphicsService::CreateVertexBuffer(void* vertices, unsigned int count, const IVertexBuffer::VertexDeclarationVector& vertexDeclaration)
+mini3d::IVertexBuffer* mini3d::DX9GraphicsService::CreateVertexBuffer(void* vertices, unsigned int count, const IVertexBuffer::VertexDeclarationVector& vertexDeclaration)
 {
 	return new DX9VertexBuffer(this, vertices, count, vertexDeclaration);
 }
 
-IIndexBuffer* DX9GraphicsService::CreateIndexBuffer(int* indices, unsigned int count)
+mini3d::IIndexBuffer* mini3d::DX9GraphicsService::CreateIndexBuffer(int* indices, unsigned int count)
 {
 	return new DX9IndexBuffer(this, indices, count);
 }
 
-IPixelShader* DX9GraphicsService::CreatePixelShader(const IPixelShader::ShaderBytes& shaderBytes)
+mini3d::IPixelShader* mini3d::DX9GraphicsService::CreatePixelShader(const IPixelShader::ShaderBytes& shaderBytes)
 {
 	return new DX9PixelShader(this, shaderBytes);
 }
 
-IVertexShader* DX9GraphicsService::CreateVertexShader(const IVertexShader::ShaderBytes& shaderBytes, const IVertexShader::VertexDeclarationVector& vertexDeclaration)
+mini3d::IVertexShader* mini3d::DX9GraphicsService::CreateVertexShader(const IVertexShader::ShaderBytes& shaderBytes, const IVertexShader::VertexDeclarationVector& vertexDeclaration)
 {
 	return new DX9VertexShader(this, shaderBytes, vertexDeclaration);
 }

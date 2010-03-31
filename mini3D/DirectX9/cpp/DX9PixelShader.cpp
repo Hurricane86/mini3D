@@ -28,19 +28,19 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "../DX9GraphicsService.h"
 #include <d3d9.h>
 
-DX9PixelShader::DX9PixelShader(DX9GraphicsService* pGraphicsService, const ShaderBytes& shaderBytes) :
+mini3d::DX9PixelShader::DX9PixelShader(DX9GraphicsService* pGraphicsService, const ShaderBytes& shaderBytes) :
 	pGraphicsService_(pGraphicsService), shaderBytes_(shaderBytes), pShaderBuffer_(0)
 {
 	LoadResource();
 }
 
-DX9PixelShader::~DX9PixelShader(void)
+mini3d::DX9PixelShader::~DX9PixelShader(void)
 {
 	UnloadResource();
 	pGraphicsService_->RemoveResource(this);
 }
 
-void DX9PixelShader::LoadResource(void)
+void mini3d::DX9PixelShader::LoadResource(void)
 {
 	IDirect3DDevice9* pDevice = pGraphicsService_->GetDevice();
 	if (pDevice == 0)
@@ -61,7 +61,7 @@ void DX9PixelShader::LoadResource(void)
 	isDirty_ = false;
 }
 
-void DX9PixelShader::UnloadResource(void)
+void mini3d::DX9PixelShader::UnloadResource(void)
 {
 	if (pShaderBuffer_ != 0)
 	{

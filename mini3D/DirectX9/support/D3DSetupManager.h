@@ -30,6 +30,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include <d3d9.h>
 #include "../../GraphicsSettings.h"
 
+namespace mini3d
+{
 class D3DSetupManager
 {
 	public:
@@ -40,5 +42,6 @@ class D3DSetupManager
 	static D3DMULTISAMPLE_TYPE FromMultisampleFormat(GraphicsSettings::MultisampleFormat multisampleFormat);
 
 };
+}
 
 #endif

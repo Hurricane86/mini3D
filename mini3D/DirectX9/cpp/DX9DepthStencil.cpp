@@ -27,38 +27,38 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "../DX9DepthStencil.h"
 #include <d3d9.h>
 
-DX9DepthStencil::DX9DepthStencil(DX9GraphicsService* pGraphicsService, unsigned int width, unsigned int height) : 
+mini3d::DX9DepthStencil::DX9DepthStencil(DX9GraphicsService* pGraphicsService, unsigned int width, unsigned int height) : 
 	pGraphicsService(pGraphicsService), pDepthStencil(0)
 {
 	SetDepthStencil(width, height);
 	LoadResource();	
 }
 
-DX9DepthStencil::~DX9DepthStencil(void)
+mini3d::DX9DepthStencil::~DX9DepthStencil(void)
 {
 	UnloadResource();
 	pGraphicsService->RemoveResource(this);
 }
 
-void DX9DepthStencil::SetDepthStencil(unsigned int width, unsigned int height)
+void mini3d::DX9DepthStencil::SetDepthStencil(unsigned int width, unsigned int height)
 {
 	this->width = width;
 	this->height = height;
 	this->isDirty = true;
 }
-unsigned int DX9DepthStencil::GetWidth(void)
+unsigned int mini3d::DX9DepthStencil::GetWidth(void)
 {
 	return width;
 }
-unsigned int DX9DepthStencil::GetHeight(void)
+unsigned int mini3d::DX9DepthStencil::GetHeight(void)
 {
 	return height;
 }
-IDirect3DSurface9*  DX9DepthStencil::GetDepthStencilBuffer(void)
+IDirect3DSurface9*  mini3d::DX9DepthStencil::GetDepthStencilBuffer(void)
 {
 	return pDepthStencil;
 }
-void DX9DepthStencil::LoadResource(void)
+void mini3d::DX9DepthStencil::LoadResource(void)
 {
 	/// Allocate buffer on the graphics card and add index data.
 	IDirect3DDevice9* pDevice = pGraphicsService->GetDevice();
@@ -92,7 +92,7 @@ void DX9DepthStencil::LoadResource(void)
 	isDirty = false;
 }
 
-void DX9DepthStencil::UnloadResource(void)
+void mini3d::DX9DepthStencil::UnloadResource(void)
 {
 	if (pDepthStencil != 0)
 	{
@@ -103,7 +103,7 @@ void DX9DepthStencil::UnloadResource(void)
 	isDirty = true;
 }
 
-bool DX9DepthStencil::GetIsDirty(void)
+bool mini3d::DX9DepthStencil::GetIsDirty(void)
 {
 	return isDirty;
 }

@@ -27,6 +27,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 #ifndef AURORA_IDX9RESOURCE_H
 #define AURORA_IDX9RESOURCE_H
 
+namespace mini3d
+{
 class IDX9Resource
 {
 public:
@@ -37,7 +39,6 @@ public:
 	virtual void UnloadResource(void) = 0;
 	virtual bool GetIsDirty(void) = 0;
 };
-
-
+}
 
 #endif

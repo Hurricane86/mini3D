@@ -31,6 +31,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "DX9GraphicsService.h"
 #include "internal/IDX9Resource.h"
 
+namespace mini3d
+{
 class DX9DepthStencil : public IDepthStencil, public IDX9Resource
 {
 friend class DX9ScreenRenderTarget;
@@ -68,5 +70,6 @@ public:
 	virtual bool GetIsDirty(void);
 
 };
+}
 
 #endif

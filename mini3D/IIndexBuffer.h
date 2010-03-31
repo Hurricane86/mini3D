@@ -27,6 +27,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 #ifndef AURORA_IINDEXBUFFER_H
 #define AURORA_IINDEXBUFFER_H
 
+namespace mini3d
+{
 class IIndexBuffer
 {
 public:
@@ -38,5 +40,6 @@ public:
 
 	virtual unsigned int GetIndexCount(void) = 0;
 };
+}
 
 #endif

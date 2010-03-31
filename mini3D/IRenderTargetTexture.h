@@ -30,6 +30,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "internal/ITexture.h"
 #include "internal/IRenderTarget.h"
 
+namespace mini3d
+{
 class IRenderTargetTexture : public IRenderTarget, public virtual ITexture
 {
 public:
@@ -44,5 +46,6 @@ public:
 
 	virtual WrapStyle GetWrapStyle(void) = 0;
 };
+}
 
 #endif

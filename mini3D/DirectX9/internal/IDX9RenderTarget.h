@@ -29,6 +29,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 #include "../../internal/IRenderTarget.h"
 
+namespace mini3d
+{
 class IDX9RenderTarget: public virtual IRenderTarget
 {
 friend class DX9GraphicsService;
@@ -44,5 +46,6 @@ public:
 	virtual bool GetDepthTestEnabled(void) = 0;
 	virtual IDepthStencil* GetDepthStencil(void) = 0;
 };
+}
 
 #endif

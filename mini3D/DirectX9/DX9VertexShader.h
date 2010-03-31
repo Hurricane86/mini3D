@@ -24,10 +24,15 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#ifndef AURORA_DX9VERTEXSHADER_H
+#define AURORA_DX9VERTEXSHADER_H
+
 #include "../IVertexShader.h"
 #include "DX9GraphicsService.h"
 #include <vector>
 
+namespace mini3d
+{
 class DX9VertexShader : IVertexShader, IDX9Resource
 {
 friend class DX9GraphicsService;
@@ -59,3 +64,6 @@ private:
 	virtual void UnloadResource(void);
 	virtual bool GetIsDirty(void) { return isDirty_; };
 };
+}
+
+#endif

@@ -29,6 +29,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 #include <vector>
 
+namespace mini3d
+{
 class IPixelShader
 {
 	friend class IGraphicsDevice;
@@ -41,5 +43,6 @@ public:
 	virtual ~IPixelShader(void) {};
 	virtual ShaderBytes GetPixelShader() = 0;
 };
+}
 
 #endif

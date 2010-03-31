@@ -49,6 +49,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "DX9ScreenRenderTarget.h"
 
 
+namespace mini3d
+{
 class DX9GraphicsService : public IGraphicsService
 {
 friend class DX9BitmapTexture;
@@ -184,5 +186,6 @@ public:
 	virtual IPixelShader* CreatePixelShader(const IPixelShader::ShaderBytes& shaderBytes);
 	virtual IVertexShader* CreateVertexShader(const IVertexShader::ShaderBytes& shaderBytes, const IVertexShader::VertexDeclarationVector& vertexDeclaration);
 };
+}
 
 #endif

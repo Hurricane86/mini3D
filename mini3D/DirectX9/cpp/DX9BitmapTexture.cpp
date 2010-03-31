@@ -27,24 +27,24 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "../DX9BitmapTexture.h"
 #include <d3d9.h>
 
-DX9BitmapTexture::DX9BitmapTexture(DX9GraphicsService* pGraphicsService, void* pBitmap, unsigned int width, unsigned int height, IBitmapTexture::BitDepth bitDepth, ITexture::WrapStyle wrapStyle) :
+mini3d::DX9BitmapTexture::DX9BitmapTexture(DX9GraphicsService* pGraphicsService, void* pBitmap, unsigned int width, unsigned int height, IBitmapTexture::BitDepth bitDepth, ITexture::WrapStyle wrapStyle) :
 	pGraphicsService(pGraphicsService), bufferWidth(0), bufferHeight(0), pBitmap(0), pTexture(0)
 {
 	SetBitmap(pBitmap, width, height);
 	LoadResource();
 }
 
-DX9BitmapTexture::~DX9BitmapTexture(void)
+mini3d::DX9BitmapTexture::~DX9BitmapTexture(void)
 {
 	UnloadResource();
 	UnloadBitmap();
 	pGraphicsService->RemoveResource(this);
 }
-IDirect3DTexture9* DX9BitmapTexture::GetTextureBuffer(void)
+IDirect3DTexture9* mini3d::DX9BitmapTexture::GetTextureBuffer(void)
 {
 	return pTexture;
 }
-void* DX9BitmapTexture::GetBitmap(unsigned int& width, unsigned int& height, IBitmapTexture::BitDepth& bitDepth, ITexture::WrapStyle& wrapStyle)
+void* mini3d::DX9BitmapTexture::GetBitmap(unsigned int& width, unsigned int& height, IBitmapTexture::BitDepth& bitDepth, ITexture::WrapStyle& wrapStyle)
 {
 	void* pReturnBitmap = pBitmap;
 	width = this->width;
@@ -65,7 +65,7 @@ void* DX9BitmapTexture::GetBitmap(unsigned int& width, unsigned int& height, IBi
 
 	return pReturnBitmap;
 }
-void DX9BitmapTexture::SetBitmap(void* pBitmap, unsigned int width, unsigned int height, IBitmapTexture::BitDepth bitDepth, ITexture::WrapStyle wrapStyle)
+void mini3d::DX9BitmapTexture::SetBitmap(void* pBitmap, unsigned int width, unsigned int height, IBitmapTexture::BitDepth bitDepth, ITexture::WrapStyle wrapStyle)
 {
 	UnloadBitmap();
 	
@@ -80,7 +80,7 @@ void DX9BitmapTexture::SetBitmap(void* pBitmap, unsigned int width, unsigned int
 
 	isDirty = true;
 }
-void DX9BitmapTexture::UnloadBitmap(void)
+void mini3d::DX9BitmapTexture::UnloadBitmap(void)
 {
 	if (pBitmap != 0)
 		operator delete(pBitmap);
@@ -91,23 +91,23 @@ void DX9BitmapTexture::UnloadBitmap(void)
 	wrapStyle = IBitmapTexture::TILE;
 	bitDepth = IBitmapTexture::BIT32;
 }
-unsigned int DX9BitmapTexture::GetWidth(void)
+unsigned int mini3d::DX9BitmapTexture::GetWidth(void)
 {
 	return width;
 }
-unsigned int DX9BitmapTexture::GetHeight(void)
+unsigned int mini3d::DX9BitmapTexture::GetHeight(void)
 {
 	return height;
 }
-ITexture::WrapStyle DX9BitmapTexture::GetWrapStyle(void)
+mini3d::ITexture::WrapStyle mini3d::DX9BitmapTexture::GetWrapStyle(void)
 {
 	return wrapStyle;
 }
-IBitmapTexture::BitDepth DX9BitmapTexture::GetBitDepth(void)
+mini3d::IBitmapTexture::BitDepth mini3d::DX9BitmapTexture::GetBitDepth(void)
 {
 	return bitDepth;
 }
-void DX9BitmapTexture::LoadResource(void)
+void mini3d::DX9BitmapTexture::LoadResource(void)
 {
 	IDirect3DDevice9* pDevice = pGraphicsService->GetDevice();
 	if (pDevice == 0)
@@ -177,7 +177,7 @@ void DX9BitmapTexture::LoadResource(void)
 	isDirty = false;
 }
 
-void DX9BitmapTexture::UnloadResource(void)
+void mini3d::DX9BitmapTexture::UnloadResource(void)
 {
 	if (pTexture != 0)
 	{
@@ -187,7 +187,7 @@ void DX9BitmapTexture::UnloadResource(void)
 
 	isDirty = true;
 }
-bool DX9BitmapTexture::GetIsDirty(void)
+bool mini3d::DX9BitmapTexture::GetIsDirty(void)
 {
 	return isDirty;
 }

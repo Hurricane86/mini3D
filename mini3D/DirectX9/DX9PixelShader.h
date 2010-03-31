@@ -24,9 +24,14 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#ifndef AURORA_DX9PIXELSHADER_H
+#define AURORA_DX9PIXELSHADER_H
+
 #include "../IPixelShader.h"
 #include <vector>
 
+namespace mini3d
+{
 class DX9GraphicsService;
 class DX9PixelShader : IPixelShader, IDX9Resource
 {
@@ -57,3 +62,6 @@ private:
 	void UnloadResource(void);
 	bool GetIsDirty(void) { return isDirty_; };
 };
+}
+
+#endif

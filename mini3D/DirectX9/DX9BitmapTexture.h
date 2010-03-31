@@ -32,6 +32,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "DX9GraphicsService.h"
 #include "internal/IDX9Resource.h"
 
+namespace mini3d
+{
 class DX9BitmapTexture : public IBitmapTexture, public IDX9Texture, public IDX9Resource
 {
 friend class DX9GraphicsService;
@@ -86,5 +88,6 @@ private:
 	DX9GraphicsService* pGraphicsService;
 
 };
+}
 
 #endif
