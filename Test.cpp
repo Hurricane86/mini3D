@@ -147,7 +147,7 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	mini3d::IGraphicsService* graphics = new mini3d::DX9GraphicsService(gs, (int)hWindow);
 	
 	// create a render target (mini3d does not have a default render target)
-	mini3d::IScreenRenderTarget* pScreenRenderTarget = graphics->CreateScreenRenderTarget(512,512,(int)hWindow, true);
+	mini3d::IScreenRenderTarget* pScreenRenderTarget = graphics->CreateScreenRenderTarget(512,512,(int)hWindow, false);
 
 	// create index buffer
 	int* pIndices = new int[6];
@@ -187,7 +187,7 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	D3DXMATRIX viewProjectionMatrixTranspose;
 	D3DXMatrixTranspose(&viewProjectionMatrixTranspose, &viewProjectionMatrix);
 
-	// set render prarameters
+		// set render prarameters
 	graphics->SetRenderTarget(pScreenRenderTarget);
 	graphics->SetIndexBuffer(iBuffer);
 	graphics->SetVertexBuffer(vBuffer);
@@ -195,23 +195,20 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	graphics->SetVertexShader(pVertexShader);
 	graphics->SetTexture(pTexture, 0);
 
+
 	// run the message loop
 	MSG Msg;
 	while(true)
 	{
 	    while(GetMessage(&Msg, NULL, 0, 0) > 0)
 		{
-			// draw the frame
-			graphics->BeginFrame();
-				graphics->BeginDraw();
-					// set a shader parameter
-					graphics->SetShaderParameterFloat(0, &viewProjectionMatrixTranspose._11, 4);
-					// clear render target with color
-					graphics->ClearRenderTarget(0xFFDDCCFF);
-					// run the rendering pipeline
-					graphics->Draw();
-				graphics->EndDraw();
-			graphics->EndFrame();
+
+			// set a shader parameter
+			graphics->SetShaderParameterFloat(0, &viewProjectionMatrixTranspose._11, 4);
+			// clear render target with color
+			graphics->ClearRenderTarget(0xFFDDCCFF);
+			// run the rendering pipeline
+			graphics->Draw();
 			
 			// do a flip
 			pScreenRenderTarget->Display();
@@ -222,6 +219,13 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 		}
 
 		delete vBuffer;
+		delete iBuffer;
+		delete pTexture;
+		delete pPixelShader;
+		delete pVertexShader;
+		delete pScreenRenderTarget;
+		delete graphics;
+
 		return Msg.wParam;
 	}
 

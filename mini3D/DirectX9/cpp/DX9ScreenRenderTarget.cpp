@@ -37,7 +37,8 @@ mini3d::DX9ScreenRenderTarget::DX9ScreenRenderTarget(DX9GraphicsService* pGraphi
 	}
 
 	SetScreenRenderTarget(width, height, hWindow, depthTestEnabled);
-	LoadResource();	
+	LoadResource();
+	pGraphicsService->AddResource(this);
 }
 
 mini3d::DX9ScreenRenderTarget::~DX9ScreenRenderTarget(void)
@@ -74,7 +75,9 @@ void mini3d::DX9ScreenRenderTarget::Display(void)
 	if (pScreenRenderTarget == 0)
 		return;
 
-	// TODO: Check so that graphicsSerivce is not in the middle of drawing
+	/// Make sure we do an endScene before we present (DirectX9 specific).
+	if (pGraphicsService->isDrawingScene == true)
+		pGraphicsService->EndScene();
 
 	pScreenRenderTarget->Present(0,0,0,0,0);
 }
@@ -130,6 +133,10 @@ void mini3d::DX9ScreenRenderTarget::UnloadResource(void)
 {
 	if (pScreenRenderTarget != 0)
 	{
+		// if we are removing the current render target, restore the default render target first
+		if (pGraphicsService->GetRenderTarget() == this)
+			pGraphicsService->SetRenderTarget(0);
+
 		pScreenRenderTarget->Release();
 		pScreenRenderTarget = 0;
 	}

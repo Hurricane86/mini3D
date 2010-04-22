@@ -32,6 +32,7 @@ mini3d::DX9BitmapTexture::DX9BitmapTexture(DX9GraphicsService* pGraphicsService,
 {
 	SetBitmap(pBitmap, width, height);
 	LoadResource();
+	pGraphicsService->AddResource(this);
 }
 
 mini3d::DX9BitmapTexture::~DX9BitmapTexture(void)
@@ -181,6 +182,11 @@ void mini3d::DX9BitmapTexture::UnloadResource(void)
 {
 	if (pTexture != 0)
 	{
+		// if we are removing one of the current textures, clear that texture slot first
+		for(int i = 0; i < pGraphicsService->GetMaxTextures(); i++)
+			if (pGraphicsService->GetTexture(i) == this)
+				pGraphicsService->SetTexture(0, i);
+
 		pTexture->Release();
 		pTexture = 0;
 	}

@@ -33,6 +33,7 @@ mini3d::DX9RenderTargetTexture::DX9RenderTargetTexture(DX9GraphicsService* pGrap
 {
 	SetRenderTarget(width, height, depthTestEnabled);
 	LoadResource();	
+	pGraphicsService->AddResource(this);
 
 	if (depthTestEnabled == true)
 		pDepthStencil = new DX9DepthStencil(pGraphicsService, width, height);
@@ -70,18 +71,17 @@ mini3d::ITexture::WrapStyle mini3d::DX9RenderTargetTexture::GetWrapStyle(void)
 {
 	return WrapStyle::CLAMP;
 }
-IDirect3DSurface9*  mini3d::DX9RenderTargetTexture::GetRenderTargetBuffer(void)
+IDirect3DSurface9* mini3d::DX9RenderTargetTexture::GetRenderTargetBuffer(void)
 {
 	IDirect3DSurface9* pSurface;
 	pRenderTarget->GetSurfaceLevel(0, &pSurface);
-
 	return pSurface;
 }
-mini3d::IDepthStencil*  mini3d::DX9RenderTargetTexture::GetDepthStencil(void)
+mini3d::IDepthStencil* mini3d::DX9RenderTargetTexture::GetDepthStencil(void)
 {
 	return pDepthStencil;
 }
-IDirect3DTexture9*  mini3d::DX9RenderTargetTexture::GetTextureBuffer(void)
+IDirect3DTexture9* mini3d::DX9RenderTargetTexture::GetTextureBuffer(void)
 {
 	return pRenderTarget;
 }
@@ -120,6 +120,15 @@ void mini3d::DX9RenderTargetTexture::UnloadResource(void)
 {
 	if (pRenderTarget != 0)
 	{
+		// if we are removing the current render target, restore the default render target first
+		if (pGraphicsService->GetRenderTarget() == this)
+			pGraphicsService->SetRenderTarget(0);
+
+		// if we are removing one of the current textures, clear that texture slot first
+		for(int i = 0; i < pGraphicsService->GetMaxTextures(); i++)
+			if (pGraphicsService->GetTexture(i) == this)
+				pGraphicsService->SetTexture(0, i);
+
 		pRenderTarget->Release();
 		pRenderTarget = 0;
 	}

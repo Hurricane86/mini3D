@@ -27,52 +27,124 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "../DX9GraphicsService.h"
 #include "../support/D3DSetupManager.h"
 
+
+// Constructor Destructor -----------------------------------------------------
+
 mini3d::DX9GraphicsService::DX9GraphicsService(const GraphicsSettings& graphicsSettings, int hWindow) :
-	pDevice(0), hWindow(hWindow), graphicsSettings(graphicsSettings), pCurrentDepthStencilBuffer(0)
+	pDevice(0), hWindow(hWindow), graphicsSettings(graphicsSettings), pCurrentDepthStencil(0), isDrawingScene(false), deviceLost(true), pCurrentRenderTargetBuffer(0)
 {
-
-	pD3D = Direct3DCreate9(D3D_SDK_VERSION);
-	pD3D->GetDeviceCaps(0, D3DDEVTYPE_HAL, &deviceCaps);
-
-	currentTextures = new IDirect3DTexture9*[deviceCaps.MaxSimultaneousTextures];
-	memset(currentTextures, 0, deviceCaps.MaxSimultaneousTextures * sizeof(IDirect3DTexture9*));
-
-	currentITextures = new ITexture*[deviceCaps.MaxSimultaneousTextures];
-	memset(currentITextures, 0, deviceCaps.MaxSimultaneousTextures * sizeof(ITexture*));
-
-	currentWrapStyles = new ITexture::WrapStyle[deviceCaps.MaxSimultaneousTextures];
-	memset(currentWrapStyles, ITexture::TILE, deviceCaps.MaxSimultaneousTextures * sizeof(ITexture::WrapStyle));
-
-	this->hWindow = hWindow;
-
-	if (pD3D == 0)
-	{
-		//TODO: Cast some error??
-	}
-
 	CreateDevice();
 }
-
 mini3d::DX9GraphicsService::~DX9GraphicsService(void)
 {
 
+	UnloadResources();
+
+	if (pDefaultRenderTarget != 0)
+		pDefaultRenderTarget->Release();
+
+	if (pDevice != 0)
+		pDevice->Release();
+
+	if (pD3D != 0)
+		pD3D->Release();
 }
+
+
+
+// Friend Functions -----------------------------------------------------------
 
 IDirect3DDevice9* mini3d::DX9GraphicsService::GetDevice(void)
 {
 	DX9GraphicsService* gs = this;
 	return pDevice;
 }
+D3DPRESENT_PARAMETERS mini3d::DX9GraphicsService::GetPresentationParameters(void)
+{
+	return presentationParameters;
+}
 
 
+
+// Private helper methods -----------------------------------------------------
+
+void mini3d::DX9GraphicsService::CreateDevice(void)
+{
+	pD3D=Direct3DCreate9(D3D_SDK_VERSION);
+	pD3D->GetDeviceCaps(0, D3DDEVTYPE_HAL, &deviceCaps);
+
+	currentITextures = new ITexture*[deviceCaps.MaxSimultaneousTextures];
+	lostDeviceCurrentITextures = new ITexture*[deviceCaps.MaxSimultaneousTextures];
+	memset(currentITextures, 0, deviceCaps.MaxSimultaneousTextures * sizeof(ITexture*));
+
+	if (pD3D == 0)
+	{
+		//TODO: Cast some error??
+	}
+	
+	// get the display mode
+	D3DDISPLAYMODE d3ddm;
+	pD3D->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &d3ddm);
+
+	// set the presentation parameters
+	D3DPRESENT_PARAMETERS d3dpp;
+
+	// TODO: need to set back buffer format fist
+	D3DSetupManager::CheckMultisampleFormat(graphicsSettings, pD3D);
+
+	ZeroMemory(&d3dpp, sizeof(d3dpp));
+	d3dpp.BackBufferWidth = 1; // Default backbuffer should be 1x1 and is never used
+	d3dpp.BackBufferHeight = 1; // Default backbuffer should be 1x1 and is never used
+	d3dpp.BackBufferCount = 1;	// TODO: More than one backbuffer?? What is it good for?
+	d3dpp.BackBufferFormat = D3DSetupManager::GetCorrectBackBufferFormat(graphicsSettings, pD3D); 
+	d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
+	d3dpp.Windowed = !graphicsSettings.fullscreen;
+	d3dpp.EnableAutoDepthStencil = false; // we manage swap chains manually
+	d3dpp.AutoDepthStencilFormat = D3DSetupManager::GetCorrectDepthStencilFormat(graphicsSettings, pD3D); 
+	d3dpp.FullScreen_RefreshRateInHz = D3DPRESENT_RATE_DEFAULT;
+	d3dpp.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
+	d3dpp.MultiSampleType = D3DSetupManager::FromMultisampleFormat(graphicsSettings.multisampleFormat);
+	d3dpp.MultiSampleQuality = 0;
+
+	presentationParameters = d3dpp;
+
+	if (FAILED(pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, (HWND)hWindow, D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dpp, &pDevice)))
+	{
+		if (FAILED(pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, (HWND)hWindow, D3DCREATE_MIXED_VERTEXPROCESSING, &d3dpp, &pDevice)))
+		{
+			if (FAILED(pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, (HWND)hWindow, D3DCREATE_SOFTWARE_VERTEXPROCESSING, &d3dpp, &pDevice)))
+			{				
+				// TODO: ALL FAILED THROW ERROR!!
+				throw;
+			}
+		}
+	}
+
+	// Device created correctly, set device lost to false
+	deviceLost = false;
+
+	// store the default back buffer so we can put it back when we reset the device
+	pDevice->GetRenderTarget(0, &pDefaultRenderTarget);
+}
+
+// Resource Management
 void mini3d::DX9GraphicsService::UpdateResources(void)
 {
+	// update resources
 	for(ResourceContainer::iterator it = resourceList.begin(); it != resourceList.end(); it++)
 	{
 		if ((*it)->GetIsDirty() == true)
 		{
 			(*it)->LoadResource();
 		}
+	}
+}
+void mini3d::DX9GraphicsService::UnloadResources(void)
+{
+	// update resources
+	for(ResourceContainer::iterator it = resourceList.begin(); it != resourceList.end(); it++)
+	{
+		(*it)->UnloadResource();
 	}
 }
 
@@ -84,6 +156,121 @@ void mini3d::DX9GraphicsService::RemoveResource(IDX9Resource* resource)
 {
 	resourceList.erase(resource);
 }
+
+void mini3d::DX9GraphicsService::SaveGraphicsState(void)
+{
+	pLostDeviceRenderTarget = pCurrentRenderTarget;
+	pLostDeviceDepthStencil = pCurrentDepthStencil;
+	pLostDeviceVertexBuffer = pCurrentVertexBuffer;
+	pLostDeviceIndexBuffer = pCurrentIndexBuffer;
+	pLostDevicePixelShader = pCurrentPixelShader;
+	pLostDeviceVertexShader = pCurrentVertexShader;
+
+	for (int i = 0; i < GetMaxTextures(); i++)
+		lostDeviceCurrentITextures[i] = currentITextures[i];
+
+}
+void mini3d::DX9GraphicsService::RestoreGraphicsState(void)
+{
+	SetRenderTarget(pLostDeviceRenderTarget);
+	SetDepthStencil(pLostDeviceDepthStencil);
+	SetVertexBuffer(pLostDeviceVertexBuffer);
+	SetIndexBuffer(pLostDeviceIndexBuffer);
+	SetPixelShader(pLostDevicePixelShader);
+	SetVertexShader(pLostDeviceVertexShader);
+	for (int i = 0; i < GetMaxTextures(); i++)
+		SetTexture(lostDeviceCurrentITextures[i], i);
+
+}
+
+void mini3d::DX9GraphicsService::HandleLostDevice()
+{
+	// find lost device type
+	int deviceState = pDevice->TestCooperativeLevel();
+
+	// if it is a driver internal error, just recreate the whole thing and return
+	if (deviceState == D3DERR_DRIVERINTERNALERROR)
+	{
+		// Store away the current state of the graphics pipeline
+		SaveGraphicsState();
+
+		// Completely tear down the device
+		UnloadResources();
+
+		// Release the default render target 
+		if (pDefaultRenderTarget != 0)
+		{
+			// This must be done after UnloadResources since UnloadResources restores
+			// the default render target
+			pDefaultRenderTarget->Release();
+			pDefaultRenderTarget = 0;
+		}
+
+		pDevice->Release();
+		pD3D->Release();
+
+		// try to recreate the device
+		// this will throw an error if the driver is broken so there is no need to do that explicitly
+		CreateDevice();
+		UpdateResources();
+
+		// put back the stored graphics pipeline states
+		RestoreGraphicsState();
+
+		return;
+	}
+
+	// check if this is the first time we get the lost device
+	if (deviceLost == false)
+	{
+		deviceLost = true;
+
+		// Store away the current state of the graphics pipeline
+		SaveGraphicsState();
+
+		// unload all resources
+		UnloadResources();
+
+		// Release the default render target 
+		if (pDefaultRenderTarget != 0)
+		{
+			// This must be done after UnloadResources since UnloadResources restores
+			// the default render target
+			pDefaultRenderTarget->Release();
+			pDefaultRenderTarget = 0;
+		}
+	}
+	
+	// se if we can recreate the device
+	if (deviceState == D3DERR_DEVICENOTRESET)
+	{
+		int newDeviceState = pDevice->Reset(&presentationParameters);
+		
+		// if it was not successful, just return and try agian later
+		if (newDeviceState != D3D_OK)
+			return;
+
+		// capture the new default render target
+		pDevice->GetRenderTarget(0, &pDefaultRenderTarget);
+
+		//if it was succesful, reload all resources and set device lost to false
+		UpdateResources();
+
+		// put back the current graphics pipeline states
+		RestoreGraphicsState();
+
+		deviceLost = false;
+	}
+
+	// device is lost but can not yet be recreated.
+	if (deviceState == D3DERR_DEVICELOST)
+	{
+		// do nothing
+	}
+}
+
+
+// Vertex Declaration Pool
 void mini3d::DX9GraphicsService::PoolVertexDeclaration(const IVertexShader::VertexDeclarationVector& vertexDeclaration)
 {
 	std::string key = CreateVertexDeclarationKey(vertexDeclaration);
@@ -91,10 +278,48 @@ void mini3d::DX9GraphicsService::PoolVertexDeclaration(const IVertexShader::Vert
 	// if the declaration is already pooled, just increase the counter
 	if (vertexDeclarationPool.find(key) != vertexDeclarationPool.end())
 	{
-		vertexDeclarationPool[key].first++;
+		vertexDeclarationPool[key].counter++;
 		return;
 	}
 
+	// create a direct3d 9 vertex delcaration from the IVertexShader vertex declaration
+	IDirect3DVertexDeclaration9* pVertexDeclaration = CreateDX9VertexDeclaration(vertexDeclaration);
+
+	// pool the vertex declaration
+	vertexDeclarationPool[key] = VertexDeclarationContainer(vertexDeclaration, pVertexDeclaration, 1);
+}
+void mini3d::DX9GraphicsService::ReleaseVertexDeclaration(const IVertexShader::VertexDeclarationVector& vertexDeclaration)
+{
+	std::string key = CreateVertexDeclarationKey(vertexDeclaration);
+	
+	if (--vertexDeclarationPool[key].counter == 0)
+	{
+		vertexDeclarationPool[key].direct3dDeclaration->Release();
+		vertexDeclarationPool.erase(key);
+	}
+
+	// if the declaration is already pooled, just increase the counter
+	if (vertexDeclarationPool.find(key) != vertexDeclarationPool.end())
+	{
+		vertexDeclarationPool[key].counter++;
+		return;
+	}
+
+}
+
+// Creates vertex declaration pool key from vertex declaration
+std::string mini3d::DX9GraphicsService::CreateVertexDeclarationKey(const IVertexShader::VertexDeclarationVector& vertexDeclaration)
+{
+	std::string key = "";
+	
+	for (unsigned int i = 0; i < vertexDeclaration.size(); i++)
+	{
+		key += char(vertexDeclaration[i]);
+	}
+	return key;
+}
+IDirect3DVertexDeclaration9* mini3d::DX9GraphicsService::CreateDX9VertexDeclaration(const IVertexShader::VertexDeclarationVector& vertexDeclaration)
+{
 	// It is not already pooled, we need to create a new one
 	int count = vertexDeclaration.size();
 	D3DVERTEXELEMENT9* pVertexElements = new D3DVERTEXELEMENT9[count + 1];
@@ -146,100 +371,79 @@ void mini3d::DX9GraphicsService::PoolVertexDeclaration(const IVertexShader::Vert
 	IDirect3DVertexDeclaration9* pVertexDeclaration;
 	pDevice->CreateVertexDeclaration(pVertexElements, &pVertexDeclaration);
 
-	// pool the vertex declaration
-	vertexDeclarationPool[key] = counterPair(1, pVertexDeclaration);
-
 	delete pVertexElements;
-}
-void mini3d::DX9GraphicsService::ReleaseVertexDeclaration(const IVertexShader::VertexDeclarationVector& vertexDeclaration)
-{
-	std::string key = CreateVertexDeclarationKey(vertexDeclaration);
-	
-	if (--vertexDeclarationPool[key].first == 0)
-	{
-		((IDirect3DVertexDeclaration9*)vertexDeclarationPool[key].second)->Release();
-		vertexDeclarationPool.erase(key);
-	}
 
-	// if the declaration is already pooled, just increase the counter
-	if (vertexDeclarationPool.find(key) != vertexDeclarationPool.end())
-	{
-		vertexDeclarationPool[key].first++;
+	return pVertexDeclaration;
+}
+
+
+// Locking resources
+void mini3d::DX9GraphicsService::BeginScene(void)
+{
+	if (isDrawingScene == true)
 		return;
-	}
 
-}
+	if (pDevice == 0)
+		return;
 
-std::string mini3d::DX9GraphicsService::CreateVertexDeclarationKey(const IVertexShader::VertexDeclarationVector& vertexDeclaration)
-{
-	std::string key = "";
-	
-	for (unsigned int i = 0; i < vertexDeclaration.size(); i++)
+	// check for lost device
+	if (deviceLost || pDevice->TestCooperativeLevel() != D3D_OK)
 	{
-		key += char(vertexDeclaration[i]);
-	}
-	return key;
-}
+		HandleLostDevice();
 
-
-
-void mini3d::DX9GraphicsService::CreateDevice(void)
-{
-	// get the display mode
-	D3DDISPLAYMODE d3ddm;
-	pD3D->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &d3ddm);
-
-	// set the presentation parameters
-	D3DPRESENT_PARAMETERS d3dpp;
-
-	// TODO: need to set back buffer format fist
-	D3DSetupManager::CheckMultisampleFormat(graphicsSettings, pD3D);
-
-	ZeroMemory(&d3dpp, sizeof(d3dpp));
-	d3dpp.BackBufferWidth = 1; // Default backbuffer should be 1x1 and is never used
-	d3dpp.BackBufferHeight = 1; // Default backbuffer should be 1x1 and is never used
-	d3dpp.BackBufferCount = 1;	// TODO: More than one backbuffer?? What is it good for?
-	d3dpp.BackBufferFormat = D3DSetupManager::GetCorrectBackBufferFormat(graphicsSettings, pD3D); 
-	d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
-	d3dpp.Windowed = !graphicsSettings.fullscreen;
-	d3dpp.EnableAutoDepthStencil = false; // we manage swap chains manually
-	d3dpp.AutoDepthStencilFormat = D3DSetupManager::GetCorrectDepthStencilFormat(graphicsSettings, pD3D); 
-	d3dpp.FullScreen_RefreshRateInHz = D3DPRESENT_RATE_DEFAULT;
-	d3dpp.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
-	d3dpp.MultiSampleType = D3DSetupManager::FromMultisampleFormat(graphicsSettings.multisampleFormat);
-	d3dpp.MultiSampleQuality = 0;
-
-	presentationParameters = d3dpp;
-
-	if (FAILED(pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, (HWND)hWindow, D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dpp, &pDevice)))
-	{
-		if (FAILED(pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, (HWND)hWindow, D3DCREATE_MIXED_VERTEXPROCESSING, &d3dpp, &pDevice)))
-		{
-			if (FAILED(pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, (HWND)hWindow, D3DCREATE_SOFTWARE_VERTEXPROCESSING, &d3dpp, &pDevice)))
-			{				
-				// TODO: ALL FAILED THROW ERROR!!
-				throw;
-			}
-		}
+		//if device is still lost, just return
+		if (deviceLost == true)
+			return;
 	}
 
-	// store the default back buffer so we can put it back when we reset the device
-	pDevice->GetRenderTarget(0, &pDefaultRenderTarget);
+	// Todo: Move this to device reset and update resources immidiatly
+	UpdateResources();
 
+	pDevice->BeginScene();
+
+	isDrawingScene = true;
 }
-
-void mini3d::DX9GraphicsService::Release(void)
+void mini3d::DX9GraphicsService::EndScene(void)
 {
-
-	pDevice->SetRenderTarget(0, pDefaultRenderTarget);
-
-	if (pDevice != 0)
-		pDevice->Release();
-
-	if (pD3D != 0)
-		pD3D->Release();
+	pDevice->EndScene();
+	isDrawingScene = false;
 }
 
+// setting render states
+void mini3d::DX9GraphicsService::SetRenderStates()
+{
+	// Set Render States
+	pDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
+	pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE); //D3DCULL_CCW
+	pDevice->SetRenderState(D3DRS_ZENABLE, true);
+	pDevice->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
+	pDevice->SetRenderState(D3DRS_ZWRITEENABLE, true);
+	pDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, true);
+	pDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+	pDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+	pDevice->SetRenderState(D3DRS_AMBIENT, D3DCOLOR_ARGB(255, 255, 255, 255));
+
+	pDevice->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_TEXTURE);
+	pDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_DIFFUSE);
+	pDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
+	pDevice->SetTextureStageState(0, D3DTSS_ALPHAARG2, D3DTA_TEXTURE);
+	pDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_DIFFUSE);
+	pDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
+
+	pDevice->SetRenderState(D3DRS_LIGHTING, false);
+	pDevice->SetRenderState(D3DRS_CLIPPING, true);
+
+	pDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
+	pDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
+}
+
+
+// Settings -------------------------------------------------------------------
+
+mini3d::GraphicsSettings mini3d::DX9GraphicsService::GetSettings(void)
+{
+	return graphicsSettings;
+}
 void mini3d::DX9GraphicsService::SetSettings(const GraphicsSettings& graphicsSettings)
 {
 	if (this->graphicsSettings == graphicsSettings)
@@ -249,96 +453,83 @@ void mini3d::DX9GraphicsService::SetSettings(const GraphicsSettings& graphicsSet
 	CreateDevice();
 }
 
-mini3d::GraphicsSettings mini3d::DX9GraphicsService::GetSettings(void)
+
+
+// Graphics Pipeline States ---------------------------------------------------
+
+int mini3d::DX9GraphicsService::GetMaxTextures()
 {
-	return graphicsSettings;
+	return deviceCaps.MaxSimultaneousTextures;
 }
-D3DPRESENT_PARAMETERS mini3d::DX9GraphicsService::GetPresentationParameters(void)
+int mini3d::DX9GraphicsService::GetMaxTextureSize()
 {
-	return presentationParameters;
+	return min(deviceCaps.MaxTextureHeight, deviceCaps.MaxTextureWidth);
+}
+int mini3d::DX9GraphicsService::GetPixelShaderVersion()
+{
+	return deviceCaps.PixelShaderVersion;
+}
+int mini3d::DX9GraphicsService::GetVertexShaderVersion()
+{
+	return deviceCaps.VertexShaderVersion;
 }
 
-// States
-void mini3d::DX9GraphicsService::SetPixelShader(IPixelShader* pPixelShader)
-{
-	DX9PixelShader* pDX9PixelShader = (DX9PixelShader*)pPixelShader;
-	if (pDX9PixelShader != pCurrentPixelShader && pDX9PixelShader->GetPixelShaderBuffer() != 0 && pDevice != 0)
-	{
-		pDevice->SetPixelShader((IDirect3DPixelShader9*)pDX9PixelShader->GetPixelShaderBuffer());
-		pCurrentPixelShader = pDX9PixelShader;
-	}
-}
 
+
+// Graphics Pipeline States ---------------------------------------------------
+
+// Pixlel Shader
 mini3d::IPixelShader* mini3d::DX9GraphicsService::GetPixelShader(void)
 {
 	return pCurrentPixelShader;
 }
-
-void mini3d::DX9GraphicsService::SetVertexShader(IVertexShader* pVertexShader)
+void mini3d::DX9GraphicsService::SetPixelShader(IPixelShader* pPixelShader)
 {
-	DX9VertexShader* pDX9VertexShader = (DX9VertexShader*)pVertexShader;
-	if (pDX9VertexShader != pCurrentVertexShader && pDX9VertexShader->GetVertexShaderBuffer() != 0 && pDevice != 0)
+	if (pCurrentPixelShader == pPixelShader)
+		return;
+
+	if (pPixelShader == 0)
 	{
-		pDevice->SetVertexShader((IDirect3DVertexShader9*)pDX9VertexShader->GetVertexShaderBuffer());
-		pCurrentVertexShader = pDX9VertexShader;
+		pDevice->SetPixelShader(0);
+	}
+	else
+	{
+		DX9PixelShader* pDX9PixelShader = (DX9PixelShader*)pPixelShader;
+		pDevice->SetPixelShader((IDirect3DPixelShader9*)pDX9PixelShader->GetPixelShaderBuffer());
 	}
 
-	IDirect3DVertexDeclaration9* pVD = vertexDeclarationPool[CreateVertexDeclarationKey(pDX9VertexShader->GetVertexDeclaration())].second;
-	pDevice->SetVertexDeclaration(pVD);
+	pCurrentPixelShader = pPixelShader;
 }
 
+// Vertex Shader
 mini3d::IVertexShader* mini3d::DX9GraphicsService::GetVertexShader(void)
 {
 	return pCurrentVertexShader;
 }
-
-void mini3d::DX9GraphicsService::SetTexture(ITexture* pTexture, unsigned int index)
-{	
-
-	if (index > deviceCaps.MaxSimultaneousTextures)
-	{
-		// Throw error in debug mode;
+void mini3d::DX9GraphicsService::SetVertexShader(IVertexShader* pVertexShader)
+{
+	if (pCurrentVertexShader == pVertexShader)
 		return;
-	}
 
-	// this cast is "unfailable" (not exception caught). Whoever inherits from ITexture must also inherit from IDX9Texture
-	IDX9Texture* pDX9Texture = dynamic_cast<IDX9Texture*>(pTexture);
-	//IDX9Texture* pDX9Texture = (IDX9Texture*)pTexture;
-
-	//TODO: maby support for GetTexture should be removed... then this will not be needed
-	currentITextures[index] = pTexture;
-
-	if (pDevice != 0 && pDX9Texture->GetTextureBuffer() != 0 && pDX9Texture->GetTextureBuffer() != currentTextures[index])
+	if (pVertexShader == 0)
 	{
-		if (currentWrapStyles[index] != pTexture->GetWrapStyle())
-		{
-			D3DTEXTUREADDRESS adressMode;
-
-			switch(pDX9Texture->GetWrapStyle())
-			{
-			case ITexture::TILE:
-				adressMode = D3DTADDRESS_WRAP;
-				break;
-			case ITexture::MIRROR:
-				adressMode = D3DTADDRESS_MIRROR;
-				break;
-			case ITexture::CLAMP:
-				adressMode = D3DTADDRESS_CLAMP;
-				break;
-			}
-
-			pDevice->SetSamplerState(index, D3DSAMP_ADDRESSU, adressMode);
-			pDevice->SetSamplerState(index, D3DSAMP_ADDRESSV, adressMode);
-			pDevice->SetSamplerState(index, D3DSAMP_ADDRESSW, adressMode);
-
-			currentWrapStyles[index] = pTexture->GetWrapStyle();
-		}
-
-		pDevice->SetTexture(index, pDX9Texture->GetTextureBuffer());
-		currentTextures[index] = pDX9Texture->GetTextureBuffer();
+		pDevice->SetVertexShader(0);
+		pDevice->SetVertexDeclaration(0);
 	}
+	else
+	{
+		DX9VertexShader* pDX9VertexShader = (DX9VertexShader*)pVertexShader;
+		pDevice->SetVertexShader((IDirect3DVertexShader9*)pDX9VertexShader->GetVertexShaderBuffer());
+
+		std::string key = CreateVertexDeclarationKey(pDX9VertexShader->GetVertexDeclaration());
+		pDevice->SetVertexDeclaration(vertexDeclarationPool[key].direct3dDeclaration);
+	}
+
+	pCurrentVertexShader = pVertexShader;
+
 }
 
+// Texture
 mini3d::ITexture* mini3d::DX9GraphicsService::GetTexture(unsigned int index)
 {
 	if (index > deviceCaps.MaxSimultaneousTextures)
@@ -349,198 +540,204 @@ mini3d::ITexture* mini3d::DX9GraphicsService::GetTexture(unsigned int index)
 
 	return currentITextures[index];
 }
+void mini3d::DX9GraphicsService::SetTexture(ITexture* pTexture, unsigned int index)
+{	
 
-void mini3d::DX9GraphicsService::SetRenderTarget(IRenderTarget* pRenderTarget)
-{
-	if (pDevice == 0)
+	if (index > deviceCaps.MaxSimultaneousTextures)
+	{
+		// TODO: Throw error in debug mode;
+		return;
+	}
+
+	// if texture already assigned, then there is no need to re-assign it
+	if (pTexture == currentITextures[index])
 		return;
 
-	IDX9RenderTarget* pDX9RenderTarget = dynamic_cast<IDX9RenderTarget*>(pRenderTarget);
-	if (pDX9RenderTarget != pCurrentRenderTarget && pDX9RenderTarget->GetRenderTargetBuffer() != 0)
+	if (pTexture == 0)
 	{
-		pDevice->SetRenderTarget(0,  (IDirect3DSurface9*)pDX9RenderTarget->GetRenderTargetBuffer());
-		pCurrentRenderTarget = pDX9RenderTarget;
-	}
-	
-	if (pRenderTarget->GetDepthTestEnabled() == true)
-	{
-		SetDepthStencil(pDX9RenderTarget->GetDepthStencil());
-	}
-}
-
-mini3d::IDepthStencil* mini3d::DX9GraphicsService::GetDepthStencil(void)
-{
-	return 0;
-}
-void mini3d::DX9GraphicsService::SetDepthStencil(IDepthStencil* pDepthStencil)
-{
-	DX9DepthStencil* pDX9DepthStencil = (DX9DepthStencil*)pDepthStencil;
-
-	IDirect3DSurface9* pDepthStencilBuffer;
-	if (pDepthStencil != 0)
-	{
-		pDepthStencilBuffer	= pDX9DepthStencil->GetDepthStencilBuffer();
+		pDevice->SetTexture(index, 0);
 	}
 	else
 	{
-		pDepthStencilBuffer = 0;
-	}
 
-	// clear the current assigned depth stencil if we are setting a rendertarget without depth stencil
-	if (pDepthStencilBuffer == 0 && pCurrentDepthStencilBuffer != 0)
-	{
-		pDevice->SetDepthStencilSurface(0);
-		pDevice->SetRenderState(D3DRS_ZENABLE, false);
-		pCurrentDepthStencilBuffer = 0;
+		// this cast is "unfailable" (not exception caught). Whoever inherits from ITexture must also inherit from IDX9Texture
+		IDX9Texture* pDX9Texture = dynamic_cast<IDX9Texture*>(pTexture);
+
+		// we always set the wrapstyle too... if we are changing the texture the overhead of also changing wrap style is small.
+		D3DTEXTUREADDRESS adressMode;
+
+		switch(pDX9Texture->GetWrapStyle())
+		{
+		case ITexture::TILE:
+			adressMode = D3DTADDRESS_WRAP;
+			break;
+		case ITexture::MIRROR:
+			adressMode = D3DTADDRESS_MIRROR;
+			break;
+		case ITexture::CLAMP:
+			adressMode = D3DTADDRESS_CLAMP;
+			break;
+		}
+
+		// set the wrap style
+		pDevice->SetSamplerState(index, D3DSAMP_ADDRESSU, adressMode);
+		pDevice->SetSamplerState(index, D3DSAMP_ADDRESSV, adressMode);
+		pDevice->SetSamplerState(index, D3DSAMP_ADDRESSW, adressMode);
+	
+		// set the texture
+		pDevice->SetTexture(index, pDX9Texture->GetTextureBuffer());
 	}
-	else if (pDepthStencilBuffer != 0 && pCurrentDepthStencilBuffer != pDepthStencilBuffer)
-	{
-		pDevice->SetDepthStencilSurface(pDepthStencilBuffer);
-		pDevice->SetRenderState(D3DRS_ZENABLE, true);
-		pCurrentDepthStencilBuffer = pDepthStencilBuffer;
-	}
+	currentITextures[index] = pTexture;
 }
 
+// Render Target
 mini3d::IRenderTarget* mini3d::DX9GraphicsService::GetRenderTarget(void)
 {
 	return pCurrentRenderTarget;
 }
-
-// Get Graphics Card Capabilities
-int mini3d::DX9GraphicsService::GetMaxTextures()
+void mini3d::DX9GraphicsService::SetRenderTarget(IRenderTarget* pRenderTarget)
 {
-	return 1;
+	if (pRenderTarget == pCurrentRenderTarget)
+		return;
+
+	// release the old render target!
+	if (pCurrentRenderTargetBuffer != 0)
+	{
+		pCurrentRenderTargetBuffer->Release();
+	}
+
+	if (pRenderTarget == 0)
+	{
+		pDevice->SetRenderTarget(0,  pDefaultRenderTarget);
+		SetDepthStencil(0);
+		pCurrentRenderTargetBuffer = 0;
+	}
+	else
+	{
+		// this cast is "unfailable" (not exception caught). Whoever inherits from IRenderTarget must also inherit from IDX9RenderTarget
+		IDX9RenderTarget* pDX9RenderTarget = dynamic_cast<IDX9RenderTarget*>(pRenderTarget);
+	
+		IDirect3DSurface9* pRenderTargetBuffer = (IDirect3DSurface9*)pDX9RenderTarget->GetRenderTargetBuffer();
+		pDevice->SetRenderTarget(0, pRenderTargetBuffer);
+	
+		if (pRenderTarget->GetDepthTestEnabled() == true)
+			SetDepthStencil(pDX9RenderTarget->GetDepthStencil());
+
+		pCurrentRenderTargetBuffer = pRenderTargetBuffer; 
+	}
+
+	pCurrentRenderTarget = pRenderTarget;
+
 }
 
-int mini3d::DX9GraphicsService::GetMaxTextureSize()
+// DepthStencil
+mini3d::IDepthStencil* mini3d::DX9GraphicsService::GetDepthStencil(void)
 {
-	return 1024;
+	return pCurrentDepthStencil;
 }
-
-int mini3d::DX9GraphicsService::GetPixelShaderVersion()
+void mini3d::DX9GraphicsService::SetDepthStencil(IDepthStencil* pDepthStencil)
 {
-	return 2;
-}
-
-int mini3d::DX9GraphicsService::GetVertexShaderVersion()
-{
-	return 2;
-}
-
-
-// Drawing Graphics
-void mini3d::DX9GraphicsService::BeginFrame(void)
-{
-	if (pDevice == 0)
+	if (pDepthStencil == pCurrentDepthStencil)
 		return;
 	
-	UpdateResources();
+	DX9DepthStencil* pDX9DepthStencil = (DX9DepthStencil*)pDepthStencil;
+	
+	if (pDepthStencil == 0)
+	{
+		pDevice->SetDepthStencilSurface(0);
+		pDevice->SetRenderState(D3DRS_ZENABLE, true);
+	}
+	else
+	{
+		pDevice->SetDepthStencilSurface(pDX9DepthStencil->GetDepthStencilBuffer());
+		pDevice->SetRenderState(D3DRS_ZENABLE, true);
+	}
 
-	// Set Render States
-	//pDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
-	//pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE); //D3DCULL_CCW
-	//pDevice->SetRenderState(D3DRS_ZENABLE, true);
-	//pDevice->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
-	//pDevice->SetRenderState(D3DRS_ZWRITEENABLE, true);
-	//pDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, true);
-	//pDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
-	//pDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
-	//pDevice->SetRenderState(D3DRS_AMBIENT, D3DCOLOR_ARGB(255, 255, 255, 255));
-
-	//pDevice->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_TEXTURE);
-	//pDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_DIFFUSE);
-	//pDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
-	//pDevice->SetTextureStageState(0, D3DTSS_ALPHAARG2, D3DTA_TEXTURE);
-	//pDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_DIFFUSE);
-	//pDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
-
-	//pDevice->SetRenderState(D3DRS_LIGHTING, false);
-	//pDevice->SetRenderState(D3DRS_CLIPPING, true);
-
-	//pDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
-	//pDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
-
-	// Store the default Swap Chain
-	//TODO: Default Swapchain
+	pCurrentDepthStencil = pDepthStencil;
 }
 
-// before frame is started, resources will be updated
-void mini3d::DX9GraphicsService::EndFrame(void)
+// Index Buffer
+mini3d::IIndexBuffer* mini3d::DX9GraphicsService::GetIndexBuffer(void)
+{	
+	return pCurrentIndexBuffer;
+}
+void mini3d::DX9GraphicsService::SetIndexBuffer(IIndexBuffer* pIndexBuffer)
 {
+	if (pCurrentIndexBuffer == pIndexBuffer)
+		return;
 
+	if (pIndexBuffer == 0)
+	{
+		pDevice->SetIndices(0);
+	}
+	else
+	{
+		DX9IndexBuffer* pDX9IndexBuffer = (DX9IndexBuffer*)pIndexBuffer;
+		pDevice->SetIndices(pDX9IndexBuffer->GetIndexBuffer());
+	}
+
+	pCurrentIndexBuffer = pIndexBuffer;
 }
 
-void mini3d::DX9GraphicsService::BeginDraw(void)
+// Vertex Buffer
+mini3d::IVertexBuffer* mini3d::DX9GraphicsService::GetVertexBuffer(void)
 {
-	// TODO: pDevice->BeginStateBlock(); ???
-	pDevice->BeginScene();
+	return pCurrentVertexBuffer;
 }
-
-void mini3d::DX9GraphicsService::EndDraw(void)
+void mini3d::DX9GraphicsService::SetVertexBuffer(IVertexBuffer* pVertexBuffer)
 {
-	pDevice->EndScene();
+	if (pCurrentVertexBuffer == pVertexBuffer)
+		return;
+
+	if (pVertexBuffer == 0)
+	{
+		pDevice->SetStreamSource(0, 0, 0, 0);
+	}
+	else
+	{
+		DX9VertexBuffer* pDX9VertexBuffer = (DX9VertexBuffer*)pVertexBuffer;
+		pDevice->SetStreamSource(0, pDX9VertexBuffer->GetVertexBuffer(), 0, pDX9VertexBuffer->GetVertexSizeInBytes());
+	}
+
+	pCurrentVertexBuffer = pVertexBuffer;
 }
 
-
+// Shader Parameters
 void mini3d::DX9GraphicsService::SetShaderParameterFloat(unsigned int index, const float* pData, unsigned int count)
 {
 	pDevice->SetVertexShaderConstantF(index, pData, count);
 }
-
 void mini3d::DX9GraphicsService::SetShaderParameterInt(unsigned int index, const int* pData, unsigned int count)
 {
 	pDevice->SetVertexShaderConstantI(index, pData, count);
 }
-
 void mini3d::DX9GraphicsService::SetShaderParameterBool(unsigned int index, const bool* pData, unsigned int count)
 {
 	pDevice->SetVertexShaderConstantB(index, (BOOL*)pData, count);
 }
 
-mini3d::IIndexBuffer* mini3d::DX9GraphicsService::GetIndexBuffer(void)
-{	
-	return 0;
-}
 
-void mini3d::DX9GraphicsService::SetIndexBuffer(IIndexBuffer* pIndexBuffer)
-{
-	DX9IndexBuffer* pDX9IndexBuffer = (DX9IndexBuffer*)pIndexBuffer;
-	pDevice->SetIndices(pDX9IndexBuffer->GetIndexBuffer());
-	pCurrentIndexBuffer = pDX9IndexBuffer;
-}
-
-mini3d::IVertexBuffer* mini3d::DX9GraphicsService::GetVertexBuffer(void)
-{
-	return 0;
-}
-
-void mini3d::DX9GraphicsService::SetVertexBuffer(IVertexBuffer* pVertexBuffer)
-{
-	DX9VertexBuffer* pDX9VertexBuffer = (DX9VertexBuffer*)pVertexBuffer;
-	pDevice->SetStreamSource(0, pDX9VertexBuffer->GetVertexBuffer(), 0, pDX9VertexBuffer->GetVertexSizeInBytes());
-	pCurrentVertexBuffer = pDX9VertexBuffer;
-}
-
-
+// Drawing
 void mini3d::DX9GraphicsService::Draw(void)
 {
+	BeginScene();
 	pDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, pCurrentVertexBuffer->GetVertexCount(), 0, pCurrentIndexBuffer->GetIndexCount() / 3);
 }
-
 void mini3d::DX9GraphicsService::DrawIndices(unsigned int startIndex, unsigned int numIndices)
 {
+	BeginScene();
 	DX9VertexBuffer* pDX9VertexBuffer = (DX9VertexBuffer*)pCurrentVertexBuffer;
 	pDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, pCurrentVertexBuffer->GetVertexCount(), startIndex, numIndices);
 }
 
-
+// Clear
 void mini3d::DX9GraphicsService::ClearRenderTarget(int color)
 {
 
 	DWORD flags = D3DCLEAR_TARGET;
 	
 	// if we have a depthstencil we need to clear that too
-	if (pCurrentDepthStencilBuffer != 0)
+	if (pCurrentDepthStencil != 0)
 	{
 		flags |= D3DCLEAR_ZBUFFER;
 	}
@@ -553,32 +750,26 @@ mini3d::IScreenRenderTarget* mini3d::DX9GraphicsService::CreateScreenRenderTarge
 {
 	return new DX9ScreenRenderTarget(this, width, height, hWindow, depthTestEnabled);
 }
-
 mini3d::IRenderTargetTexture* mini3d::DX9GraphicsService::CreateRenderTargetTexture(unsigned int width, unsigned int height, bool depthTestEnabled)
 {
 	return new DX9RenderTargetTexture(this, width, height, depthTestEnabled);
 }
-
 mini3d::IBitmapTexture* mini3d::DX9GraphicsService::CreateBitmapTexture(void* pBitmap, unsigned int width, unsigned int height, IBitmapTexture::BitDepth bitDepth, ITexture::WrapStyle wrapStyle)
 {
 	return new DX9BitmapTexture(this, pBitmap, width, height, bitDepth, wrapStyle);
 }
-
 mini3d::IVertexBuffer* mini3d::DX9GraphicsService::CreateVertexBuffer(void* vertices, unsigned int count, const IVertexBuffer::VertexDeclarationVector& vertexDeclaration)
 {
 	return new DX9VertexBuffer(this, vertices, count, vertexDeclaration);
 }
-
 mini3d::IIndexBuffer* mini3d::DX9GraphicsService::CreateIndexBuffer(int* indices, unsigned int count)
 {
 	return new DX9IndexBuffer(this, indices, count);
 }
-
 mini3d::IPixelShader* mini3d::DX9GraphicsService::CreatePixelShader(const IPixelShader::ShaderBytes& shaderBytes)
 {
 	return new DX9PixelShader(this, shaderBytes);
 }
-
 mini3d::IVertexShader* mini3d::DX9GraphicsService::CreateVertexShader(const IVertexShader::ShaderBytes& shaderBytes, const IVertexShader::VertexDeclarationVector& vertexDeclaration)
 {
 	return new DX9VertexShader(this, shaderBytes, vertexDeclaration);

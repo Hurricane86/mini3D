@@ -49,10 +49,14 @@ public:
 	// initialisation
 	virtual ~IGraphicsService(void) { };
 	
-	virtual void Release(void) = 0;
-	
 	virtual void SetSettings(const GraphicsSettings& graphicsSettings) = 0;
 	virtual GraphicsSettings GetSettings(void) = 0;
+
+	// Get Graphics Card Capabilities
+	virtual int GetMaxTextures() = 0;
+	virtual int GetMaxTextureSize() = 0;
+	virtual int GetPixelShaderVersion() = 0;
+	virtual int GetVertexShaderVersion() = 0;
 
 	// States
 	virtual IPixelShader* GetPixelShader(void) = 0;
@@ -70,27 +74,15 @@ public:
 	virtual IDepthStencil* GetDepthStencil(void) = 0;
 	virtual void SetDepthStencil(IDepthStencil* pDepthStencil) = 0;
 
-	// Get Graphics Card Capabilities
-	virtual int GetMaxTextures() = 0;
-	virtual int GetMaxTextureSize() = 0;
-	virtual int GetPixelShaderVersion() = 0;
-	virtual int GetVertexShaderVersion() = 0;
-
-	// Drawing Graphics
-	virtual void BeginFrame(void) = 0; // before frame is started, resources will be updated
-	virtual void EndFrame(void) = 0;
-	virtual void BeginDraw(void) = 0;
-	virtual void EndDraw(void) = 0;
-
-	virtual void SetShaderParameterFloat(unsigned int index, const float* pData, unsigned int count) = 0;
-	virtual void SetShaderParameterInt(unsigned int index, const int* pData, unsigned int count) = 0;
-	virtual void SetShaderParameterBool(unsigned int index, const bool* pData, unsigned int count) = 0;
-
 	virtual IIndexBuffer* GetIndexBuffer(void) = 0;
 	virtual void SetIndexBuffer(IIndexBuffer* indexBuffer) = 0;
 
 	virtual IVertexBuffer* GetVertexBuffer(void) = 0;
 	virtual void SetVertexBuffer(IVertexBuffer* vertexBuffer) = 0;
+
+	virtual void SetShaderParameterFloat(unsigned int index, const float* pData, unsigned int count) = 0;
+	virtual void SetShaderParameterInt(unsigned int index, const int* pData, unsigned int count) = 0;
+	virtual void SetShaderParameterBool(unsigned int index, const bool* pData, unsigned int count) = 0;
 
 	virtual void Draw(void) = 0;
 	virtual void DrawIndices(unsigned int startIndex, unsigned int numIndices) = 0;

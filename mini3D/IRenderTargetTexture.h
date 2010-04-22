@@ -32,7 +32,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 namespace mini3d
 {
-class IRenderTargetTexture : public IRenderTarget, public virtual ITexture
+class IRenderTargetTexture : public virtual IRenderTarget, public virtual ITexture
 {
 public:
 

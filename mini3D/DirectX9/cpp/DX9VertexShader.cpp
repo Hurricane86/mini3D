@@ -31,13 +31,12 @@ OTHER DEALINGS IN THE SOFTWARE.
 mini3d::DX9VertexShader::DX9VertexShader(DX9GraphicsService* pGraphicsService, const ShaderBytes& shaderBytes, const VertexDeclarationVector& vertexDeclaration) :
 	pGraphicsService_(pGraphicsService), shaderBytes_(shaderBytes), pShaderBuffer_(0), vertexDeclaration_(vertexDeclaration)
 {
-	pGraphicsService_->PoolVertexDeclaration(vertexDeclaration);
 	LoadResource();
+	pGraphicsService->AddResource(this);
 }
 
 mini3d::DX9VertexShader::~DX9VertexShader(void)
 {
-	pGraphicsService_->ReleaseVertexDeclaration(vertexDeclaration_);
 	UnloadResource();
 	pGraphicsService_->RemoveResource(this);
 }
@@ -61,13 +60,27 @@ void mini3d::DX9VertexShader::LoadResource(void)
 	}
 
 	isDirty_ = false;
+
+	// load the vertex declaration into the pool
+	pGraphicsService_->PoolVertexDeclaration(vertexDeclaration_);
 }
+
 
 void mini3d::DX9VertexShader::UnloadResource(void)
 {
 	if (pShaderBuffer_ != 0)
 	{
+		// if this is the currently loaded pixel shader, release it
+		if (pGraphicsService_->GetVertexShader() == this)
+			pGraphicsService_->SetVertexShader(0);
+
 		pShaderBuffer_->Release();
 		pShaderBuffer_ = 0;
 	}
+
+	isDirty_ = true;
+
+	// remove the vertex declaration from the pool
+	pGraphicsService_->ReleaseVertexDeclaration(vertexDeclaration_);
+
 }

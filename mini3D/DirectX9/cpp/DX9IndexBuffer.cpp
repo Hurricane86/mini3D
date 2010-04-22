@@ -32,6 +32,7 @@ mini3d::DX9IndexBuffer::DX9IndexBuffer(DX9GraphicsService* pGraphicsService, voi
 {
 	SetIndices(pIndices, count);
 	LoadResource();	
+	pGraphicsService->AddResource(this);
 }
 
 mini3d::DX9IndexBuffer::~DX9IndexBuffer(void)
@@ -131,6 +132,10 @@ void mini3d::DX9IndexBuffer::UnloadResource(void)
 {
 	if (pIndexBuffer != 0)
 	{
+		// if this is the currently loaded index buffer, release it
+		if (pGraphicsService->GetIndexBuffer() == this)
+			pGraphicsService->SetIndexBuffer(0);
+
 		pIndexBuffer->Release();
 		pIndexBuffer = 0;
 	}

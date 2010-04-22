@@ -31,7 +31,8 @@ mini3d::DX9DepthStencil::DX9DepthStencil(DX9GraphicsService* pGraphicsService, u
 	pGraphicsService(pGraphicsService), pDepthStencil(0)
 {
 	SetDepthStencil(width, height);
-	LoadResource();	
+	LoadResource();
+	pGraphicsService->AddResource(this);
 }
 
 mini3d::DX9DepthStencil::~DX9DepthStencil(void)
@@ -96,6 +97,10 @@ void mini3d::DX9DepthStencil::UnloadResource(void)
 {
 	if (pDepthStencil != 0)
 	{
+		// if this is the currently loaded index buffer, release it
+		if (pGraphicsService->GetDepthStencil() == this)
+			pGraphicsService->SetDepthStencil(0);
+
 		pDepthStencil->Release();
 		pDepthStencil = 0;
 	}

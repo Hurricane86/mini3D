@@ -30,6 +30,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 mini3d::DX9VertexBuffer::DX9VertexBuffer(void) :
 	pGraphicsService(pGraphicsService), bufferSizeInBytes(0), pVertices(0), pVertexBuffer(0), pVertexDeclaration(0), sizeInBytes(0)
 {
+	pGraphicsService->AddResource(this);
 }
 
 
@@ -37,7 +38,8 @@ mini3d::DX9VertexBuffer::DX9VertexBuffer(DX9GraphicsService* pGraphicsService, v
 	pGraphicsService(pGraphicsService), bufferSizeInBytes(0), pVertices(0), pVertexBuffer(0), pVertexDeclaration(0), sizeInBytes(0)
 {
 	SetVertices(pVertices, count, vertexDeclaration);
-	LoadResource();	
+	LoadResource();
+	pGraphicsService->AddResource(this);
 }
 
 mini3d::DX9VertexBuffer::~DX9VertexBuffer(void)
@@ -64,13 +66,6 @@ void mini3d::DX9VertexBuffer::SetVertices(void* pVertices, unsigned int count, c
 }
 void mini3d::DX9VertexBuffer::SetVertexDeclaration(const VertexDeclarationVector& vertexDeclaration)
 {
-	// if we already have a vertex declaration, release it from the graphics service pool
-	//if (this->vertexDeclaration.GetCount() != 0)
-		//pGraphicsService->ReleaseVertexDeclaration(vertexDeclaration);
-	
-	// pool the new one
-	//pGraphicsService->PoolVertexDeclaration(vertexDeclaration);
-
 	vertexSizeInBytes = 0;
 	int count = vertexDeclaration.size();
 	for (int i = 0; i < count; i++)
@@ -183,6 +178,10 @@ void mini3d::DX9VertexBuffer::UnloadResource(void)
 {
 	if (pVertexBuffer != 0)
 	{
+		// if this is the currently loaded vertex buffer, release it
+		if (pGraphicsService->GetVertexBuffer() == this)
+			pGraphicsService->SetVertexBuffer(0);
+
 		pVertexBuffer->Release();
 		pVertexBuffer = 0;
 	}

@@ -32,6 +32,7 @@ mini3d::DX9PixelShader::DX9PixelShader(DX9GraphicsService* pGraphicsService, con
 	pGraphicsService_(pGraphicsService), shaderBytes_(shaderBytes), pShaderBuffer_(0)
 {
 	LoadResource();
+	pGraphicsService->AddResource(this);
 }
 
 mini3d::DX9PixelShader::~DX9PixelShader(void)
@@ -65,7 +66,13 @@ void mini3d::DX9PixelShader::UnloadResource(void)
 {
 	if (pShaderBuffer_ != 0)
 	{
+		// if this is the currently loaded pixel shader, release it
+		if (pGraphicsService_->GetPixelShader() == this)
+			pGraphicsService_->SetPixelShader(0);
+
 		pShaderBuffer_->Release();
 		pShaderBuffer_ = 0;
 	}
+
+	isDirty_ = true;
 }

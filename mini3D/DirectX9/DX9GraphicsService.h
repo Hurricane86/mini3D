@@ -51,6 +51,31 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 namespace mini3d
 {
+
+struct VertexDeclarationContainer
+{
+	VertexDeclarationContainer(IVertexShader::VertexDeclarationVector mini3dDeclaration, IDirect3DVertexDeclaration9* direct3dDeclaration, int counter) : 
+								mini3dDeclaration(mini3dDeclaration), direct3dDeclaration(direct3dDeclaration), counter(counter)
+	{
+	}
+
+	VertexDeclarationContainer() : 
+	mini3dDeclaration(IVertexShader::VertexDeclarationVector()), direct3dDeclaration(0), counter(0)
+	{
+	}
+
+	VertexDeclarationContainer( VertexDeclarationContainer& other)
+	{
+		this->counter = other.counter;
+		this->direct3dDeclaration = other.direct3dDeclaration;
+		this->mini3dDeclaration = other.mini3dDeclaration;
+	}
+
+	IVertexShader::VertexDeclarationVector mini3dDeclaration;
+	IDirect3DVertexDeclaration9* direct3dDeclaration;
+	int counter;
+};
+	
 class DX9GraphicsService : public IGraphicsService
 {
 friend class DX9BitmapTexture;
@@ -71,37 +96,47 @@ private:
 	
 	// These member variables are accessed by the friend classes
 	typedef std::set<IDX9Resource*> ResourceContainer;
-	private: ResourceContainer resourceList;
+	ResourceContainer resourceList;
 
 	typedef std::pair<unsigned int, IDirect3DVertexDeclaration9*> counterPair;
-	typedef std::map<std::string, counterPair> VertexDeclarationPool;
-	private: VertexDeclarationPool vertexDeclarationPool;
+	typedef std::map<std::string, VertexDeclarationContainer> VertexDeclarationPool;
+	VertexDeclarationPool vertexDeclarationPool;
 
 	// Member variables
 
 	D3DCAPS9 deviceCaps;
+	
+	// currently loaded resources
+	IRenderTarget* pCurrentRenderTarget;
+	IDirect3DSurface9* pCurrentRenderTargetBuffer;
+	IDepthStencil* pCurrentDepthStencil;
+	IVertexBuffer* pCurrentVertexBuffer;
+	IIndexBuffer* pCurrentIndexBuffer;
+	IPixelShader* pCurrentPixelShader;
+	IVertexShader* pCurrentVertexShader;
+	ITexture** currentITextures;
 
+	// Device lost graphics state
+	IRenderTarget* pLostDeviceRenderTarget;
+	IDepthStencil* pLostDeviceDepthStencil;
+	IVertexBuffer* pLostDeviceVertexBuffer;
+	IIndexBuffer* pLostDeviceIndexBuffer;
+	IPixelShader* pLostDevicePixelShader;
+	IVertexShader* pLostDeviceVertexShader;
+	ITexture** lostDeviceCurrentITextures;
+
+	// other state tracking
+	boolean isDrawingScene;
+	
+	// other variables
 	int hWindow;
 	GraphicsSettings graphicsSettings;
 	IDirect3D9* pD3D;
 	IDirect3DDevice9* pDevice;
-	IPixelShader* pCurrentPixelShader;
-	IVertexShader* pCurrentVertexShader;
-	
-	IDirect3DTexture9** currentTextures;
-	ITexture** currentITextures;
-	
-	ITexture::WrapStyle* currentWrapStyles;
-	
-	IRenderTarget* pCurrentRenderTarget;
-	
-	IDirect3DSurface9* pCurrentDepthStencilBuffer;
-	
-	IVertexBuffer* pCurrentVertexBuffer;
-	IIndexBuffer* pCurrentIndexBuffer;
+	boolean deviceLost;
 
+	//IDirect3DSurface9* pCurrentDepthStencilBuffer;
 	IDirect3DSurface9* pDefaultRenderTarget;
-
 	D3DPRESENT_PARAMETERS presentationParameters;
 
 private:
@@ -111,18 +146,28 @@ private:
 
 	virtual void CreateDevice(void);
 
+	// Drawing Graphics
+	virtual void BeginScene(void);
+	virtual void EndScene(void);
+	virtual void SetRenderStates(void);
+
 	// Resource Management
 	void UpdateResources(void);
+	void UnloadResources(void);
 	void AddResource(IDX9Resource* resource);
 	void RemoveResource(IDX9Resource* resource);
+	
+	void SaveGraphicsState(void);
+	void RestoreGraphicsState(void);
+	void HandleLostDevice(void);
+
 	void PoolVertexDeclaration(const IVertexShader::VertexDeclarationVector& vertexDeclaration);
 	void ReleaseVertexDeclaration(const IVertexShader::VertexDeclarationVector& vertexDeclaration);
 	std::string CreateVertexDeclarationKey(const IVertexShader::VertexDeclarationVector& vertexDeclaration);
+	IDirect3DVertexDeclaration9* mini3d::DX9GraphicsService::CreateDX9VertexDeclaration(const IVertexShader::VertexDeclarationVector& vertexDeclaration);
 
 public:
 	// IGraphicsService
-	virtual void Release(void);
-	
 	virtual void SetSettings(const GraphicsSettings& graphicsSettings);
 	virtual GraphicsSettings GetSettings(void);
 	
@@ -141,8 +186,6 @@ public:
 	
 	virtual IDepthStencil* GetDepthStencil(void);
 	virtual void SetDepthStencil(IDepthStencil* pDepthStencil);
-//
-//public:
 
 	// Get Graphics Card Capabilities
 	virtual int GetMaxTextures(void);
@@ -150,12 +193,6 @@ public:
 	virtual int GetPixelShaderVersion(void);
 	virtual int GetVertexShaderVersion(void);
 	
-	// Drawing Graphics
-	virtual void BeginFrame(void);
-	virtual void EndFrame(void);
-	virtual void BeginDraw(void);
-	virtual void EndDraw(void);
-
 	virtual void SetShaderParameterFloat(unsigned int index, const float* pData, unsigned int count);
 	virtual void SetShaderParameterInt(unsigned int index, const int* pData, unsigned int count);
 	virtual void SetShaderParameterBool(unsigned int index, const bool* pData, unsigned int count);
