@@ -142,7 +142,7 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	mini3d::IGraphicsService* graphics = new mini3d::DX9GraphicsService((int)hWindow);
 	
 	// create a render target (mini3d does not have a default render target)
-	mini3d::IScreenRenderTarget* pScreenRenderTarget = graphics->CreateScreenRenderTarget(512,512,(int)hWindow, false, mini3d::IScreenRenderTarget::QUALITY_MINIMUM);
+	mini3d::IScreenRenderTarget* pScreenRenderTarget = graphics->CreateScreenRenderTarget(512,512,(int)hWindow, false, mini3d::IScreenRenderTarget::QUALITY_MEDIUM);
 
 	// create index buffer
 	int* pIndices = new int[6];
