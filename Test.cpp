@@ -62,7 +62,7 @@ mini3d::IPixelShader::ShaderBytes PixelShaderBytesFromFile(wstring file)
 	if (fileStream)
 	{
 		fileStream.seekg(0, ios::end);
-		long fileSize = fileStream.tellg();
+		long fileSize = long(fileStream.tellg()); // pretty safe downcast since shader files will not be gazillions of bytes long
 		fileStream.seekg(0, ios::beg);
 
 		shaderBytes.resize(fileSize);
@@ -138,21 +138,16 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	mini3d::IVertexShader::VertexDeclarationVector vd;
 		vd.push_back(mini3d::IVertexShader::POSITION); vd.push_back(mini3d::IVertexShader::COLOR); vd.push_back(mini3d::IVertexShader::TEXTURECOORDINATE);
 
-	// create a graphics settings structure for initialising the graphics services
-	mini3d::GraphicsSettings gs;
-		gs.multisampleFormat = mini3d::GraphicsSettings::SIXTEEN_SAMPLES;
-		gs.fullscreen = false;
-
 	// create a graphics service
-	mini3d::IGraphicsService* graphics = new mini3d::DX9GraphicsService(gs, (int)hWindow);
+	mini3d::IGraphicsService* graphics = new mini3d::DX9GraphicsService((int)hWindow);
 	
 	// create a render target (mini3d does not have a default render target)
-	mini3d::IScreenRenderTarget* pScreenRenderTarget = graphics->CreateScreenRenderTarget(512,512,(int)hWindow, false);
+	mini3d::IScreenRenderTarget* pScreenRenderTarget = graphics->CreateScreenRenderTarget(512,512,(int)hWindow, false, mini3d::IScreenRenderTarget::QUALITY_MINIMUM);
 
 	// create index buffer
 	int* pIndices = new int[6];
 	memcpy(pIndices, &indices, sizeof(indices));
-	mini3d::IIndexBuffer* iBuffer = graphics->CreateIndexBuffer(pIndices, 6);
+	mini3d::IIndexBuffer* iBuffer = graphics->CreateIndexBuffer(pIndices, 6, mini3d::IIndexBuffer::CULL_NONE);
 
 	// create vertex buffer
 	VertexPCT* pVertices = new VertexPCT[4];
@@ -206,7 +201,7 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 			// set a shader parameter
 			graphics->SetShaderParameterFloat(0, &viewProjectionMatrixTranspose._11, 4);
 			// clear render target with color
-			graphics->ClearRenderTarget(0xFFDDCCFF);
+			graphics->Clear(0xFFDDCCFF);
 			// run the rendering pipeline
 			graphics->Draw();
 			

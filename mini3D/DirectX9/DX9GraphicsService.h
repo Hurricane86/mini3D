@@ -31,7 +31,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include <set>
 #include <map>
 #include <string>
-#include "../GraphicsSettings.h"
 #include "../IGraphicsService.h"
 
 #include "internal/IDX9RenderTarget.h"
@@ -78,6 +77,7 @@ struct VertexDeclarationContainer
 	
 class DX9GraphicsService : public IGraphicsService
 {
+	// friends
 friend class DX9BitmapTexture;
 friend class DX9RenderTargetTexture;
 friend class DX9PixelShader;
@@ -86,11 +86,6 @@ friend class DX9VertexBuffer;
 friend class DX9IndexBuffer;
 friend class DX9DepthStencil;
 friend class DX9ScreenRenderTarget;
-
-public:
-	// Constructor
-	DX9GraphicsService(const GraphicsSettings& graphicsSettings, int hWindow);
-	~DX9GraphicsService(void);
 
 private:
 	
@@ -103,7 +98,6 @@ private:
 	VertexDeclarationPool vertexDeclarationPool;
 
 	// Member variables
-
 	D3DCAPS9 deviceCaps;
 	
 	// currently loaded resources
@@ -126,52 +120,45 @@ private:
 	ITexture** lostDeviceCurrentITextures;
 
 	// other state tracking
-	boolean isDrawingScene;
+	bool isDrawingScene;
 	
 	// other variables
 	int hWindow;
-	GraphicsSettings graphicsSettings;
 	IDirect3D9* pD3D;
 	IDirect3DDevice9* pDevice;
-	boolean deviceLost;
+	bool deviceLost;
 
 	//IDirect3DSurface9* pCurrentDepthStencilBuffer;
 	IDirect3DSurface9* pDefaultRenderTarget;
 	D3DPRESENT_PARAMETERS presentationParameters;
 
-private:
-	// Support Functions
-	IDirect3DDevice9* GetDevice(void);
-	D3DPRESENT_PARAMETERS GetPresentationParameters(void);
-
-	virtual void CreateDevice(void);
-
-	// Drawing Graphics
-	virtual void BeginScene(void);
-	virtual void EndScene(void);
-	virtual void SetRenderStates(void);
-
-	// Resource Management
-	void UpdateResources(void);
-	void UnloadResources(void);
-	void AddResource(IDX9Resource* resource);
-	void RemoveResource(IDX9Resource* resource);
-	
-	void SaveGraphicsState(void);
-	void RestoreGraphicsState(void);
-	void HandleLostDevice(void);
-
-	void PoolVertexDeclaration(const IVertexShader::VertexDeclarationVector& vertexDeclaration);
-	void ReleaseVertexDeclaration(const IVertexShader::VertexDeclarationVector& vertexDeclaration);
-	std::string CreateVertexDeclarationKey(const IVertexShader::VertexDeclarationVector& vertexDeclaration);
-	IDirect3DVertexDeclaration9* mini3d::DX9GraphicsService::CreateDX9VertexDeclaration(const IVertexShader::VertexDeclarationVector& vertexDeclaration);
-
 public:
-	// IGraphicsService
-	virtual void SetSettings(const GraphicsSettings& graphicsSettings);
-	virtual GraphicsSettings GetSettings(void);
 	
-	// States	
+
+	// CONSTRUCTOR ------------------------------------------------------------
+
+	DX9GraphicsService(int hWindow);
+	~DX9GraphicsService(void);
+
+
+	// IGRAPHICS SERVICE INTERFACE --------------------------------------------
+
+	// Get Graphics Card Capabilities
+	virtual int GetMaxTextures(void);
+	virtual int GetMaxTextureSize(void);
+	virtual int GetPixelShaderVersion(void);
+	virtual int GetVertexShaderVersion(void);
+
+	// Create Resources
+	virtual IScreenRenderTarget* CreateScreenRenderTarget(unsigned int width, unsigned int height, int hWindow, bool depthTestEnabled, IScreenRenderTarget::Quality quality);
+	virtual IRenderTargetTexture* CreateRenderTargetTexture(unsigned int width, unsigned int height, bool depthTestEnabled);
+	virtual IBitmapTexture* CreateBitmapTexture(void* pBitmap, unsigned int width, unsigned int height, IBitmapTexture::BitDepth bitDepth = IBitmapTexture::BIT32, ITexture::WrapStyle wrapStyle = ITexture::TILE);
+	virtual IVertexBuffer* CreateVertexBuffer(void* pVertices, unsigned int count, const IVertexBuffer::VertexDeclarationVector& vertexDeclaration);
+	virtual IIndexBuffer* CreateIndexBuffer(int* pIndices,  unsigned int count, const IIndexBuffer::CullMode cullMode = IIndexBuffer::CULL_COUNTERCLOCKWIZE);
+	virtual IPixelShader* CreatePixelShader(const IPixelShader::ShaderBytes& shaderBytes);
+	virtual IVertexShader* CreateVertexShader(const IVertexShader::ShaderBytes& shaderBytes, const IVertexShader::VertexDeclarationVector& vertexDeclaration);
+
+	// Pipeline States
 	virtual IPixelShader* GetPixelShader(void);
 	virtual void SetPixelShader(IPixelShader* pPixelShader);
 	
@@ -187,12 +174,7 @@ public:
 	virtual IDepthStencil* GetDepthStencil(void);
 	virtual void SetDepthStencil(IDepthStencil* pDepthStencil);
 
-	// Get Graphics Card Capabilities
-	virtual int GetMaxTextures(void);
-	virtual int GetMaxTextureSize(void);
-	virtual int GetPixelShaderVersion(void);
-	virtual int GetVertexShaderVersion(void);
-	
+	// Shader Parameters
 	virtual void SetShaderParameterFloat(unsigned int index, const float* pData, unsigned int count);
 	virtual void SetShaderParameterInt(unsigned int index, const int* pData, unsigned int count);
 	virtual void SetShaderParameterBool(unsigned int index, const bool* pData, unsigned int count);
@@ -203,25 +185,50 @@ public:
 	virtual IVertexBuffer* GetVertexBuffer(void);
 	virtual void SetVertexBuffer(IVertexBuffer* vertexBuffer);
 
+	// Drawing
+	virtual void Clear(int color);
 	virtual void Draw(void);
 	virtual void DrawIndices(unsigned int startIndex, unsigned int numIndices);
 
-	virtual void ClearRenderTarget(int color);
-//	virtual void ClearDepthStencil(void);
+private:
+	
+	// INTERNAL HELPER FUNCTIONS ----------------------------------------------
+	
+	// These functions are accessed by the DX9Resources
+	IDirect3DDevice9* GetDevice(void);
+	D3DPRESENT_PARAMETERS GetPresentationParameters(void);
+	void CheckMultisampleFormat(IScreenRenderTarget::Quality& quality, bool fullscreen);
+	D3DMULTISAMPLE_TYPE FromMultisampleFormat(IScreenRenderTarget::Quality quality);
 
-	// Create Resources
-	virtual IScreenRenderTarget* CreateScreenRenderTarget(unsigned int width, unsigned int height, int hWindow, bool depthTestEnabled);
+	// INTERNAL HELPER FUNCTIONS ----------------------------------------------
 
-	virtual IRenderTargetTexture* CreateRenderTargetTexture(unsigned int width, unsigned int height, bool depthTestEnabled);
-	//virtual IDepthStencil* CreateDepthStencil(unsigned int width, unsigned int height);
+	// Device creation
+	virtual void CreateDevice(void);
+	D3DFORMAT GetCorrectBackBufferFormat(void);
+	D3DFORMAT GetCorrectDepthStencilFormat(void);
 
-	virtual IBitmapTexture* CreateBitmapTexture(void* pBitmap, unsigned int width, unsigned int height, IBitmapTexture::BitDepth bitDepth = IBitmapTexture::BIT32, ITexture::WrapStyle wrapStyle = ITexture::TILE);
+	// Drawing Graphics
+	virtual void BeginScene(void);
+	virtual void EndScene(void);
+	virtual void SetRenderStates(void);
 
-	virtual IVertexBuffer* CreateVertexBuffer(void* pVertices, unsigned int count, const IVertexBuffer::VertexDeclarationVector& vertexDeclaration);
-	virtual IIndexBuffer* CreateIndexBuffer(int* pIndices, unsigned int count);
+	// Resource Management
+	void UpdateResources(void);
+	void UnloadResources(void);
+	void AddResource(IDX9Resource* resource);
+	void RemoveResource(IDX9Resource* resource);
+	
+	// Lost device stuff
+	void SaveGraphicsState(void);
+	void RestoreGraphicsState(void);
+	void HandleLostDevice(void);
 
-	virtual IPixelShader* CreatePixelShader(const IPixelShader::ShaderBytes& shaderBytes);
-	virtual IVertexShader* CreateVertexShader(const IVertexShader::ShaderBytes& shaderBytes, const IVertexShader::VertexDeclarationVector& vertexDeclaration);
+	// Vertex declaration pooling
+	void PoolVertexDeclaration(const IVertexShader::VertexDeclarationVector& vertexDeclaration);
+	void ReleaseVertexDeclaration(const IVertexShader::VertexDeclarationVector& vertexDeclaration);
+	IDirect3DVertexDeclaration9* mini3d::DX9GraphicsService::CreateDX9VertexDeclaration(const IVertexShader::VertexDeclarationVector& vertexDeclaration);
+	std::string CreateVertexDeclarationKey(const IVertexShader::VertexDeclarationVector& vertexDeclaration);
+
 };
 }
 

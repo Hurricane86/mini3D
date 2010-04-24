@@ -35,9 +35,11 @@ class IScreenRenderTarget : public virtual IRenderTarget
 {
 public:
 
+	enum Quality{QUALITY_MINIMUM, QUALITY_LOW, QUALITY_MEDIUM, QUALITY_HIGH, QUALITY_MAXIMUM};
+
 	virtual ~IScreenRenderTarget(void) {};
 
-	virtual void SetScreenRenderTarget(unsigned int width, unsigned int height, int hWindow, bool depthTestEnabled) = 0;
+	virtual void SetScreenRenderTarget(unsigned int width, unsigned int height, int hWindow, bool depthTestEnabled, Quality quality) = 0;
 	virtual unsigned int GetWidth(void) = 0;
 	virtual unsigned int GetHeight(void) = 0;
 	virtual bool GetDepthTestEnabled(void) = 0;

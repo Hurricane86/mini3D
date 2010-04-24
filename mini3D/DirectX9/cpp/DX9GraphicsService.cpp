@@ -25,13 +25,12 @@ OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include "../DX9GraphicsService.h"
-#include "../support/D3DSetupManager.h"
 
 
 // Constructor Destructor -----------------------------------------------------
 
-mini3d::DX9GraphicsService::DX9GraphicsService(const GraphicsSettings& graphicsSettings, int hWindow) :
-	pDevice(0), hWindow(hWindow), graphicsSettings(graphicsSettings), pCurrentDepthStencil(0), isDrawingScene(false), deviceLost(true), pCurrentRenderTargetBuffer(0)
+mini3d::DX9GraphicsService::DX9GraphicsService(int hWindow) :
+	pDevice(0), hWindow(hWindow), pCurrentDepthStencil(0), isDrawingScene(false), deviceLost(true), pCurrentRenderTargetBuffer(0)
 {
 	CreateDevice();
 }
@@ -90,20 +89,21 @@ void mini3d::DX9GraphicsService::CreateDevice(void)
 	D3DPRESENT_PARAMETERS d3dpp;
 
 	// TODO: need to set back buffer format fist
-	D3DSetupManager::CheckMultisampleFormat(graphicsSettings, pD3D);
+	IScreenRenderTarget::Quality quality = IScreenRenderTarget::QUALITY_MINIMUM;
+	CheckMultisampleFormat(quality, false);
 
 	ZeroMemory(&d3dpp, sizeof(d3dpp));
 	d3dpp.BackBufferWidth = 1; // Default backbuffer should be 1x1 and is never used
 	d3dpp.BackBufferHeight = 1; // Default backbuffer should be 1x1 and is never used
 	d3dpp.BackBufferCount = 1;	// TODO: More than one backbuffer?? What is it good for?
-	d3dpp.BackBufferFormat = D3DSetupManager::GetCorrectBackBufferFormat(graphicsSettings, pD3D); 
+	d3dpp.BackBufferFormat = GetCorrectBackBufferFormat(); 
 	d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
-	d3dpp.Windowed = !graphicsSettings.fullscreen;
+	d3dpp.Windowed = true;
 	d3dpp.EnableAutoDepthStencil = false; // we manage swap chains manually
-	d3dpp.AutoDepthStencilFormat = D3DSetupManager::GetCorrectDepthStencilFormat(graphicsSettings, pD3D); 
+	d3dpp.AutoDepthStencilFormat = GetCorrectDepthStencilFormat(); 
 	d3dpp.FullScreen_RefreshRateInHz = D3DPRESENT_RATE_DEFAULT;
 	d3dpp.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
-	d3dpp.MultiSampleType = D3DSetupManager::FromMultisampleFormat(graphicsSettings.multisampleFormat);
+	d3dpp.MultiSampleType = FromMultisampleFormat(quality);
 	d3dpp.MultiSampleQuality = 0;
 
 	presentationParameters = d3dpp;
@@ -438,22 +438,6 @@ void mini3d::DX9GraphicsService::SetRenderStates()
 }
 
 
-// Settings -------------------------------------------------------------------
-
-mini3d::GraphicsSettings mini3d::DX9GraphicsService::GetSettings(void)
-{
-	return graphicsSettings;
-}
-void mini3d::DX9GraphicsService::SetSettings(const GraphicsSettings& graphicsSettings)
-{
-	if (this->graphicsSettings == graphicsSettings)
-		return;
-
-	this->graphicsSettings = graphicsSettings;
-	CreateDevice();
-}
-
-
 
 // Graphics Pipeline States ---------------------------------------------------
 
@@ -731,7 +715,7 @@ void mini3d::DX9GraphicsService::DrawIndices(unsigned int startIndex, unsigned i
 }
 
 // Clear
-void mini3d::DX9GraphicsService::ClearRenderTarget(int color)
+void mini3d::DX9GraphicsService::Clear(int color)
 {
 
 	DWORD flags = D3DCLEAR_TARGET;
@@ -746,9 +730,9 @@ void mini3d::DX9GraphicsService::ClearRenderTarget(int color)
 
 
 // Create Resources
-mini3d::IScreenRenderTarget* mini3d::DX9GraphicsService::CreateScreenRenderTarget(unsigned int width, unsigned int height, int hWindow, bool depthTestEnabled)
+mini3d::IScreenRenderTarget* mini3d::DX9GraphicsService::CreateScreenRenderTarget(unsigned int width, unsigned int height, int hWindow, bool depthTestEnabled, IScreenRenderTarget::Quality quality)
 {
-	return new DX9ScreenRenderTarget(this, width, height, hWindow, depthTestEnabled);
+	return new DX9ScreenRenderTarget(this, width, height, hWindow, depthTestEnabled, quality);
 }
 mini3d::IRenderTargetTexture* mini3d::DX9GraphicsService::CreateRenderTargetTexture(unsigned int width, unsigned int height, bool depthTestEnabled)
 {
@@ -762,7 +746,7 @@ mini3d::IVertexBuffer* mini3d::DX9GraphicsService::CreateVertexBuffer(void* vert
 {
 	return new DX9VertexBuffer(this, vertices, count, vertexDeclaration);
 }
-mini3d::IIndexBuffer* mini3d::DX9GraphicsService::CreateIndexBuffer(int* indices, unsigned int count)
+mini3d::IIndexBuffer* mini3d::DX9GraphicsService::CreateIndexBuffer(int* indices, unsigned int count, const IIndexBuffer::CullMode cullMode)
 {
 	return new DX9IndexBuffer(this, indices, count);
 }
@@ -775,3 +759,100 @@ mini3d::IVertexShader* mini3d::DX9GraphicsService::CreateVertexShader(const IVer
 	return new DX9VertexShader(this, shaderBytes, vertexDeclaration);
 }
 
+
+// Set up helper functions
+
+D3DFORMAT mini3d::DX9GraphicsService::GetCorrectBackBufferFormat(void)
+{
+	D3DDISPLAYMODE displayMode;
+	pD3D->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &displayMode);
+
+	// Get the color depth of the display
+	if (displayMode.Format == D3DFMT_X8R8G8B8)
+		return D3DFMT_X8R8G8B8;
+	else if (displayMode.Format == D3DFMT_R5G6B5)
+		return D3DFMT_R5G6B5;
+	else // TODO: will we ever end up here?
+		return D3DFMT_X8R8G8B8;
+}
+
+
+D3DFORMAT mini3d::DX9GraphicsService::GetCorrectDepthStencilFormat(void)
+{
+	// TODO: This similar to the ogre initialization code! Look this over and assert all assumptions!
+
+	D3DDISPLAYMODE displayMode;
+	pD3D->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &displayMode);
+
+	// Get the color depth of the display
+	D3DFORMAT displayFormat = GetCorrectBackBufferFormat();
+
+	// if we are only running 16 bit color format, then just run a 16 bit depth format...
+	if (displayFormat == D3DFMT_R5G6B5)
+		return D3DFMT_D16;
+
+	// check support for 24bit depth with 8 bit stencil
+	if (SUCCEEDED( pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, displayFormat, D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_SURFACE, D3DFMT_D24S8 )))
+	{
+		// "nVidia chips since the TNT1 have a restriction that the total depth+stencil bit depth MUST be the same as the bit depth of the frame buffer."
+		// - http://www.gamedev.net/community/forums/topic.asp?topic_id=73404
+		// TODO: True only for really old cards (order than 2004)?? Check nvida website!
+
+		if( SUCCEEDED( pD3D->CheckDepthStencilMatch(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, displayFormat, displayFormat, D3DFMT_D24S8 )))
+			return D3DFMT_D24S8;
+		else 
+			return D3DFMT_D24X8;
+	}
+
+	// Ok, so that did not work. Try a pure 32bit depth buffer with no stencil
+	if(SUCCEEDED( pD3D->CheckDeviceFormat(D3DFMT_D24S8, D3DDEVTYPE_HAL, displayMode.Format,  D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_SURFACE, D3DFMT_D32 )))
+		return D3DFMT_D32;
+
+	// If all else failes, run a 16bit buffer
+	// TODO: This will probably never happen, but maby we should "crash" here instead??
+	return D3DFMT_D16;
+}
+
+void mini3d::DX9GraphicsService::CheckMultisampleFormat(IScreenRenderTarget::Quality& quality, bool fullscreen)
+{
+
+	D3DDISPLAYMODE displayMode;
+	pD3D->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &displayMode);
+	
+
+	DWORD pQualityLevels;
+	while (	quality > 0 && 
+			FAILED(pD3D->CheckDeviceMultiSampleType( D3DADAPTER_DEFAULT, 
+														D3DDEVTYPE_HAL, 
+														displayMode.Format, 
+														!fullscreen,
+														FromMultisampleFormat(quality),
+														&pQualityLevels)))
+	{
+		quality = (IScreenRenderTarget::Quality)((int)quality - 1);
+	}
+}
+
+D3DMULTISAMPLE_TYPE mini3d::DX9GraphicsService::FromMultisampleFormat(IScreenRenderTarget::Quality quality)
+{
+	switch(quality)
+	{
+	case IScreenRenderTarget::QUALITY_MINIMUM:
+			return D3DMULTISAMPLE_NONE;
+			break;
+		case IScreenRenderTarget::QUALITY_LOW:
+			return D3DMULTISAMPLE_2_SAMPLES;
+			break;
+		case IScreenRenderTarget::QUALITY_MEDIUM:
+			return D3DMULTISAMPLE_4_SAMPLES;
+			break;
+		case IScreenRenderTarget::QUALITY_HIGH:
+			return D3DMULTISAMPLE_8_SAMPLES;
+			break;
+		case IScreenRenderTarget::QUALITY_MAXIMUM:
+			return D3DMULTISAMPLE_16_SAMPLES;
+			break;
+	}
+	// default case, no multisample
+	return D3DMULTISAMPLE_NONE;
+}

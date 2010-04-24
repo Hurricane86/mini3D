@@ -32,6 +32,7 @@ namespace mini3d
 class IIndexBuffer
 {
 public:
+	enum CullMode { CULL_CLOCKWIZE = 0, CULL_COUNTERCLOCKWIZE = 1, CULL_NONE = 2 };
 
 	virtual ~IIndexBuffer(void) {};
 	

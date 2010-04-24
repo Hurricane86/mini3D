@@ -46,7 +46,8 @@ private:
 	int width;
 	int height;
 	int hWindow;
-	int depthTestEnabled;
+	bool depthTestEnabled;
+	Quality quality;
 
 	// TODO: Fix this with power of 2 comparison agains width, height...
 	int bufferWidth;
@@ -57,10 +58,10 @@ private:
 	bool isDirty;
 
 public:
-	DX9ScreenRenderTarget(DX9GraphicsService* pGraphicsService, unsigned int width, unsigned int height, int hWindow, bool depthTestEnabled);
+	DX9ScreenRenderTarget(DX9GraphicsService* pGraphicsService, unsigned int width, unsigned int height, int hWindow, bool depthTestEnabled, Quality quality);
 	virtual ~DX9ScreenRenderTarget(void);
 
-	virtual void SetScreenRenderTarget(unsigned int width, unsigned int height, int hWindow, bool depthTestEnabled);
+	virtual void SetScreenRenderTarget(unsigned int width, unsigned int height, int hWindow, bool depthTestEnabled, Quality quality);
 	IDirect3DSurface9*  GetRenderTargetBuffer(void);
 
 	void LoadResource(void);

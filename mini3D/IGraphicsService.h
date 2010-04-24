@@ -28,7 +28,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 #define AURORA_IGRAPHICSSERVICE_H
 
 
-#include "GraphicsSettings.h"
 #include "IPixelShader.h"
 #include "IVertexShader.h"
 #include "internal/ITexture.h"
@@ -48,9 +47,6 @@ public:
 
 	// initialisation
 	virtual ~IGraphicsService(void) { };
-	
-	virtual void SetSettings(const GraphicsSettings& graphicsSettings) = 0;
-	virtual GraphicsSettings GetSettings(void) = 0;
 
 	// Get Graphics Card Capabilities
 	virtual int GetMaxTextures() = 0;
@@ -58,7 +54,16 @@ public:
 	virtual int GetPixelShaderVersion() = 0;
 	virtual int GetVertexShaderVersion() = 0;
 
-	// States
+	// Create Resources
+	virtual IScreenRenderTarget* CreateScreenRenderTarget(unsigned int width, unsigned int height, int hWindow, bool depthTestEnabled, IScreenRenderTarget::Quality quality) = 0;
+	virtual IRenderTargetTexture* CreateRenderTargetTexture(unsigned int width, unsigned int height, bool depthTestEnabled) = 0;
+	virtual IBitmapTexture* CreateBitmapTexture(void* pBitmap, unsigned int width, unsigned int height, IBitmapTexture::BitDepth bitDepth = IBitmapTexture::BIT32, ITexture::WrapStyle wrapStyle = ITexture::TILE) = 0;
+	virtual IVertexBuffer* CreateVertexBuffer(void* pVertices, unsigned int count, const IVertexBuffer::VertexDeclarationVector& vertexDeclaration) = 0;
+	virtual IIndexBuffer* CreateIndexBuffer(int* pIndices, unsigned int count, const IIndexBuffer::CullMode cullMode = IIndexBuffer::CULL_COUNTERCLOCKWIZE) = 0;
+	virtual IPixelShader* CreatePixelShader(const IPixelShader::ShaderBytes& shaderBytes) = 0;
+	virtual IVertexShader* CreateVertexShader(const IVertexShader::ShaderBytes& shaderBytes, const IVertexShader::VertexDeclarationVector& vertexDeclaration) = 0;
+
+	// Pipeline states
 	virtual IPixelShader* GetPixelShader(void) = 0;
 	virtual void SetPixelShader(IPixelShader* pPixelShader) = 0;
 
@@ -71,38 +76,21 @@ public:
 	virtual IRenderTarget* GetRenderTarget(void) = 0;
 	virtual void SetRenderTarget(IRenderTarget* pRenderTarget) = 0;
 
-	virtual IDepthStencil* GetDepthStencil(void) = 0;
-	virtual void SetDepthStencil(IDepthStencil* pDepthStencil) = 0;
-
 	virtual IIndexBuffer* GetIndexBuffer(void) = 0;
 	virtual void SetIndexBuffer(IIndexBuffer* indexBuffer) = 0;
 
 	virtual IVertexBuffer* GetVertexBuffer(void) = 0;
 	virtual void SetVertexBuffer(IVertexBuffer* vertexBuffer) = 0;
 
+	// Shader Parameters
 	virtual void SetShaderParameterFloat(unsigned int index, const float* pData, unsigned int count) = 0;
 	virtual void SetShaderParameterInt(unsigned int index, const int* pData, unsigned int count) = 0;
 	virtual void SetShaderParameterBool(unsigned int index, const bool* pData, unsigned int count) = 0;
 
+	// Drawing
+	virtual void Clear(int color) = 0;
 	virtual void Draw(void) = 0;
 	virtual void DrawIndices(unsigned int startIndex, unsigned int numIndices) = 0;
-
-	virtual void ClearRenderTarget(int color) = 0;
-	//virtual void ClearDepthStencil(void) = 0;
-
-	// Create Resources
-	virtual IScreenRenderTarget* CreateScreenRenderTarget(unsigned int width, unsigned int height, int hWindow, bool depthTestEnabled) = 0;
-
-	virtual IRenderTargetTexture* CreateRenderTargetTexture(unsigned int width, unsigned int height, bool depthTestEnabled) = 0;
-	//virtual IDepthStencil* CreateDepthStencil(unsigned int width, unsigned int height) = 0;
-
-	virtual IBitmapTexture* CreateBitmapTexture(void* pBitmap, unsigned int width, unsigned int height, IBitmapTexture::BitDepth bitDepth = IBitmapTexture::BIT32, ITexture::WrapStyle wrapStyle = ITexture::TILE) = 0;
-
-	virtual IVertexBuffer* CreateVertexBuffer(void* pVertices, unsigned int count, const IVertexBuffer::VertexDeclarationVector& vertexDeclaration) = 0;
-	virtual IIndexBuffer* CreateIndexBuffer(int* pIndices, unsigned int count) = 0;
-
-	virtual IPixelShader* CreatePixelShader(const IPixelShader::ShaderBytes& shaderBytes) = 0;
-	virtual IVertexShader* CreateVertexShader(const IVertexShader::ShaderBytes& shaderBytes, const IVertexShader::VertexDeclarationVector& vertexDeclaration) = 0;
 
 };
 }

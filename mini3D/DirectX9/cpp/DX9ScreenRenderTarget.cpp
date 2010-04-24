@@ -28,15 +28,15 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "../DX9DepthStencil.h"
 #include <d3d9.h>
 
-mini3d::DX9ScreenRenderTarget::DX9ScreenRenderTarget(DX9GraphicsService* pGraphicsService, unsigned int width, unsigned int height, int hWindow, bool depthTestEnabled) : 
-	pGraphicsService(pGraphicsService), pScreenRenderTarget(0), pDepthStencil(0)
+mini3d::DX9ScreenRenderTarget::DX9ScreenRenderTarget(DX9GraphicsService* pGraphicsService, unsigned int width, unsigned int height, int hWindow, bool depthTestEnabled, Quality quality) : 
+	pGraphicsService(pGraphicsService), pScreenRenderTarget(0), pDepthStencil(0), quality(quality)
 {
 	if (depthTestEnabled == true)
 	{
 		pDepthStencil = new DX9DepthStencil(pGraphicsService, width, height);
 	}
 
-	SetScreenRenderTarget(width, height, hWindow, depthTestEnabled);
+	SetScreenRenderTarget(width, height, hWindow, depthTestEnabled, quality);
 	LoadResource();
 	pGraphicsService->AddResource(this);
 }
@@ -50,7 +50,7 @@ mini3d::DX9ScreenRenderTarget::~DX9ScreenRenderTarget(void)
 		delete pDepthStencil;
 }
 
-void mini3d::DX9ScreenRenderTarget::SetScreenRenderTarget(unsigned int width, unsigned int height, int hWindow, bool depthTestEnabled)
+void mini3d::DX9ScreenRenderTarget::SetScreenRenderTarget(unsigned int width, unsigned int height, int hWindow, bool depthTestEnabled, Quality quality)
 {
 	this->hWindow = hWindow;
 	this->width = width;
@@ -102,7 +102,7 @@ void mini3d::DX9ScreenRenderTarget::LoadResource(void)
 	}
 
 	// If the buffer exists but is not the correct size, tear it down and recreate it
-	if (pScreenRenderTarget != 0 && (bufferWidth != width || bufferHeight != height)) // TODO: power of 2
+	if (pScreenRenderTarget != 0 && (bufferWidth != width || bufferHeight != height))
 	{
 		UnloadResource();
 	}
@@ -110,11 +110,16 @@ void mini3d::DX9ScreenRenderTarget::LoadResource(void)
 	// If it does not exist, create a new one
 	if (pScreenRenderTarget == 0)
 	{
-		D3DPRESENT_PARAMETERS pp = pGraphicsService->GetPresentationParameters();
+		D3DPRESENT_PARAMETERS pp;
+		memcpy(&pp, &pGraphicsService->GetPresentationParameters(), sizeof(D3DPRESENT_PARAMETERS));
 		
+		pGraphicsService->CheckMultisampleFormat(quality, !pp.Windowed);
+
 		pp.BackBufferWidth = width;
 		pp.BackBufferHeight = height;
 		pp.hDeviceWindow = (HWND)hWindow;
+		pp.SwapEffect = D3DSWAPEFFECT_DISCARD;
+		pp.MultiSampleQuality = pGraphicsService->FromMultisampleFormat(quality);
 				
 		if( FAILED( pDevice->CreateAdditionalSwapChain(&pp, &pScreenRenderTarget))) 
 		{
