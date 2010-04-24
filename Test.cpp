@@ -139,7 +139,7 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 		vd.push_back(mini3d::IVertexShader::POSITION); vd.push_back(mini3d::IVertexShader::COLOR); vd.push_back(mini3d::IVertexShader::TEXTURECOORDINATE);
 
 	// create a graphics service
-	mini3d::IGraphicsService* graphics = new mini3d::DX9GraphicsService((int)hWindow);
+	mini3d::IGraphicsService* graphics = new mini3d::DX9GraphicsService(false);
 	
 	// create a render target (mini3d does not have a default render target)
 	mini3d::IScreenRenderTarget* pScreenRenderTarget = graphics->CreateScreenRenderTarget(512,512,(int)hWindow, false, mini3d::IScreenRenderTarget::QUALITY_MEDIUM);

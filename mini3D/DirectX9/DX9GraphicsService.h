@@ -123,10 +123,11 @@ private:
 	bool isDrawingScene;
 	
 	// other variables
-	int hWindow;
+	HWND hWindow;
 	IDirect3D9* pD3D;
 	IDirect3DDevice9* pDevice;
 	bool deviceLost;
+	bool isFullscreen;
 
 	//IDirect3DSurface9* pCurrentDepthStencilBuffer;
 	IDirect3DSurface9* pDefaultRenderTarget;
@@ -137,11 +138,27 @@ public:
 
 	// CONSTRUCTOR ------------------------------------------------------------
 
-	DX9GraphicsService(int hWindow);
+	DX9GraphicsService(bool isFullscreen);
 	~DX9GraphicsService(void);
 
 
 	// IGRAPHICS SERVICE INTERFACE --------------------------------------------
+
+	// Properties
+	virtual bool GetIsFullScreen()
+	{ 
+		return isFullscreen; 
+	};
+	virtual void SetIsFullScreen(bool value)
+	{
+		if (isFullscreen == value)
+			return;
+
+		isFullscreen = value;
+		
+		// Recreate The device
+		RecreateDevice();
+	};
 
 	// Get Graphics Card Capabilities
 	virtual int GetMaxTextures(void);
@@ -203,7 +220,8 @@ private:
 	// INTERNAL HELPER FUNCTIONS ----------------------------------------------
 
 	// Device creation
-	virtual void CreateDevice(void);
+	void CreateDevice(void);
+	void CreateInternalWindow(void);
 	D3DFORMAT GetCorrectBackBufferFormat(void);
 	D3DFORMAT GetCorrectDepthStencilFormat(void);
 
@@ -222,6 +240,9 @@ private:
 	void SaveGraphicsState(void);
 	void RestoreGraphicsState(void);
 	void HandleLostDevice(void);
+	void RecreateDevice(void);
+	void ReleaseDevice(void);
+	void RestoreDevice(void);
 
 	// Vertex declaration pooling
 	void PoolVertexDeclaration(const IVertexShader::VertexDeclarationVector& vertexDeclaration);

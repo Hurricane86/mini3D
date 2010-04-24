@@ -113,12 +113,11 @@ void mini3d::DX9ScreenRenderTarget::LoadResource(void)
 		D3DPRESENT_PARAMETERS pp;
 		memcpy(&pp, &pGraphicsService->GetPresentationParameters(), sizeof(D3DPRESENT_PARAMETERS));
 		
-		pGraphicsService->CheckMultisampleFormat(quality, !pp.Windowed);
+		pGraphicsService->CheckMultisampleFormat(quality, pp.Windowed);
 
 		pp.BackBufferWidth = width;
 		pp.BackBufferHeight = height;
 		pp.hDeviceWindow = (HWND)hWindow;
-		pp.SwapEffect = D3DSWAPEFFECT_DISCARD;
 		pp.MultiSampleType = pGraphicsService->FromMultisampleFormat(quality);
 				
 		if( FAILED( pDevice->CreateAdditionalSwapChain(&pp, &pScreenRenderTarget))) 

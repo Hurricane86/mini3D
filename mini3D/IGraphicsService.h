@@ -48,6 +48,10 @@ public:
 	// initialisation
 	virtual ~IGraphicsService(void) { };
 
+	// Properties
+	virtual bool GetIsFullScreen() = 0;
+	virtual void SetIsFullScreen(bool fullscreen) = 0;
+
 	// Get Graphics Card Capabilities
 	virtual int GetMaxTextures() = 0;
 	virtual int GetMaxTextureSize() = 0;

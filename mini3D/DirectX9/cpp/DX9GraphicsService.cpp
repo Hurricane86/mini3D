@@ -29,9 +29,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 // Constructor Destructor -----------------------------------------------------
 
-mini3d::DX9GraphicsService::DX9GraphicsService(int hWindow) :
-	pDevice(0), hWindow(hWindow), pCurrentDepthStencil(0), isDrawingScene(false), deviceLost(true), pCurrentRenderTargetBuffer(0)
+mini3d::DX9GraphicsService::DX9GraphicsService(bool isFullscreen) :
+	isFullscreen(isFullscreen),
+	pD3D(0), pDevice(0),	pCurrentDepthStencil(0), isDrawingScene(false), deviceLost(true), pCurrentRenderTargetBuffer(0), lostDeviceCurrentITextures(0), currentITextures(0)
 {
+	CreateInternalWindow();
 	CreateDevice();
 }
 mini3d::DX9GraphicsService::~DX9GraphicsService(void)
@@ -69,17 +71,28 @@ D3DPRESENT_PARAMETERS mini3d::DX9GraphicsService::GetPresentationParameters(void
 
 void mini3d::DX9GraphicsService::CreateDevice(void)
 {
-	pD3D=Direct3DCreate9(D3D_SDK_VERSION);
-	pD3D->GetDeviceCaps(0, D3DDEVTYPE_HAL, &deviceCaps);
-
-	currentITextures = new ITexture*[deviceCaps.MaxSimultaneousTextures];
-	lostDeviceCurrentITextures = new ITexture*[deviceCaps.MaxSimultaneousTextures];
-	memset(currentITextures, 0, deviceCaps.MaxSimultaneousTextures * sizeof(ITexture*));
+	if (pD3D == 0)
+		pD3D=Direct3DCreate9(D3D_SDK_VERSION);
 
 	if (pD3D == 0)
 	{
 		//TODO: Cast some error??
 	}
+
+	pD3D->GetDeviceCaps(0, D3DDEVTYPE_HAL, &deviceCaps);
+
+	if (currentITextures != 0)
+		delete[] currentITextures;
+
+	currentITextures = new ITexture*[deviceCaps.MaxSimultaneousTextures];
+	memset(currentITextures, 0, deviceCaps.MaxSimultaneousTextures * sizeof(ITexture*));
+
+	if (currentITextures != 0)
+		delete[] currentITextures;
+	
+	lostDeviceCurrentITextures = new ITexture*[deviceCaps.MaxSimultaneousTextures];
+
+
 	
 	// get the display mode
 	D3DDISPLAYMODE d3ddm;
@@ -98,7 +111,7 @@ void mini3d::DX9GraphicsService::CreateDevice(void)
 	d3dpp.BackBufferCount = 1;	// TODO: More than one backbuffer?? What is it good for?
 	d3dpp.BackBufferFormat = GetCorrectBackBufferFormat(); 
 	d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
-	d3dpp.Windowed = true;
+	d3dpp.Windowed = !isFullscreen;
 	d3dpp.EnableAutoDepthStencil = false; // we manage swap chains manually
 	d3dpp.AutoDepthStencilFormat = GetCorrectDepthStencilFormat(); 
 	d3dpp.FullScreen_RefreshRateInHz = D3DPRESENT_RATE_DEFAULT;
@@ -125,6 +138,50 @@ void mini3d::DX9GraphicsService::CreateDevice(void)
 
 	// store the default back buffer so we can put it back when we reset the device
 	pDevice->GetRenderTarget(0, &pDefaultRenderTarget);
+}
+
+LRESULT CALLBACK DX9WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    switch(msg)
+    {
+        case WM_CLOSE:
+            DestroyWindow(hwnd);
+        break;
+        case WM_DESTROY:
+            PostQuitMessage(0);
+        break;
+        default:
+            return DefWindowProc(hwnd, msg, wParam, lParam);
+    }
+    return 0;
+}
+
+void mini3d::DX9GraphicsService::CreateInternalWindow(void)
+{
+	HINSTANCE hInstance = GetModuleHandle(NULL);
+
+    WNDCLASSEX wc;
+
+    wc.cbSize        = sizeof(WNDCLASSEX);
+    wc.style         = 0;
+    wc.lpfnWndProc   = DX9WndProc;
+    wc.cbClsExtra    = 0;
+    wc.cbWndExtra    = 0;
+    wc.hInstance     = hInstance;
+    wc.hIcon         = LoadIcon(NULL, IDI_APPLICATION);
+    wc.hCursor       = LoadCursor(NULL, IDC_ARROW);
+    wc.hbrBackground = (HBRUSH)(COLOR_WINDOW+1);
+    wc.lpszMenuName  = NULL;
+    wc.lpszClassName = L"DX9InternalWindowClass";
+    wc.hIconSm       = LoadIcon(NULL, IDI_APPLICATION);
+
+    if(!RegisterClassEx(&wc))
+    {
+		hWindow = 0;
+		return;
+    }
+
+	hWindow = CreateWindowEx(WS_EX_CLIENTEDGE, L"DX9InternalWindowClass", L"HiddenWindow", 0, CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, HWND_MESSAGE, 0, hInstance, 0);
 }
 
 // Resource Management
@@ -191,75 +248,20 @@ void mini3d::DX9GraphicsService::HandleLostDevice()
 	// if it is a driver internal error, just recreate the whole thing and return
 	if (deviceState == D3DERR_DRIVERINTERNALERROR)
 	{
-		// Store away the current state of the graphics pipeline
-		SaveGraphicsState();
-
-		// Completely tear down the device
-		UnloadResources();
-
-		// Release the default render target 
-		if (pDefaultRenderTarget != 0)
-		{
-			// This must be done after UnloadResources since UnloadResources restores
-			// the default render target
-			pDefaultRenderTarget->Release();
-			pDefaultRenderTarget = 0;
-		}
-
-		pDevice->Release();
-		pD3D->Release();
-
-		// try to recreate the device
-		// this will throw an error if the driver is broken so there is no need to do that explicitly
-		CreateDevice();
-		UpdateResources();
-
-		// put back the stored graphics pipeline states
-		RestoreGraphicsState();
-
+		RecreateDevice();
 		return;
 	}
 
 	// check if this is the first time we get the lost device
 	if (deviceLost == false)
 	{
-		deviceLost = true;
-
-		// Store away the current state of the graphics pipeline
-		SaveGraphicsState();
-
-		// unload all resources
-		UnloadResources();
-
-		// Release the default render target 
-		if (pDefaultRenderTarget != 0)
-		{
-			// This must be done after UnloadResources since UnloadResources restores
-			// the default render target
-			pDefaultRenderTarget->Release();
-			pDefaultRenderTarget = 0;
-		}
+		ReleaseDevice();
 	}
 	
 	// se if we can recreate the device
 	if (deviceState == D3DERR_DEVICENOTRESET)
 	{
-		int newDeviceState = pDevice->Reset(&presentationParameters);
-		
-		// if it was not successful, just return and try agian later
-		if (newDeviceState != D3D_OK)
-			return;
-
-		// capture the new default render target
-		pDevice->GetRenderTarget(0, &pDefaultRenderTarget);
-
-		//if it was succesful, reload all resources and set device lost to false
-		UpdateResources();
-
-		// put back the current graphics pipeline states
-		RestoreGraphicsState();
-
-		deviceLost = false;
+		RestoreDevice();
 	}
 
 	// device is lost but can not yet be recreated.
@@ -269,6 +271,61 @@ void mini3d::DX9GraphicsService::HandleLostDevice()
 	}
 }
 
+void mini3d::DX9GraphicsService::RecreateDevice()
+{
+	ReleaseDevice();
+
+	pDevice->Release();
+	pD3D->Release();
+
+	// try to recreate the device
+	// this will throw an error if the driver is broken so there is no need to do that explicitly
+	CreateDevice();
+	UpdateResources();
+
+	// put back the stored graphics pipeline states
+	RestoreGraphicsState();
+}
+
+void mini3d::DX9GraphicsService::ReleaseDevice()
+{
+	deviceLost = true;
+
+	// Store away the current state of the graphics pipeline
+	SaveGraphicsState();
+
+	// unload all resources
+	UnloadResources();
+
+	// Release the default render target 
+	if (pDefaultRenderTarget != 0)
+	{
+		// This must be done after UnloadResources since UnloadResources restores
+		// the default render target
+		pDefaultRenderTarget->Release();
+		pDefaultRenderTarget = 0;
+	}
+}
+
+void mini3d::DX9GraphicsService::RestoreDevice()
+{
+	int newDeviceState = pDevice->Reset(&presentationParameters);
+		
+	// if it was not successful, just return and try agian later
+	if (newDeviceState != D3D_OK)
+		return;
+
+	// capture the new default render target
+	pDevice->GetRenderTarget(0, &pDefaultRenderTarget);
+
+	//if it was succesful, reload all resources and set device lost to false
+	UpdateResources();
+
+	// put back the current graphics pipeline states
+	RestoreGraphicsState();
+
+	deviceLost = false;
+}
 
 // Vertex Declaration Pool
 void mini3d::DX9GraphicsService::PoolVertexDeclaration(const IVertexShader::VertexDeclarationVector& vertexDeclaration)
