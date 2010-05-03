@@ -69,7 +69,7 @@ bool mini3d::DX9RenderTargetTexture::GetDepthTestEnabled(void)
 }
 mini3d::ITexture::WrapStyle mini3d::DX9RenderTargetTexture::GetWrapStyle(void)
 {
-	return WrapStyle::CLAMP;
+	return CLAMP;
 }
 IDirect3DSurface9* mini3d::DX9RenderTargetTexture::GetRenderTargetBuffer(void)
 {

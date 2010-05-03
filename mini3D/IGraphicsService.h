@@ -38,6 +38,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "IVertexBuffer.h"
 #include "IIndexBuffer.h"
 #include "IScreenRenderTarget.h"
+#include "IShaderProgram.h"
 
 namespace mini3d
 {
@@ -66,13 +67,18 @@ public:
 	virtual IIndexBuffer* CreateIndexBuffer(int* pIndices, unsigned int count, const IIndexBuffer::CullMode cullMode = IIndexBuffer::CULL_COUNTERCLOCKWIZE) = 0;
 	virtual IPixelShader* CreatePixelShader(const IPixelShader::ShaderBytes& shaderBytes) = 0;
 	virtual IVertexShader* CreateVertexShader(const IVertexShader::ShaderBytes& shaderBytes, const IVertexShader::VertexDeclarationVector& vertexDeclaration) = 0;
+	virtual IShaderProgram* CreateShaderProgram(IVertexShader* pVertexShader, IPixelShader* pPixelShader) = 0;
 
 	// Pipeline states
-	virtual IPixelShader* GetPixelShader(void) = 0;
-	virtual void SetPixelShader(IPixelShader* pPixelShader) = 0;
 
-	virtual IVertexShader* GetVertexShader(void) = 0;
-	virtual void SetVertexShader(IVertexShader* pVertexShader) = 0;
+	virtual IShaderProgram* GetShaderProgram(void) = 0;
+	virtual void SetShaderProgram(IShaderProgram* pShaderProgram) = 0;
+	
+	//virtual IPixelShader* GetPixelShader(void) = 0;
+	//virtual void SetPixelShader(IPixelShader* pPixelShader) = 0;
+
+	//virtual IVertexShader* GetVertexShader(void) = 0;
+	//virtual void SetVertexShader(IVertexShader* pVertexShader) = 0;
 
 	virtual ITexture* GetTexture(unsigned int index) = 0;
 	virtual void SetTexture(ITexture* pTexture, unsigned int index) = 0;
