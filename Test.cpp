@@ -198,6 +198,8 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 
 	// run the message loop
 	MSG Msg;
+
+	// run the application while the window is shwoing
 	while(true)
 	{
 	    while(GetMessage(&Msg, NULL, 0, 0) > 0)
