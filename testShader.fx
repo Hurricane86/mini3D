@@ -13,7 +13,7 @@ sampler2D texSampler : register(s0) = sampler_state
 struct a2v
 { 
     float4 position   : POSITION;
-    int1   color	    : COLOR;
+    float4 color	  : COLOR;
     float2 tex0       : TEXCOORD0;
 };
 
@@ -21,7 +21,7 @@ struct a2v
 struct v2p
 {
     float4 position    : POSITION;
-    int1   color       : COLOR;
+    float4 color       : COLOR;
     float2 tex0        : TEXCOORD0;
 };
  
@@ -35,7 +35,7 @@ struct p2f
 void vs( in a2v IN, out v2p OUT ) 
 {
     //getting to position to object space
-    OUT.position    = mul(float4(IN.position.xyz, 1.0), ModelViewProj);
+    OUT.position    = mul(IN.position, ModelViewProj);
  	OUT.color = IN.color;
     OUT.tex0 = IN.tex0;
 }

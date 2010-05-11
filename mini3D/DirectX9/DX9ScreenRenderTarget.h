@@ -30,6 +30,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "../IScreenRenderTarget.h"
 #include "DX9GraphicsService.h"
 #include "internal/IDX9Resource.h"
+#include <map>
 
 namespace mini3d
 {
@@ -48,6 +49,8 @@ private:
 	int hWindow;
 	bool depthTestEnabled;
 	Quality quality;
+	static WNDPROC pOrigProc;
+	static std::map<int, DX9ScreenRenderTarget*> windowMap;
 
 	// TODO: Fix this with power of 2 comparison agains width, height...
 	int bufferWidth;
@@ -73,6 +76,8 @@ public:
 	virtual IDepthStencil* GetDepthStencil(void);
 	virtual void Display(void);
 	bool GetIsDirty(void);
+	void SetSize(int width, int height);
+	static LRESULT CALLBACK HookWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 };
 }
 

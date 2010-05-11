@@ -34,7 +34,16 @@ namespace mini3d
 class IVertexShader
 {
 public:
-	enum VertexDataType { POSITION = 0, COLOR = 1, TEXTURECOORDINATE = 2, NORMAL = 3, BINORMAL = 4, TANGENT = 5, BLENDWEIGHT = 6, BLENDINDICES = 7 };
+	enum VertexDataType {	POSITION_FLOAT3 = 0, 
+							POSITION_FLOAT4 = 1, 
+							COLOR_INT = 2, 
+							COLOR_FLOAT4 = 3, 
+							TEXTURECOORDINATE_FLOAT2 = 4, 
+							NORMAL_FLOAT3 = 5, 
+							BINORMAL_FLOAT3 = 6, 
+							TANGENT_FLOAT3 = 7, 
+							BLENDWEIGHT_FLOAT = 8, 
+							BLENDINDICES_FLOAT = 9 };
 	
 	// Typedefs
 	typedef std::vector<int> VertexDeclarationVector;

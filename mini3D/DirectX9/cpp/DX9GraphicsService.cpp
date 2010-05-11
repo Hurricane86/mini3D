@@ -345,6 +345,7 @@ void mini3d::DX9GraphicsService::PoolVertexDeclaration(const IVertexShader::Vert
 	// pool the vertex declaration
 	vertexDeclarationPool[key] = VertexDeclarationContainer(vertexDeclaration, pVertexDeclaration, 1);
 }
+
 void mini3d::DX9GraphicsService::ReleaseVertexDeclaration(const IVertexShader::VertexDeclarationVector& vertexDeclaration)
 {
 	std::string key = CreateVertexDeclarationKey(vertexDeclaration);
@@ -361,7 +362,6 @@ void mini3d::DX9GraphicsService::ReleaseVertexDeclaration(const IVertexShader::V
 		vertexDeclarationPool[key].counter++;
 		return;
 	}
-
 }
 
 // Creates vertex declaration pool key from vertex declaration
@@ -398,21 +398,35 @@ IDirect3DVertexDeclaration9* mini3d::DX9GraphicsService::CreateDX9VertexDeclarat
 		switch (vertexDeclaration[i])
 		{
 				
-		case IVertexShader::POSITION:
+		case IVertexShader::POSITION_FLOAT3:
 			pVertexElements[i].Method = D3DDECLMETHOD_DEFAULT;
 			pVertexElements[i].Type = D3DDECLTYPE_FLOAT3;
 			pVertexElements[i].Usage = D3DDECLUSAGE_POSITION;
 			pVertexElements[i].UsageIndex = positionUsageIndex++;
 			offset += 12;
 			break;
-		case IVertexShader::COLOR:
+		case IVertexShader::POSITION_FLOAT4:
+			pVertexElements[i].Method = D3DDECLMETHOD_DEFAULT;
+			pVertexElements[i].Type = D3DDECLTYPE_FLOAT4;
+			pVertexElements[i].Usage = D3DDECLUSAGE_POSITION;
+			pVertexElements[i].UsageIndex = positionUsageIndex++;
+			offset += 16;
+			break;
+		case IVertexShader::COLOR_INT:
 			pVertexElements[i].Method = D3DDECLMETHOD_DEFAULT;
 			pVertexElements[i].Type = D3DDECLTYPE_D3DCOLOR;
 			pVertexElements[i].Usage = D3DDECLUSAGE_COLOR;
 			pVertexElements[i].UsageIndex = colorUsageIndex++;
 			offset += 4;
 			break;
-		case IVertexShader::TEXTURECOORDINATE:
+		case IVertexShader::COLOR_FLOAT4:
+			pVertexElements[i].Method = D3DDECLMETHOD_DEFAULT;
+			pVertexElements[i].Type = D3DDECLTYPE_FLOAT4;
+			pVertexElements[i].Usage = D3DDECLUSAGE_COLOR;
+			pVertexElements[i].UsageIndex = colorUsageIndex++;
+			offset += 16;
+			break;
+		case IVertexShader::TEXTURECOORDINATE_FLOAT2:
 			pVertexElements[i].Method = D3DDECLMETHOD_DEFAULT;
 			pVertexElements[i].Type = D3DDECLTYPE_FLOAT2;
 			pVertexElements[i].Usage = D3DDECLUSAGE_TEXCOORD;
@@ -518,6 +532,19 @@ int mini3d::DX9GraphicsService::GetVertexShaderVersion()
 
 
 // Graphics Pipeline States ---------------------------------------------------
+
+// Shader Program
+mini3d::IShaderProgram* mini3d::DX9GraphicsService::GetShaderProgram(void)
+{
+	return pCurrentShaderProgram;
+}
+void mini3d::DX9GraphicsService::SetShaderProgram(IShaderProgram* pShaderProgram)
+{
+	SetVertexShader(((DX9ShaderProgram*)pShaderProgram)->pVertexShader);
+	SetPixelShader(((DX9ShaderProgram*)pShaderProgram)->pPixelShader);
+
+	pCurrentShaderProgram = pShaderProgram;
+}
 
 // Pixlel Shader
 mini3d::IPixelShader* mini3d::DX9GraphicsService::GetPixelShader(void)
@@ -746,15 +773,25 @@ void mini3d::DX9GraphicsService::SetVertexBuffer(IVertexBuffer* pVertexBuffer)
 // Shader Parameters
 void mini3d::DX9GraphicsService::SetShaderParameterFloat(unsigned int index, const float* pData, unsigned int count)
 {
-	pDevice->SetVertexShaderConstantF(index, pData, count);
+	pDevice->SetVertexShaderConstantF(index, pData, count / 4);
 }
 void mini3d::DX9GraphicsService::SetShaderParameterInt(unsigned int index, const int* pData, unsigned int count)
 {
 	pDevice->SetVertexShaderConstantI(index, pData, count);
 }
-void mini3d::DX9GraphicsService::SetShaderParameterBool(unsigned int index, const bool* pData, unsigned int count)
+void mini3d::DX9GraphicsService::SetShaderParameterMatrix(unsigned int index, const float* pData, unsigned int rows, unsigned int columns)
 {
-	pDevice->SetVertexShaderConstantB(index, (BOOL*)pData, count);
+	if (rows == 4 && columns == 4)
+	{
+		// transpose the matrix
+		float* matrixTransposed = new float[16];
+		for (int i = 0; i < 16; i++)
+		{
+			matrixTransposed[i] = pData[(i % 4) * 4 + (i / 4)];
+		}
+		pDevice->SetVertexShaderConstantF(index, matrixTransposed, 4);
+		delete[] matrixTransposed;
+	}
 }
 
 
@@ -814,6 +851,10 @@ mini3d::IPixelShader* mini3d::DX9GraphicsService::CreatePixelShader(const IPixel
 mini3d::IVertexShader* mini3d::DX9GraphicsService::CreateVertexShader(const IVertexShader::ShaderBytes& shaderBytes, const IVertexShader::VertexDeclarationVector& vertexDeclaration)
 {
 	return new DX9VertexShader(this, shaderBytes, vertexDeclaration);
+}
+mini3d::IShaderProgram* mini3d::DX9GraphicsService::CreateShaderProgram(IVertexShader* pVertexShader, IPixelShader* pPixelShader)
+{
+	return new DX9ShaderProgram(this, pVertexShader, pPixelShader);
 }
 
 

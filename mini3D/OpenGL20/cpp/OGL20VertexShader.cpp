@@ -126,19 +126,19 @@ void mini3d::OGL20VertexShader::CreateOGL20VertexAttributes()
 		switch (vertexDeclaration_[i])
 		{
 				
-		case IVertexShader::POSITION:
+		case IVertexShader::POSITION_FLOAT4:
 			vertexAttributes[i].normalized = GL_FALSE;
 			vertexAttributes[i].size = 4;
 			vertexAttributes[i].type = GL_FLOAT;
 			offset += 16;
 			break;
-		case IVertexShader::COLOR:
+		case IVertexShader::COLOR_FLOAT4:
 			vertexAttributes[i].normalized = GL_FALSE;
 			vertexAttributes[i].size = 4;
 			vertexAttributes[i].type = GL_FLOAT;
 			offset += 16;
 			break;
-		case IVertexShader::TEXTURECOORDINATE:
+		case IVertexShader::TEXTURECOORDINATE_FLOAT2:
 			vertexAttributes[i].normalized = GL_FALSE;
 			vertexAttributes[i].size = 2;
 			vertexAttributes[i].type = GL_FLOAT;

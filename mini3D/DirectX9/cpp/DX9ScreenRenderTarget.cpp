@@ -28,6 +28,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "../DX9DepthStencil.h"
 #include <d3d9.h>
 
+std::map<int, mini3d::DX9ScreenRenderTarget*> mini3d::DX9ScreenRenderTarget::windowMap;
+WNDPROC mini3d::DX9ScreenRenderTarget::pOrigProc;
+
 mini3d::DX9ScreenRenderTarget::DX9ScreenRenderTarget(DX9GraphicsService* pGraphicsService, unsigned int width, unsigned int height, int hWindow, bool depthTestEnabled, Quality quality) : 
 	pGraphicsService(pGraphicsService), pScreenRenderTarget(0), pDepthStencil(0), quality(quality)
 {
@@ -56,6 +59,11 @@ void mini3d::DX9ScreenRenderTarget::SetScreenRenderTarget(unsigned int width, un
 	this->width = width;
 	this->height = height;
 	this->depthTestEnabled = depthTestEnabled;
+
+	windowMap.insert(std::pair<int, DX9ScreenRenderTarget*>(hWindow, this));
+
+	pOrigProc = (WNDPROC)SetWindowLongPtr((HWND)hWindow, GWL_WNDPROC, (LONG)&HookWndProc);
+
 	this->isDirty = true;
 }
 unsigned int mini3d::DX9ScreenRenderTarget::GetWidth(void)
@@ -93,6 +101,13 @@ mini3d::IDepthStencil*  mini3d::DX9ScreenRenderTarget::GetDepthStencil(void)
 }
 void mini3d::DX9ScreenRenderTarget::LoadResource(void)
 {
+
+	bool setRenderTargetToThis = false;
+
+	if (pGraphicsService->GetRenderTarget() == this)
+		setRenderTargetToThis = true;
+
+
 	/// Allocate buffer on the graphics card and add index data.
 	IDirect3DDevice9* pDevice = pGraphicsService->GetDevice();
 	if (pDevice == 0)
@@ -112,8 +127,8 @@ void mini3d::DX9ScreenRenderTarget::LoadResource(void)
 	{
 		D3DPRESENT_PARAMETERS pp;
 		memcpy(&pp, &pGraphicsService->GetPresentationParameters(), sizeof(D3DPRESENT_PARAMETERS));
-		
-		pGraphicsService->CheckMultisampleFormat(quality, pp.Windowed);
+
+		pGraphicsService->CheckMultisampleFormat(quality, pp.Windowed != 0);
 
 		pp.BackBufferWidth = width;
 		pp.BackBufferHeight = height;
@@ -131,6 +146,10 @@ void mini3d::DX9ScreenRenderTarget::LoadResource(void)
 	bufferHeight = height;
 	hBufferWindow = hWindow;
 	isDirty = false;
+
+	// restore rendertarget if neccessary
+	if (setRenderTargetToThis == true && pGraphicsService->GetRenderTarget() != this)
+		pGraphicsService->SetRenderTarget(this);
 }
 
 void mini3d::DX9ScreenRenderTarget::UnloadResource(void)
@@ -151,4 +170,24 @@ void mini3d::DX9ScreenRenderTarget::UnloadResource(void)
 bool mini3d::DX9ScreenRenderTarget::GetIsDirty(void)
 {
 	return isDirty;
+}
+
+void mini3d::DX9ScreenRenderTarget::SetSize(int width, int height)
+{
+	this->width = width;
+	this->height = height;
+	LoadResource();
+}
+
+LRESULT CALLBACK mini3d::DX9ScreenRenderTarget::HookWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	switch(msg)
+	{
+	case WM_SIZE:
+		DX9ScreenRenderTarget* screenRenderTarget = windowMap.find((int)hwnd)->second;
+		screenRenderTarget->SetSize(LOWORD(lParam), HIWORD(lParam));
+		break;
+	}
+
+	return CallWindowProc(pOrigProc, hwnd, msg, wParam, lParam);
 }

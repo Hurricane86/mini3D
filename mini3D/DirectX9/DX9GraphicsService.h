@@ -41,6 +41,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "DX9IndexBuffer.h"
 #include "DX9PixelShader.h"
 #include "DX9VertexShader.h"
+#include "DX9ShaderProgram.h"
 #include "DX9VertexBuffer.h"
 #include "DX9IndexBuffer.h"
 #include "DX9RenderTargetTexture.h"
@@ -82,6 +83,7 @@ friend class DX9BitmapTexture;
 friend class DX9RenderTargetTexture;
 friend class DX9PixelShader;
 friend class DX9VertexShader;
+friend class DX9ShaderProgram;
 friend class DX9VertexBuffer;
 friend class DX9IndexBuffer;
 friend class DX9DepthStencil;
@@ -109,6 +111,7 @@ private:
 	IPixelShader* pCurrentPixelShader;
 	IVertexShader* pCurrentVertexShader;
 	ITexture** currentITextures;
+	IShaderProgram* pCurrentShaderProgram;
 
 	// Device lost graphics state
 	IRenderTarget* pLostDeviceRenderTarget;
@@ -174,6 +177,7 @@ public:
 	virtual IIndexBuffer* CreateIndexBuffer(int* pIndices,  unsigned int count, const IIndexBuffer::CullMode cullMode = IIndexBuffer::CULL_COUNTERCLOCKWIZE);
 	virtual IPixelShader* CreatePixelShader(const IPixelShader::ShaderBytes& shaderBytes);
 	virtual IVertexShader* CreateVertexShader(const IVertexShader::ShaderBytes& shaderBytes, const IVertexShader::VertexDeclarationVector& vertexDeclaration);
+	virtual IShaderProgram* CreateShaderProgram(mini3d::IVertexShader* pVertexShader, mini3d::IPixelShader* pPixelShader);
 
 	// Pipeline States
 	virtual IPixelShader* GetPixelShader(void);
@@ -181,6 +185,9 @@ public:
 	
 	virtual IVertexShader* GetVertexShader(void);
 	virtual void SetVertexShader(IVertexShader* pVertexShader);
+
+	virtual IShaderProgram* GetShaderProgram(void);
+	virtual void SetShaderProgram(IShaderProgram* ShaderProgram);
 	
 	virtual ITexture* GetTexture(unsigned int index);
 	virtual void SetTexture(ITexture* pTexture, unsigned int index);
@@ -194,7 +201,7 @@ public:
 	// Shader Parameters
 	virtual void SetShaderParameterFloat(unsigned int index, const float* pData, unsigned int count);
 	virtual void SetShaderParameterInt(unsigned int index, const int* pData, unsigned int count);
-	virtual void SetShaderParameterBool(unsigned int index, const bool* pData, unsigned int count);
+	virtual void SetShaderParameterMatrix(unsigned int index, const float* pData, unsigned int rows, unsigned int columns);
 	
 	virtual IIndexBuffer* GetIndexBuffer(void);
 	virtual void SetIndexBuffer(IIndexBuffer* indexBuffer);

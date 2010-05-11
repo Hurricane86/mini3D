@@ -74,13 +74,13 @@ void mini3d::OGL20VertexBuffer::SetVertexDeclaration(const VertexDeclarationVect
 		switch (vertexDeclaration[i])
 		{
 				
-		case IVertexBuffer::POSITION:
+		case IVertexShader::POSITION_FLOAT4:
 			vertexSizeInBytes += 16;
 			break;
-		case IVertexBuffer::COLOR:
+		case IVertexShader::COLOR_FLOAT4:
 			vertexSizeInBytes += 16;
 			break;
-		case IVertexBuffer::TEXTURECOORDINATE:
+		case IVertexShader::TEXTURECOORDINATE_FLOAT2:
 			vertexSizeInBytes += 8;
 			break;
 		}

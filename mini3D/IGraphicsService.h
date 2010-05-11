@@ -95,7 +95,7 @@ public:
 	// Shader Parameters
 	virtual void SetShaderParameterFloat(unsigned int index, const float* pData, unsigned int count) = 0;
 	virtual void SetShaderParameterInt(unsigned int index, const int* pData, unsigned int count) = 0;
-	virtual void SetShaderParameterBool(unsigned int index, const bool* pData, unsigned int count) = 0;
+	virtual void SetShaderParameterMatrix(unsigned int index, const float* pData, unsigned int rows, unsigned int columns) = 0;
 
 	// Drawing
 	virtual void Clear(int color) = 0;

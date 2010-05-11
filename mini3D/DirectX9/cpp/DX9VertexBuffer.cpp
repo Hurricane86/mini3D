@@ -73,13 +73,19 @@ void mini3d::DX9VertexBuffer::SetVertexDeclaration(const VertexDeclarationVector
 		switch (vertexDeclaration[i])
 		{
 				
-		case IVertexBuffer::POSITION:
+		case IVertexShader::POSITION_FLOAT3:
 			vertexSizeInBytes += 12;
 			break;
-		case IVertexBuffer::COLOR:
+		case IVertexShader::POSITION_FLOAT4:
+			vertexSizeInBytes += 16;
+			break;
+		case IVertexShader::COLOR_INT:
 			vertexSizeInBytes += 4;
 			break;
-		case IVertexBuffer::TEXTURECOORDINATE:
+		case IVertexShader::COLOR_FLOAT4:
+			vertexSizeInBytes += 16;
+			break;
+		case IVertexShader::TEXTURECOORDINATE_FLOAT2:
 			vertexSizeInBytes += 8;
 			break;
 		}

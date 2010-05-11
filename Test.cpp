@@ -47,14 +47,14 @@ struct VertexPCT
 	float u,v;
 };
 
-VertexPCT vertices[] = {{-5.0f,-5.0f, 0.0f, 1.0f,  1.0f, 1.0f, 0.5f, 1.0f,  0.0f, 0.0f},
-						{ 5.0f,-5.0f, 0.0f, 1.0f,  1.0f, 1.0f, 0.5f, 1.0f,  1.0f, 0.0f},
-						{ 5.0f, 5.0f, 0.0f, 1.0f,  1.0f, 1.0f, 0.5f, 1.0f,  1.0f, 1.0f},
-						{-5.0f, 5.0f, 0.0f, 1.0f,  1.0f, 1.0f, 0.5f, 1.0f,  0.0f, 1.0f}};
+VertexPCT vertices[] = {{-5.0f,-5.0f, 0.0f, 1.0f,  1.0f, 1.0f, 0.0f, 1.0f,  0.0f, 0.0f},
+						{ 5.0f,-5.0f, 0.0f, 1.0f,  1.0f, 0.0f, 0.0f, 1.0f,  1.0f, 0.0f},
+						{ 5.0f, 5.0f, 0.0f, 1.0f,  0.0f, 1.0f, 1.0f, 1.0f,  1.0f, 1.0f},
+						{-5.0f, 5.0f, 0.0f, 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,  0.0f, 1.0f}};
 
 int indices[] = {0, 1, 2, 0, 2, 3};
 
-mini3d::IPixelShader::ShaderBytes PixelShaderBytesFromFile(wstring file)
+mini3d::IPixelShader::ShaderBytes ShaderBytesFromFile(wstring file)
 {
 	
 	mini3d::IPixelShader::ShaderBytes shaderBytes;
@@ -136,13 +136,15 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 
 	// create a vertex declaration for the vertex buffer and the vertex shader
 	mini3d::IVertexShader::VertexDeclarationVector vd;
-		vd.push_back(mini3d::IVertexShader::POSITION); vd.push_back(mini3d::IVertexShader::COLOR); vd.push_back(mini3d::IVertexShader::TEXTURECOORDINATE);
+		vd.push_back(mini3d::IVertexShader::POSITION_FLOAT4);
+		vd.push_back(mini3d::IVertexShader::COLOR_FLOAT4);
+		vd.push_back(mini3d::IVertexShader::TEXTURECOORDINATE_FLOAT2);
 
 	// create a graphics service
-	mini3d::IGraphicsService* graphics = new mini3d::OGL20GraphicsService(false);
+	mini3d::IGraphicsService* graphics = new mini3d::DX9GraphicsService(false);
 	
 	// create a render target (mini3d does not have a default render target)
-	mini3d::IScreenRenderTarget* pScreenRenderTarget = graphics->CreateScreenRenderTarget(512,512,(int)hWindow, false, mini3d::IScreenRenderTarget::QUALITY_MEDIUM);
+	mini3d::IScreenRenderTarget* pScreenRenderTarget = graphics->CreateScreenRenderTarget(512,512,(int)hWindow, false, mini3d::IScreenRenderTarget::QUALITY_MINIMUM);
 
 	// create index buffer
 	int* pIndices = new int[6];
@@ -162,16 +164,15 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	}
 	mini3d::IBitmapTexture* pTexture = graphics->CreateBitmapTexture(pBitmap, 512, 512);
 
-	// create pixel shader
-	//mini3d::IPixelShader::ShaderBytes shaderBytes = PixelShaderBytesFromFile(L"testPixelShader.fxo");
-	mini3d::IPixelShader::ShaderBytes shaderBytes = PixelShaderBytesFromFile(L"fragmentshader.txt");
-	mini3d::IPixelShader* pPixelShader = graphics->CreatePixelShader(shaderBytes);
-
 	// create vertex shader
-	//mini3d::IVertexShader::ShaderBytes shaderBytes2 = PixelShaderBytesFromFile(L"testVertexShader.fxo");
-	mini3d::IVertexShader::ShaderBytes shaderBytes2 = PixelShaderBytesFromFile(L"vertexshader.txt");
+	mini3d::IVertexShader::ShaderBytes shaderBytes2 = ShaderBytesFromFile(L"vertexshader.hlsl"); 
 	mini3d::IVertexShader* pVertexShader = graphics->CreateVertexShader(shaderBytes2, vd);
 
+	// create pixel shader
+	mini3d::IPixelShader::ShaderBytes shaderBytes = ShaderBytesFromFile(L"pixelshader.hlsl");
+	mini3d::IPixelShader* pPixelShader = graphics->CreatePixelShader(shaderBytes);
+	
+	// create shader program
 	mini3d::IShaderProgram* pShaderProgram = graphics->CreateShaderProgram(pVertexShader, pPixelShader);
 
 	// create a view projection matrix
@@ -190,8 +191,6 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	graphics->SetRenderTarget(pScreenRenderTarget);
 	graphics->SetIndexBuffer(iBuffer);
 	graphics->SetVertexBuffer(vBuffer);
-	//graphics->SetPixelShader(pPixelShader);
-	//graphics->SetVertexShader(pVertexShader);
 	graphics->SetShaderProgram(pShaderProgram);
 	graphics->SetTexture(pTexture, 0);
 
@@ -205,11 +204,12 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 		{
 
 			// set a shader parameter
-			((mini3d::OGL20GraphicsService*)graphics)->SetShaderParameterMatrix(0, &viewProjectionMatrix._11, 4, 4);
-			((mini3d::OGL20GraphicsService*)graphics)->SetShaderParameterInt(1, textureUnit, 1);
-			//graphics->SetShaderParameterFloat(0, &viewProjectionMatrixTranspose._11, 4);
+			graphics->SetShaderParameterMatrix(0, &viewProjectionMatrix._11, 4, 4);
+			graphics->SetShaderParameterInt(1, textureUnit, 1);
+			
 			// clear render target with color
 			graphics->Clear(0xFFDDCCFF);
+			
 			// run the rendering pipeline
 			graphics->Draw();
 			
