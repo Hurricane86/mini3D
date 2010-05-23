@@ -68,6 +68,9 @@ public:
 	virtual bool GetDepthTestEnabled(void);
 	virtual IDepthStencil* GetDepthStencil(void);
 	virtual WrapStyle GetWrapStyle(void);
+	
+	virtual bool GetFullscreenCompatible(void) { return true; };
+	virtual bool GetWindowedCompatible(void) { return true; };
 
 	// IDX9Resource
 	virtual void LoadResource(void);

@@ -47,6 +47,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "DX9RenderTargetTexture.h"
 #include "DX9DepthStencil.h"
 #include "DX9ScreenRenderTarget.h"
+#include "DX9FullscreenRenderTarget.h"
 
 
 namespace mini3d
@@ -88,6 +89,7 @@ friend class DX9VertexBuffer;
 friend class DX9IndexBuffer;
 friend class DX9DepthStencil;
 friend class DX9ScreenRenderTarget;
+friend class DX9FullscreenRenderTarget;
 
 private:
 	
@@ -127,13 +129,17 @@ private:
 	
 	// other variables
 	HWND hWindow;
+	HWND hInternalWindow;
 	IDirect3D9* pD3D;
 	IDirect3DDevice9* pDevice;
 	bool deviceLost;
 	bool isFullscreen;
+	IDX9RenderTarget* pFullscreenRenderTarget;
+	bool defaultDepthStencil;
 
 	//IDirect3DSurface9* pCurrentDepthStencilBuffer;
 	IDirect3DSurface9* pDefaultRenderTarget;
+	IDirect3DSurface9* pDefaultDepthStencilSurface;
 	D3DPRESENT_PARAMETERS presentationParameters;
 
 public:
@@ -171,6 +177,7 @@ public:
 
 	// Create Resources
 	virtual IScreenRenderTarget* CreateScreenRenderTarget(unsigned int width, unsigned int height, int hWindow, bool depthTestEnabled, IScreenRenderTarget::Quality quality);
+	virtual IFullscreenRenderTarget* CreateFullscreenRenderTarget(unsigned int width, unsigned int height, int hWindow, bool depthTestEnabled, IFullscreenRenderTarget::Quality quality);
 	virtual IRenderTargetTexture* CreateRenderTargetTexture(unsigned int width, unsigned int height, bool depthTestEnabled);
 	virtual IBitmapTexture* CreateBitmapTexture(void* pBitmap, unsigned int width, unsigned int height, IBitmapTexture::BitDepth bitDepth = IBitmapTexture::BIT32, ITexture::WrapStyle wrapStyle = ITexture::TILE);
 	virtual IVertexBuffer* CreateVertexBuffer(void* pVertices, unsigned int count, const IVertexBuffer::VertexDeclarationVector& vertexDeclaration);
@@ -227,7 +234,7 @@ private:
 	// INTERNAL HELPER FUNCTIONS ----------------------------------------------
 
 	// Device creation
-	void CreateDevice(void);
+	void CreateDevice();
 	void CreateInternalWindow(void);
 	D3DFORMAT GetCorrectBackBufferFormat(void);
 	D3DFORMAT GetCorrectDepthStencilFormat(void);

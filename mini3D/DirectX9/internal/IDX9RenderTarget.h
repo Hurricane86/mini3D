@@ -44,6 +44,9 @@ public:
 	virtual unsigned int GetWidth(void) = 0;
 	virtual unsigned int GetHeight(void) = 0;
 	virtual bool GetDepthTestEnabled(void) = 0;
+	virtual bool GetFullscreenCompatible(void) = 0;
+	virtual bool GetWindowedCompatible(void) = 0;
+
 	virtual IDepthStencil* GetDepthStencil(void) = 0;
 };
 }

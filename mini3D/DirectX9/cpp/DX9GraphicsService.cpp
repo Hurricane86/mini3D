@@ -30,8 +30,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 // Constructor Destructor -----------------------------------------------------
 
 mini3d::DX9GraphicsService::DX9GraphicsService(bool isFullscreen) :
-	isFullscreen(isFullscreen),
-	pD3D(0), pDevice(0),	pCurrentDepthStencil(0), isDrawingScene(false), deviceLost(true), pCurrentRenderTargetBuffer(0), lostDeviceCurrentITextures(0), currentITextures(0)
+	pD3D(0), pDevice(0), pCurrentDepthStencil(0), isDrawingScene(false), deviceLost(true), pCurrentRenderTargetBuffer(0), lostDeviceCurrentITextures(0), currentITextures(0), pFullscreenRenderTarget(0), isFullscreen(false) 
 {
 	CreateInternalWindow();
 	CreateDevice();
@@ -69,7 +68,7 @@ D3DPRESENT_PARAMETERS mini3d::DX9GraphicsService::GetPresentationParameters(void
 
 // Private helper methods -----------------------------------------------------
 
-void mini3d::DX9GraphicsService::CreateDevice(void)
+void mini3d::DX9GraphicsService::CreateDevice()
 {
 	if (pD3D == 0)
 		pD3D=Direct3DCreate9(D3D_SDK_VERSION);
@@ -100,24 +99,41 @@ void mini3d::DX9GraphicsService::CreateDevice(void)
 
 	// set the presentation parameters
 	D3DPRESENT_PARAMETERS d3dpp;
+	ZeroMemory(&d3dpp, sizeof(d3dpp));
+
+	IScreenRenderTarget::Quality quality;
+	if (isFullscreen == true)
+	{
+		// safe because only DX9FullscreenRenderTargets are assigned to pFullscreenRenderTarget
+		DX9FullscreenRenderTarget* pDX9FullscreenRenderTarget = dynamic_cast<DX9FullscreenRenderTarget*>(pFullscreenRenderTarget);
+		quality = (IScreenRenderTarget::Quality)pDX9FullscreenRenderTarget->GetQuality();
+		d3dpp.BackBufferWidth = pFullscreenRenderTarget->GetWidth();
+		d3dpp.BackBufferHeight = pFullscreenRenderTarget->GetHeight();
+		d3dpp.Windowed = false;
+		d3dpp.EnableAutoDepthStencil = pDX9FullscreenRenderTarget->GetDepthTestEnabled();
+	}
+	else
+	{
+		quality = IScreenRenderTarget::QUALITY_MINIMUM;
+		d3dpp.BackBufferWidth = 1; // Default backbuffer should be 1x1 and is never used
+		d3dpp.BackBufferHeight = 1; // Default backbuffer should be 1x1 and is never used
+		d3dpp.Windowed = true;
+		d3dpp.EnableAutoDepthStencil = false; // we manage swap chains manually
+	}
 
 	// TODO: need to set back buffer format fist
-	IScreenRenderTarget::Quality quality = IScreenRenderTarget::QUALITY_MINIMUM;
+
 	CheckMultisampleFormat(quality, false);
 
-	ZeroMemory(&d3dpp, sizeof(d3dpp));
-	d3dpp.BackBufferWidth = 1; // Default backbuffer should be 1x1 and is never used
-	d3dpp.BackBufferHeight = 1; // Default backbuffer should be 1x1 and is never used
 	d3dpp.BackBufferCount = 1;	// TODO: More than one backbuffer?? What is it good for?
 	d3dpp.BackBufferFormat = GetCorrectBackBufferFormat(); 
 	d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
-	d3dpp.Windowed = !isFullscreen;
-	d3dpp.EnableAutoDepthStencil = false; // we manage swap chains manually
 	d3dpp.AutoDepthStencilFormat = GetCorrectDepthStencilFormat(); 
 	d3dpp.FullScreen_RefreshRateInHz = D3DPRESENT_RATE_DEFAULT;
 	d3dpp.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
 	d3dpp.MultiSampleType = FromMultisampleFormat(quality);
 	d3dpp.MultiSampleQuality = 0;
+
 
 	presentationParameters = d3dpp;
 
@@ -138,6 +154,16 @@ void mini3d::DX9GraphicsService::CreateDevice(void)
 
 	// store the default back buffer so we can put it back when we reset the device
 	pDevice->GetRenderTarget(0, &pDefaultRenderTarget);
+	
+	// set the default depht stencil
+	if (isFullscreen == true && pFullscreenRenderTarget->GetDepthTestEnabled() == true)
+	{
+		pDevice->GetDepthStencilSurface(&pDefaultDepthStencilSurface);
+	}
+	else
+	{
+		pDefaultDepthStencilSurface = 0;
+	}
 }
 
 LRESULT CALLBACK DX9WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -182,6 +208,7 @@ void mini3d::DX9GraphicsService::CreateInternalWindow(void)
     }
 
 	hWindow = CreateWindowEx(WS_EX_CLIENTEDGE, L"DX9InternalWindowClass", L"HiddenWindow", 0, CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, HWND_MESSAGE, 0, hInstance, 0);
+	hInternalWindow = hWindow;
 }
 
 // Resource Management
@@ -276,7 +303,10 @@ void mini3d::DX9GraphicsService::RecreateDevice()
 	ReleaseDevice();
 
 	pDevice->Release();
+	pDevice = 0;
+
 	pD3D->Release();
+	pD3D = 0;
 
 	// try to recreate the device
 	// this will throw an error if the driver is broken so there is no need to do that explicitly
@@ -668,13 +698,14 @@ void mini3d::DX9GraphicsService::SetRenderTarget(IRenderTarget* pRenderTarget)
 	if (pRenderTarget == pCurrentRenderTarget)
 		return;
 
-	// release the old render target!
-	if (pCurrentRenderTargetBuffer != 0)
-	{
-		pCurrentRenderTargetBuffer->Release();
-	}
+	// TODO: DO this internally in the resources instead
+	//// release the old render target!
+	//if (pCurrentRenderTargetBuffer != 0)
+	//{
+	//	pCurrentRenderTargetBuffer->Release();
+	//}
 
-	if (pRenderTarget == 0)
+	if (pRenderTarget == 0  || pRenderTarget == pFullscreenRenderTarget)
 	{
 		pDevice->SetRenderTarget(0,  pDefaultRenderTarget);
 		SetDepthStencil(0);
@@ -684,6 +715,20 @@ void mini3d::DX9GraphicsService::SetRenderTarget(IRenderTarget* pRenderTarget)
 	{
 		// this cast is "unfailable" (not exception caught). Whoever inherits from IRenderTarget must also inherit from IDX9RenderTarget
 		IDX9RenderTarget* pDX9RenderTarget = dynamic_cast<IDX9RenderTarget*>(pRenderTarget);
+		DX9FullscreenRenderTarget* pDX9FullscreenRenderTarget = dynamic_cast<DX9FullscreenRenderTarget*>(pRenderTarget);
+
+		// if the rendertarget is incompatible with the current device screen mode...
+		if ((pDX9RenderTarget->GetWindowedCompatible() && isFullscreen) || (pDX9RenderTarget->GetFullscreenCompatible() && !isFullscreen))
+		{
+			// recreate the device to fit this screen mode
+			pCurrentRenderTarget = pRenderTarget;
+			isFullscreen = pDX9RenderTarget->GetFullscreenCompatible();
+			pFullscreenRenderTarget = isFullscreen ? pDX9RenderTarget : 0;
+			hWindow = isFullscreen ? (HWND)pDX9FullscreenRenderTarget->GetWindow() : hInternalWindow;
+			RecreateDevice();
+			return;
+		}
+
 	
 		IDirect3DSurface9* pRenderTargetBuffer = (IDirect3DSurface9*)pDX9RenderTarget->GetRenderTargetBuffer();
 		pDevice->SetRenderTarget(0, pRenderTargetBuffer);
@@ -827,6 +872,10 @@ void mini3d::DX9GraphicsService::Clear(int color)
 mini3d::IScreenRenderTarget* mini3d::DX9GraphicsService::CreateScreenRenderTarget(unsigned int width, unsigned int height, int hWindow, bool depthTestEnabled, IScreenRenderTarget::Quality quality)
 {
 	return new DX9ScreenRenderTarget(this, width, height, hWindow, depthTestEnabled, quality);
+}
+mini3d::IFullscreenRenderTarget* mini3d::DX9GraphicsService::CreateFullscreenRenderTarget(unsigned int width, unsigned int height, int hWindow, bool depthTestEnabled, IFullscreenRenderTarget::Quality quality)
+{
+	return new DX9FullscreenRenderTarget(this, width, height, hWindow, depthTestEnabled, quality);
 }
 mini3d::IRenderTargetTexture* mini3d::DX9GraphicsService::CreateRenderTargetTexture(unsigned int width, unsigned int height, bool depthTestEnabled)
 {

@@ -145,6 +145,7 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	
 	// create a render target (mini3d does not have a default render target)
 	mini3d::IScreenRenderTarget* pScreenRenderTarget = graphics->CreateScreenRenderTarget(512,512,(int)hWindow, false, mini3d::IScreenRenderTarget::QUALITY_MINIMUM);
+	//mini3d::IFullscreenRenderTarget* pScreenRenderTarget = graphics->CreateFullscreenRenderTarget(1280,800,(int)hWindow, false, mini3d::IFullscreenRenderTarget::QUALITY_MINIMUM);
 
 	// create index buffer
 	int* pIndices = new int[6];

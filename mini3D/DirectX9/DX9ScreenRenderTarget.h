@@ -77,6 +77,10 @@ public:
 	virtual void Display(void);
 	bool GetIsDirty(void);
 	void SetSize(int width, int height);
+
+	virtual bool GetFullscreenCompatible(void) { return false; };
+	virtual bool GetWindowedCompatible(void) { return true; };
+
 	static LRESULT CALLBACK HookWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 };
 }

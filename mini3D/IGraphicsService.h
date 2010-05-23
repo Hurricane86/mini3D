@@ -38,6 +38,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "IVertexBuffer.h"
 #include "IIndexBuffer.h"
 #include "IScreenRenderTarget.h"
+#include "IFullscreenRenderTarget.h"
 #include "IShaderProgram.h"
 
 namespace mini3d
@@ -61,6 +62,7 @@ public:
 
 	// Create Resources
 	virtual IScreenRenderTarget* CreateScreenRenderTarget(unsigned int width, unsigned int height, int hWindow, bool depthTestEnabled, IScreenRenderTarget::Quality quality) = 0;
+	virtual IFullscreenRenderTarget* CreateFullscreenRenderTarget(unsigned int width, unsigned int height, int hWindow, bool depthTestEnabled, IFullscreenRenderTarget::Quality quality) = 0;
 	virtual IRenderTargetTexture* CreateRenderTargetTexture(unsigned int width, unsigned int height, bool depthTestEnabled) = 0;
 	virtual IBitmapTexture* CreateBitmapTexture(void* pBitmap, unsigned int width, unsigned int height, IBitmapTexture::BitDepth bitDepth = IBitmapTexture::BIT32, ITexture::WrapStyle wrapStyle = ITexture::TILE) = 0;
 	virtual IVertexBuffer* CreateVertexBuffer(void* pVertices, unsigned int count, const IVertexBuffer::VertexDeclarationVector& vertexDeclaration) = 0;
