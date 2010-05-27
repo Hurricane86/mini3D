@@ -35,6 +35,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <math.h>
 
 using namespace std;
 
@@ -47,12 +48,17 @@ struct VertexPCT
 	float u,v;
 };
 
-VertexPCT vertices[] = {{-5.0f,-5.0f, 0.0f, 1.0f,  1.0f, 1.0f, 0.0f, 1.0f,  0.0f, 0.0f},
-						{ 5.0f,-5.0f, 0.0f, 1.0f,  1.0f, 0.0f, 0.0f, 1.0f,  1.0f, 0.0f},
-						{ 5.0f, 5.0f, 0.0f, 1.0f,  0.0f, 1.0f, 1.0f, 1.0f,  1.0f, 1.0f},
-						{-5.0f, 5.0f, 0.0f, 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,  0.0f, 1.0f}};
+VertexPCT vertices[] = {{-5.0f,-5.0f, 5.0f, 1.0f,  1.0f, 1.0f, 0.0f, 1.0f,  0.0f, 0.0f},
+						{ 5.0f,-5.0f, 5.0f, 1.0f,  1.0f, 0.0f, 0.0f, 1.0f,  0.99f, 0.0f},
+						{ 5.0f, 5.0f, 5.0f, 1.0f,  0.0f, 1.0f, 1.0f, 1.0f,  0.99f, 0.99f},
+						{-5.0f, 5.0f, 5.0f, 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,  0.0f, 0.99f},
+						
+						{-5.0f,-5.0f, -5.0f, 1.0f,  1.0f, 1.0f, 0.0f, 1.0f,  0.0f, 0.0f},
+						{ 5.0f,-5.0f, -5.0f, 1.0f,  1.0f, 0.0f, 0.0f, 1.0f,  0.99f, 0.0f},
+						{ 5.0f, 5.0f, -5.0f, 1.0f,  0.0f, 1.0f, 1.0f, 1.0f,  0.99f, 0.99f},
+						{-5.0f, 5.0f, -5.0f, 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,  0.0f, 0.99f}};
 
-int indices[] = {0, 1, 2, 0, 2, 3};
+int indices[] = {0, 1, 2, 0, 2, 3,   4, 0, 3, 4, 3, 7,  5, 4, 7, 5, 7, 6,  1, 5, 6, 1, 6, 2,  1, 0, 4, 1, 4, 5,  3, 2, 6, 3, 6, 7};
 
 mini3d::IPixelShader::ShaderBytes ShaderBytesFromFile(wstring file)
 {
@@ -147,15 +153,18 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	mini3d::IScreenRenderTarget* pScreenRenderTarget = graphics->CreateScreenRenderTarget(512,512,(int)hWindow, false, mini3d::IScreenRenderTarget::QUALITY_MINIMUM);
 	//mini3d::IFullscreenRenderTarget* pScreenRenderTarget = graphics->CreateFullscreenRenderTarget(1280,800,(int)hWindow, false, mini3d::IFullscreenRenderTarget::QUALITY_MINIMUM);
 
+	mini3d::IRenderTargetTexture* pRenderTargetTexture = graphics->CreateRenderTargetTexture(512, 512, true);
+	
+
 	// create index buffer
-	int* pIndices = new int[6];
+	int* pIndices = new int[36];
 	memcpy(pIndices, &indices, sizeof(indices));
-	mini3d::IIndexBuffer* iBuffer = graphics->CreateIndexBuffer(pIndices, 6, mini3d::IIndexBuffer::CULL_NONE);
+	mini3d::IIndexBuffer* iBuffer = graphics->CreateIndexBuffer(pIndices, 36, mini3d::IIndexBuffer::CULL_NONE);
 
 	// create vertex buffer
-	VertexPCT* pVertices = new VertexPCT[4];
+	VertexPCT* pVertices = new VertexPCT[8];
 	memcpy(pVertices, &vertices, sizeof(vertices));
-	mini3d::IVertexBuffer* vBuffer = graphics->CreateVertexBuffer(pVertices, 4, vd);
+	mini3d::IVertexBuffer* vBuffer = graphics->CreateVertexBuffer(pVertices, 8, vd);
 	
 	// create texture
 	int* pBitmap = new int[512 * 512 * 4];
@@ -181,24 +190,24 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	D3DXMATRIX viewMatrix;
 	D3DXMATRIX projectionMatrix;
 		
-	D3DXMatrixLookAtLH(&viewMatrix, &Vector3(0,2,20), &Vector3(0,0,0), &Vector3(0,-1,0));
+	D3DXMatrixLookAtLH(&viewMatrix, &Vector3(10, -8, 30), &Vector3(0,0,0), &Vector3(0,-1,0));
 	D3DXMatrixPerspectiveFovLH(&projectionMatrix, (float)(3.1415f / 4.0f), 1, 40.0f / 1000.0f, 40.0f);
 
 	D3DXMATRIX viewProjectionMatrix = viewMatrix * projectionMatrix;
 	D3DXMATRIX viewProjectionMatrixTranspose;
 	D3DXMatrixTranspose(&viewProjectionMatrixTranspose, &viewProjectionMatrix);
 
-		// set render prarameters
-	graphics->SetRenderTarget(pScreenRenderTarget);
+	// set render prarameters
 	graphics->SetIndexBuffer(iBuffer);
 	graphics->SetVertexBuffer(vBuffer);
 	graphics->SetShaderProgram(pShaderProgram);
-	graphics->SetTexture(pTexture, 0);
 
 	int* textureUnit = new int(0);
 
 	// run the message loop
 	MSG Msg;
+	
+	double frame = 0;
 
 	// run the application while the window is shwoing
 	while(true)
@@ -206,22 +215,46 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	    while(GetMessage(&Msg, NULL, 0, 0) > 0)
 		{
 
+			// update camera
+			D3DXMatrixLookAtLH(&viewMatrix, &Vector3(20 * cos(frame), -8, 25 * sin(frame)), &Vector3(0,0,0), &Vector3(0,-1,0));
+			D3DXMatrixPerspectiveFovLH(&projectionMatrix, (float)(3.1415f / 4.0f), 1, 40.0f / 1000.0f, 40.0f);
+
+			D3DXMATRIX viewProjectionMatrix = viewMatrix * projectionMatrix;
+			D3DXMATRIX viewProjectionMatrixTranspose;
+			D3DXMatrixTranspose(&viewProjectionMatrixTranspose, &viewProjectionMatrix);
+
 			// set a shader parameter
 			graphics->SetShaderParameterMatrix(0, &viewProjectionMatrix._11, 4, 4);
 			graphics->SetShaderParameterInt(1, textureUnit, 1);
 			
+			// set up the scene with the renderTargetTexture
+			graphics->SetRenderTarget(pRenderTargetTexture);
+			graphics->SetTexture(pTexture, 0);
+
 			// clear render target with color
-			graphics->Clear(0xFFDDCCFF);
-			
-			// run the rendering pipeline
+			graphics->Clear(0x55FF55FF);
+
+			// draw the scene to the renderTargetTexture
 			graphics->Draw();
 			
+			graphics->SetRenderTarget(pScreenRenderTarget);
+			graphics->SetTexture(pRenderTargetTexture, 0);
+
+			// clear render target with color
+			graphics->Clear(0xFFFFFFFF);
+
+			// Draw the scene to the screenRenderTarget
+			graphics->Draw();
+
 			// do a flip
 			pScreenRenderTarget->Display();
 
 			// windows message stuff
 			TranslateMessage(&Msg);
 			DispatchMessage(&Msg);
+
+			// update frame
+			frame += 0.01;
 		}
 
 		delete vBuffer;

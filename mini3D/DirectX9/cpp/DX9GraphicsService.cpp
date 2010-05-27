@@ -30,7 +30,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 // Constructor Destructor -----------------------------------------------------
 
 mini3d::DX9GraphicsService::DX9GraphicsService(bool isFullscreen) :
-	pD3D(0), pDevice(0), pCurrentDepthStencil(0), isDrawingScene(false), deviceLost(true), pCurrentRenderTargetBuffer(0), lostDeviceCurrentITextures(0), currentITextures(0), pFullscreenRenderTarget(0), isFullscreen(false) 
+pD3D(0), pDevice(0), pCurrentDepthStencil(0), isDrawingScene(false), deviceLost(true), pCurrentRenderTargetBuffer(0), lostDeviceCurrentITextures(0), currentITextures(0), pFullscreenRenderTarget(0), isFullscreen(false), pCurrentRenderTarget(0) 
 {
 	CreateInternalWindow();
 	CreateDevice();
@@ -718,7 +718,7 @@ void mini3d::DX9GraphicsService::SetRenderTarget(IRenderTarget* pRenderTarget)
 		DX9FullscreenRenderTarget* pDX9FullscreenRenderTarget = dynamic_cast<DX9FullscreenRenderTarget*>(pRenderTarget);
 
 		// if the rendertarget is incompatible with the current device screen mode...
-		if ((pDX9RenderTarget->GetWindowedCompatible() && isFullscreen) || (pDX9RenderTarget->GetFullscreenCompatible() && !isFullscreen))
+		if ((isFullscreen == false && pDX9RenderTarget->GetWindowedCompatible() == false) || (isFullscreen == true && pDX9RenderTarget->GetFullscreenCompatible() == false))
 		{
 			// recreate the device to fit this screen mode
 			pCurrentRenderTarget = pRenderTarget;

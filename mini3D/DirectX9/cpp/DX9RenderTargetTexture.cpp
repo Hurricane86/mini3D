@@ -29,7 +29,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include <d3d9.h>
 
 mini3d::DX9RenderTargetTexture::DX9RenderTargetTexture(DX9GraphicsService* pGraphicsService, unsigned int width, unsigned int height, bool depthTestEnabled) : 
-	pGraphicsService(pGraphicsService), pDepthStencil(0)
+	pGraphicsService(pGraphicsService), pDepthStencil(0), pRenderTarget(0)
 {
 	SetRenderTarget(width, height, depthTestEnabled);
 	LoadResource();	
