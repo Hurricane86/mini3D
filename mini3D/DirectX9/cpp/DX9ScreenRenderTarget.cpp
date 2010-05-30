@@ -32,7 +32,7 @@ std::map<int, mini3d::DX9ScreenRenderTarget*> mini3d::DX9ScreenRenderTarget::win
 WNDPROC mini3d::DX9ScreenRenderTarget::pOrigProc;
 
 mini3d::DX9ScreenRenderTarget::DX9ScreenRenderTarget(DX9GraphicsService* pGraphicsService, unsigned int width, unsigned int height, int hWindow, bool depthTestEnabled, Quality quality) : 
-	pGraphicsService(pGraphicsService), pScreenRenderTarget(0), pDepthStencil(0), quality(quality)
+	pGraphicsService(pGraphicsService), pScreenRenderTarget(0), pDepthStencil(0), quality(quality), depthTestEnabled(depthTestEnabled)
 {
 	if (depthTestEnabled == true)
 	{
@@ -91,9 +91,7 @@ void mini3d::DX9ScreenRenderTarget::Display(void)
 }
 IDirect3DSurface9*  mini3d::DX9ScreenRenderTarget::GetRenderTargetBuffer(void)
 {
-	IDirect3DSurface9* pRenderSurface;
-	pScreenRenderTarget->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &pRenderSurface);
-	return pRenderSurface;
+	return pRenderTargetSurface;
 }
 mini3d::IDepthStencil*  mini3d::DX9ScreenRenderTarget::GetDepthStencil(void)
 {
@@ -106,7 +104,6 @@ void mini3d::DX9ScreenRenderTarget::LoadResource(void)
 
 	if (pGraphicsService->GetRenderTarget() == this)
 		setRenderTargetToThis = true;
-
 
 	/// Allocate buffer on the graphics card and add index data.
 	IDirect3DDevice9* pDevice = pGraphicsService->GetDevice();
@@ -140,6 +137,9 @@ void mini3d::DX9ScreenRenderTarget::LoadResource(void)
 			isDirty = true;
 			return;
 		}
+
+		// store the rendertargetsurface to avoid reference counting
+		pScreenRenderTarget->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &pRenderTargetSurface);
 	}
 
 	bufferWidth = width;
@@ -150,6 +150,7 @@ void mini3d::DX9ScreenRenderTarget::LoadResource(void)
 	// restore rendertarget if neccessary
 	if (setRenderTargetToThis == true && pGraphicsService->GetRenderTarget() != this)
 		pGraphicsService->SetRenderTarget(this);
+
 }
 
 void mini3d::DX9ScreenRenderTarget::UnloadResource(void)
@@ -159,6 +160,10 @@ void mini3d::DX9ScreenRenderTarget::UnloadResource(void)
 		// if we are removing the current render target, restore the default render target first
 		if (pGraphicsService->GetRenderTarget() == this)
 			pGraphicsService->SetRenderTarget(0);
+
+		pRenderTargetSurface->Release();
+		pRenderTargetSurface->Release();
+		pRenderTargetSurface = 0;
 
 		pScreenRenderTarget->Release();
 		pScreenRenderTarget = 0;
@@ -177,6 +182,12 @@ void mini3d::DX9ScreenRenderTarget::SetSize(int width, int height)
 	this->width = width;
 	this->height = height;
 	LoadResource();
+	
+	if (depthTestEnabled == true)
+	{
+		// TODO: this needs to be implemented in IDepthStencil!!
+		// pDepthStencil->SetSize(width, height);
+	}
 }
 
 LRESULT CALLBACK mini3d::DX9ScreenRenderTarget::HookWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)

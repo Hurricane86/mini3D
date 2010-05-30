@@ -698,13 +698,6 @@ void mini3d::DX9GraphicsService::SetRenderTarget(IRenderTarget* pRenderTarget)
 	if (pRenderTarget == pCurrentRenderTarget)
 		return;
 
-	// TODO: DO this internally in the resources instead
-	//// release the old render target!
-	//if (pCurrentRenderTargetBuffer != 0)
-	//{
-	//	pCurrentRenderTargetBuffer->Release();
-	//}
-
 	if (pRenderTarget == 0  || pRenderTarget == pFullscreenRenderTarget)
 	{
 		pDevice->SetRenderTarget(0,  pDefaultRenderTarget);
@@ -735,6 +728,10 @@ void mini3d::DX9GraphicsService::SetRenderTarget(IRenderTarget* pRenderTarget)
 	
 		if (pRenderTarget->GetDepthTestEnabled() == true)
 			SetDepthStencil(pDX9RenderTarget->GetDepthStencil());
+		else if (pCurrentDepthStencil != 0)
+		{
+			SetDepthStencil(0);
+		}
 
 		pCurrentRenderTargetBuffer = pRenderTargetBuffer; 
 	}

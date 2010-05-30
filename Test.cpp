@@ -23,13 +23,21 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
+#define NOMINMAX
+
+#include "mini3d/utilities/math3d.h"
+#include "mini3d/utilities/BinaryFileReader.h"
+
+#include <Eigen/Core>
+#include <eigen/src/Core/Matrix.h>
+#include <Eigen/Geometry>
 
 #include "d3d9.h"
 #include <d3dx9.h>
 
-#include "mini3D/IGraphicsService.h"
-#include "mini3D/DirectX9/DX9GraphicsService.h"
-#include "mini3D/OpenGL20/OGL20GraphicsService.h"
+#include "mini3d/IGraphicsService.h"
+#include "mini3d/DirectX9/DX9GraphicsService.h"
+#include "mini3d/OpenGL20/OGL20GraphicsService.h"
 
 #include <iostream>
 #include <fstream>
@@ -38,46 +46,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include <math.h>
 
 using namespace std;
-
+USING_PART_OF_NAMESPACE_EIGEN
 #define Vector3 D3DXVECTOR3
-
-struct VertexPCT
-{
-	float x,y,z,w;
-	float r,g,b,a;
-	float u,v;
-};
-
-VertexPCT vertices[] = {{-5.0f,-5.0f, 5.0f, 1.0f,  1.0f, 1.0f, 0.0f, 1.0f,  0.0f, 0.0f},
-						{ 5.0f,-5.0f, 5.0f, 1.0f,  1.0f, 0.0f, 0.0f, 1.0f,  0.99f, 0.0f},
-						{ 5.0f, 5.0f, 5.0f, 1.0f,  0.0f, 1.0f, 1.0f, 1.0f,  0.99f, 0.99f},
-						{-5.0f, 5.0f, 5.0f, 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,  0.0f, 0.99f},
-						
-						{-5.0f,-5.0f, -5.0f, 1.0f,  1.0f, 1.0f, 0.0f, 1.0f,  0.0f, 0.0f},
-						{ 5.0f,-5.0f, -5.0f, 1.0f,  1.0f, 0.0f, 0.0f, 1.0f,  0.99f, 0.0f},
-						{ 5.0f, 5.0f, -5.0f, 1.0f,  0.0f, 1.0f, 1.0f, 1.0f,  0.99f, 0.99f},
-						{-5.0f, 5.0f, -5.0f, 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,  0.0f, 0.99f}};
-
-int indices[] = {0, 1, 2, 0, 2, 3,   4, 0, 3, 4, 3, 7,  5, 4, 7, 5, 7, 6,  1, 5, 6, 1, 6, 2,  1, 0, 4, 1, 4, 5,  3, 2, 6, 3, 6, 7};
-
-mini3d::IPixelShader::ShaderBytes ShaderBytesFromFile(wstring file)
-{
-	
-	mini3d::IPixelShader::ShaderBytes shaderBytes;
-
-	fstream fileStream(file.c_str(), ios_base::binary | ios_base::in);
-	if (fileStream)
-	{
-		fileStream.seekg(0, ios::end);
-		long fileSize = long(fileStream.tellg()); // pretty safe downcast since shader files will not be gazillions of bytes long
-		fileStream.seekg(0, ios::beg);
-
-		shaderBytes.resize(fileSize);
-		fileStream.read(&shaderBytes[0], fileSize);
-		fileStream.close();
-	}
-	return shaderBytes;
-}
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -111,7 +81,7 @@ HWND createWindow(void)
     wc.hCursor       = LoadCursor(NULL, IDC_ARROW);
     wc.hbrBackground = (HBRUSH)(COLOR_WINDOW+1);
     wc.lpszMenuName  = NULL;
-    wc.lpszClassName = L"OpenGL";
+    wc.lpszClassName = L"mini3d";
     wc.hIconSm       = LoadIcon(NULL, IDI_APPLICATION);
 
     if(!RegisterClassEx(&wc))
@@ -124,7 +94,7 @@ HWND createWindow(void)
 
 	HWND hWindow = CreateWindowEx(
         WS_EX_CLIENTEDGE,
-        L"OpenGL",
+        L"mini3d",
         L"The title of my window",
         WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT, CW_USEDEFAULT, 512, 512,
@@ -133,6 +103,20 @@ HWND createWindow(void)
 	return hWindow;
 }
 
+struct VertexPCT { float x,y,z,w; float r,g,b,a;	float u,v; };
+
+VertexPCT vertices[] = {{-5.0f,-5.0f, 5.0f, 1.0f,  1.0f, 1.0f, 0.0f, 1.0f,  0.0f, 0.0f},
+						{ 5.0f,-5.0f, 5.0f, 1.0f,  1.0f, 0.0f, 0.0f, 1.0f,  0.99f, 0.0f},
+						{ 5.0f, 5.0f, 5.0f, 1.0f,  0.0f, 1.0f, 1.0f, 1.0f,  0.99f, 0.99f},
+						{-5.0f, 5.0f, 5.0f, 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,  0.0f, 0.99f},
+						
+						{-5.0f,-5.0f, -5.0f, 1.0f,  1.0f, 1.0f, 0.0f, 1.0f,  0.0f, 0.0f},
+						{ 5.0f,-5.0f, -5.0f, 1.0f,  1.0f, 0.0f, 0.0f, 1.0f,  0.99f, 0.0f},
+						{ 5.0f, 5.0f, -5.0f, 1.0f,  0.0f, 1.0f, 1.0f, 1.0f,  0.99f, 0.99f},
+						{-5.0f, 5.0f, -5.0f, 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,  0.0f, 0.99f}};
+
+int indices[] = {0, 1, 2, 0, 2, 3,   4, 0, 3, 4, 3, 7,  5, 4, 7, 5, 7, 6,  1, 5, 6, 1, 6, 2,  1, 0, 4, 1, 4, 5,  3, 2, 6, 3, 6, 7};
+
 INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 {
 	// create a window
@@ -140,97 +124,82 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 		ShowWindow(hWindow, SW_SHOW);
 		UpdateWindow(hWindow);
 
+	// create a graphics service
+	mini3d::IGraphicsService* graphics = new mini3d::DX9GraphicsService(false);
+	
+	// create a render target (mini3d does not have a default render target)
+	mini3d::IScreenRenderTarget* pScreenRenderTarget = graphics->CreateScreenRenderTarget(512,512,(int)hWindow, true, mini3d::IScreenRenderTarget::QUALITY_MINIMUM);
+	//mini3d::IFullscreenRenderTarget* pScreenRenderTarget = graphics->CreateFullscreenRenderTarget(1280,800,(int)hWindow, false, mini3d::IFullscreenRenderTarget::QUALITY_MINIMUM);
+
+	// Create a render target texture
+	mini3d::IRenderTargetTexture* pRenderTargetTexture = graphics->CreateRenderTargetTexture(512, 512, true);
+
+	// create index buffer
+	mini3d::IIndexBuffer* iBuffer = graphics->CreateIndexBuffer(indices, 36, mini3d::IIndexBuffer::CULL_NONE);
+
 	// create a vertex declaration for the vertex buffer and the vertex shader
 	mini3d::IVertexShader::VertexDeclarationVector vd;
 		vd.push_back(mini3d::IVertexShader::POSITION_FLOAT4);
 		vd.push_back(mini3d::IVertexShader::COLOR_FLOAT4);
 		vd.push_back(mini3d::IVertexShader::TEXTURECOORDINATE_FLOAT2);
 
-	// create a graphics service
-	mini3d::IGraphicsService* graphics = new mini3d::DX9GraphicsService(false);
-	
-	// create a render target (mini3d does not have a default render target)
-	mini3d::IScreenRenderTarget* pScreenRenderTarget = graphics->CreateScreenRenderTarget(512,512,(int)hWindow, false, mini3d::IScreenRenderTarget::QUALITY_MINIMUM);
-	//mini3d::IFullscreenRenderTarget* pScreenRenderTarget = graphics->CreateFullscreenRenderTarget(1280,800,(int)hWindow, false, mini3d::IFullscreenRenderTarget::QUALITY_MINIMUM);
-
-	mini3d::IRenderTargetTexture* pRenderTargetTexture = graphics->CreateRenderTargetTexture(512, 512, true);
-	
-
-	// create index buffer
-	int* pIndices = new int[36];
-	memcpy(pIndices, &indices, sizeof(indices));
-	mini3d::IIndexBuffer* iBuffer = graphics->CreateIndexBuffer(pIndices, 36, mini3d::IIndexBuffer::CULL_NONE);
-
 	// create vertex buffer
-	VertexPCT* pVertices = new VertexPCT[8];
-	memcpy(pVertices, &vertices, sizeof(vertices));
-	mini3d::IVertexBuffer* vBuffer = graphics->CreateVertexBuffer(pVertices, 8, vd);
+	mini3d::IVertexBuffer* vBuffer = graphics->CreateVertexBuffer(vertices, 8, vd);
 	
 	// create texture
-	int* pBitmap = new int[512 * 512 * 4];
-	for(int i = 0; i < 512 * 512; i++)
-	{
-		pBitmap[i] = 0xFFFFFFFF * ((i / 128) % 2);
-	}
+	int* pBitmap = new int[512 * 512 * 4]; for(int i = 0; i < 512 * 512; i++) { pBitmap[i] = 0xFFFFFFFF * ((i / 128) % 2); }
 	mini3d::IBitmapTexture* pTexture = graphics->CreateBitmapTexture(pBitmap, 512, 512);
 
 	// create vertex shader
-	mini3d::IVertexShader::ShaderBytes shaderBytes2 = ShaderBytesFromFile(L"vertexshader.hlsl"); 
+	mini3d::IVertexShader::ShaderBytes shaderBytes2 = mini3d::utilites::BinaryFileReader::ReadBytesFromFile(L"vertexshader.hlsl");
 	mini3d::IVertexShader* pVertexShader = graphics->CreateVertexShader(shaderBytes2, vd);
 
 	// create pixel shader
-	mini3d::IPixelShader::ShaderBytes shaderBytes = ShaderBytesFromFile(L"pixelshader.hlsl");
+	mini3d::IPixelShader::ShaderBytes shaderBytes = mini3d::utilites::BinaryFileReader::ReadBytesFromFile(L"pixelshader.hlsl");
 	mini3d::IPixelShader* pPixelShader = graphics->CreatePixelShader(shaderBytes);
 	
 	// create shader program
 	mini3d::IShaderProgram* pShaderProgram = graphics->CreateShaderProgram(pVertexShader, pPixelShader);
 
-	// create a view projection matrix
-	// no matrix math in mini3d, so we use the d3dx stuff... could be any other lib here just as well...
-	D3DXMATRIX viewMatrix;
-	D3DXMATRIX projectionMatrix;
-		
-	D3DXMatrixLookAtLH(&viewMatrix, &Vector3(10, -8, 30), &Vector3(0,0,0), &Vector3(0,-1,0));
-	D3DXMatrixPerspectiveFovLH(&projectionMatrix, (float)(3.1415f / 4.0f), 1, 40.0f / 1000.0f, 40.0f);
-
-	D3DXMATRIX viewProjectionMatrix = viewMatrix * projectionMatrix;
-	D3DXMATRIX viewProjectionMatrixTranspose;
-	D3DXMatrixTranspose(&viewProjectionMatrixTranspose, &viewProjectionMatrix);
-
 	// set render prarameters
 	graphics->SetIndexBuffer(iBuffer);
 	graphics->SetVertexBuffer(vBuffer);
 	graphics->SetShaderProgram(pShaderProgram);
-
-	int* textureUnit = new int(0);
-
-	// run the message loop
-	MSG Msg;
 	
-	double frame = 0;
-
+	
 	// run the application while the window is shwoing
 	while(true)
 	{
-	    while(GetMessage(&Msg, NULL, 0, 0) > 0)
+		// For keeping track of window messages
+		MSG Msg;
+
+		// Matrix4f
+		Matrix4f viewMatrixE;
+		Matrix4f projectionMatrixE;
+
+		// keeps track of what texture unit the texture is assigned to. This value is sent to the shader program
+		int* textureUnit = new int(0);
+
+		// keeps track of the current frame, for animation
+		double frame = 0;
+
+		// loop while the window is not closed
+		while(GetMessage(&Msg, NULL, 0, 0) > 0)
 		{
 
 			// update camera
-			D3DXMatrixLookAtLH(&viewMatrix, &Vector3(20 * cos(frame), -8, 25 * sin(frame)), &Vector3(0,0,0), &Vector3(0,-1,0));
-			D3DXMatrixPerspectiveFovLH(&projectionMatrix, (float)(3.1415f / 4.0f), 1, 40.0f / 1000.0f, 40.0f);
+			mini3d::utilites::math3d::setuplookat(&viewMatrixE[0], &Vector3f(20 * cos(frame), -8, 20 * sin(frame)).x(), &Vector3f(0,0,0).x(), &Vector3f(0,-1,0).x());
+			mini3d::utilites::math3d::BuildPerspProjMat(&projectionMatrixE[0], (float)(3.1415f / 4.0f), 1, 40.0f / 100.0f, 80.0f);
+			Matrix4f viewProjectionMatrixE = projectionMatrixE * viewMatrixE;
 
-			D3DXMATRIX viewProjectionMatrix = viewMatrix * projectionMatrix;
-			D3DXMATRIX viewProjectionMatrixTranspose;
-			D3DXMatrixTranspose(&viewProjectionMatrixTranspose, &viewProjectionMatrix);
-
-			// set a shader parameter
-			graphics->SetShaderParameterMatrix(0, &viewProjectionMatrix._11, 4, 4);
-			graphics->SetShaderParameterInt(1, textureUnit, 1);
-			
 			// set up the scene with the renderTargetTexture
 			graphics->SetRenderTarget(pRenderTargetTexture);
 			graphics->SetTexture(pTexture, 0);
 
+			// set a shader parameter
+			graphics->SetShaderParameterMatrix(0, &viewProjectionMatrixE[0], 4, 4);
+			graphics->SetShaderParameterInt(1, textureUnit, 1);
+			
 			// clear render target with color
 			graphics->Clear(0x55FF55FF);
 
@@ -240,10 +209,10 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 			graphics->SetRenderTarget(pScreenRenderTarget);
 			graphics->SetTexture(pRenderTargetTexture, 0);
 
-			// clear render target with color
+			//// clear render target with color
 			graphics->Clear(0xFFFFFFFF);
 
-			// Draw the scene to the screenRenderTarget
+			//// Draw the scene to the screenRenderTarget
 			graphics->Draw();
 
 			// do a flip
@@ -272,4 +241,3 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 
 	return 1;
 }
-

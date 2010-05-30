@@ -31,6 +31,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 mini3d::DX9RenderTargetTexture::DX9RenderTargetTexture(DX9GraphicsService* pGraphicsService, unsigned int width, unsigned int height, bool depthTestEnabled) : 
 	pGraphicsService(pGraphicsService), pDepthStencil(0), pRenderTarget(0)
 {
+	timesAllocated = 0;
+
 	SetRenderTarget(width, height, depthTestEnabled);
 	LoadResource();	
 	pGraphicsService->AddResource(this);
@@ -73,9 +75,7 @@ mini3d::ITexture::WrapStyle mini3d::DX9RenderTargetTexture::GetWrapStyle(void)
 }
 IDirect3DSurface9* mini3d::DX9RenderTargetTexture::GetRenderTargetBuffer(void)
 {
-	IDirect3DSurface9* pSurface;
-	pRenderTarget->GetSurfaceLevel(0, &pSurface);
-	return pSurface;
+	return pRenderTargetSurface;
 }
 mini3d::IDepthStencil* mini3d::DX9RenderTargetTexture::GetDepthStencil(void)
 {
@@ -109,11 +109,16 @@ void mini3d::DX9RenderTargetTexture::LoadResource(void)
 			isDirty = true;
 			return;
 		}
+		
+		// Capture the render target surfrace to avoid reference counting in directx
+		pRenderTarget->GetSurfaceLevel(0, &pRenderTargetSurface);
+		timesAllocated++;
 	}
 
 	bufferWidth = width;
 	bufferHeight = height;
 	isDirty = false;
+
 }
 
 void mini3d::DX9RenderTargetTexture::UnloadResource(void)
@@ -128,6 +133,10 @@ void mini3d::DX9RenderTargetTexture::UnloadResource(void)
 		for(int i = 0; i < pGraphicsService->GetMaxTextures(); i++)
 			if (pGraphicsService->GetTexture(i) == this)
 				pGraphicsService->SetTexture(0, i);
+
+		pRenderTargetSurface->Release();
+		pRenderTargetSurface = 0;
+		timesAllocated --;
 
 		pRenderTarget->Release();
 		pRenderTarget = 0;

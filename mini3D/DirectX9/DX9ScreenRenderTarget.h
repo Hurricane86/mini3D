@@ -44,6 +44,8 @@ private:
 	IDirect3DSwapChain9* pScreenRenderTarget;
 	DX9DepthStencil* pDepthStencil;
 
+	IDirect3DSurface9* pRenderTargetSurface;
+
 	int width;
 	int height;
 	int hWindow;

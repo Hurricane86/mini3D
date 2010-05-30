@@ -50,9 +50,12 @@ private:
 	unsigned int bufferHeight;
 	IDirect3DTexture9* pRenderTarget;
 	DX9DepthStencil* pDepthStencil;
+	IDirect3DSurface9* pRenderTargetSurface;
 	
 	// GraphicsDevice link
 	DX9GraphicsService* pGraphicsService;
+
+	int timesAllocated;
 
 private:
 	virtual IDirect3DSurface9* GetRenderTargetBuffer(void);
