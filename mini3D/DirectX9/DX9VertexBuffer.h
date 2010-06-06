@@ -35,46 +35,65 @@ namespace mini3d
 {
 class DX9VertexBuffer :	public IVertexBuffer, public IDX9Resource
 {
-friend class DX9GraphicsService;
+
+public:
+
+	// ::::: Constructor & Destructor :::::::::::::::::::::::::::::::::::::::::
+	
+	DX9VertexBuffer(DX9GraphicsService* pGraphicsService, const void* pVertices, const unsigned int& count, const unsigned int& vertexSizeInBytes);
+	~DX9VertexBuffer(void);
+
+
+	// ::::: IVertexBuffer ::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+	virtual void* GetVertices(unsigned int& sizeInBytes) const;
+	virtual void SetVertices(const void* pVertices, const unsigned int& count, const unsigned int& vertexSizeInBytes);
+
+	virtual void* Lock(unsigned int& sizeInBytes) const;
+	virtual void Unlock(const bool& dataIsChanged);
+
+	virtual unsigned int GetVertexCount() const { return sizeInBytes / vertexSizeInBytes; };
+	virtual unsigned int GetVertexSizeInBytes() const { return vertexSizeInBytes; };
+
+
+	// ::::: IDX9Resource :::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+	virtual void LoadResource();
+	virtual void UnloadResource();
+	virtual bool GetIsDirty() const { return isDirty; };
+
+
+	// ::::: Public Methods :::::::::::::::::::::::::::::::::::::::::::::::::::
+
+	IDirect3DVertexBuffer9* GetVertexBuffer() const { return pVertexBuffer; };
 
 private:
-	// vertices
-	void* pVertices;
-	unsigned int sizeInBytes;
-	unsigned int vertexSizeInBytes;
-	VertexDeclarationVector vertexDeclaration;
-	
-	// Buffer
-	IDirect3DVertexBuffer9* pVertexBuffer;
-	IDirect3DVertexDeclaration9* pVertexDeclaration;
-	int bufferSizeInBytes;
-	bool isDirty;
+
+	// ::::: Private Methods :::::::::::::::::::::::::::::::::::::::::::::::::::
+
+	void UnloadVertices(void);
+
+
+private:
+
+	// ::::: Private Member Variables :::::::::::::::::::::::::::::::::::::::::
 
 	// GraphicsDevice link
 	DX9GraphicsService* pGraphicsService;
 
-private:
-	void UnloadVertices(void);
-	IDirect3DVertexBuffer9* GetVertexBuffer();
-	IDirect3DVertexDeclaration9* GetVertexDeclarationBuffer();
-	void SetVertexDeclaration(const VertexDeclarationVector& vertexDeclaration);
-	unsigned int GetVertexSizeInBytes(void);
-
-public:
-	DX9VertexBuffer(void);
-	DX9VertexBuffer(DX9GraphicsService* pGraphicsService, void* pVertices, unsigned int count, const VertexDeclarationVector& vertexDeclaration);
-	~DX9VertexBuffer(void);
-
-	virtual void SetVertices(void* vertices, unsigned int count,const VertexDeclarationVector& vertexDeclaration);
-	virtual void* GetVertices(unsigned int& count, VertexDeclarationVector& vertexDeclaration);
+	// vertices
+	void* pVertices;
+	unsigned int sizeInBytes;
+	unsigned int vertexSizeInBytes;
 	
-	unsigned int GetVertexCount(void);
-	virtual VertexDeclarationVector GetVertexDeclaration();
+	// Buffer
+	IDirect3DVertexBuffer9* pVertexBuffer;
+	int bufferSizeInBytes;
+	bool isDirty;
 
-	// IResource
-	virtual void LoadResource(void);
-	virtual void UnloadResource(void);
-	virtual bool GetIsDirty(void);
+
+
+
 };
 }
 

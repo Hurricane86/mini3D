@@ -27,8 +27,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 #ifndef AURORA_IPIXELSHADER_H
 #define AURORA_IPIXELSHADER_H
 
-#include <vector>
-
 namespace mini3d
 {
 class IPixelShader
@@ -36,12 +34,10 @@ class IPixelShader
 	friend class IGraphicsDevice;
 
 public:
-	// Typedefs
-	typedef std::vector<char> ShaderBytes;
-	
 	// Methods
-	virtual ~IPixelShader(void) {};
-	virtual ShaderBytes GetPixelShader() = 0;
+	virtual ~IPixelShader() {};
+
+	virtual void* GetPixelShader(unsigned int& sizeInBytes) = 0;
 };
 }
 

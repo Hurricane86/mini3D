@@ -48,61 +48,51 @@ class IGraphicsService
 public:
 
 	// initialisation
-	virtual ~IGraphicsService(void) { };
-
-	// Properties
-	virtual bool GetIsFullScreen() = 0;
-	virtual void SetIsFullScreen(bool fullscreen) = 0;
+	virtual ~IGraphicsService() { };
 
 	// Get Graphics Card Capabilities
-	virtual int GetMaxTextures() = 0;
-	virtual int GetMaxTextureSize() = 0;
-	virtual int GetPixelShaderVersion() = 0;
-	virtual int GetVertexShaderVersion() = 0;
+	virtual int GetMaxTextures() const = 0;
+	virtual int GetMaxTextureSize() const = 0;
+	virtual int GetPixelShaderVersion() const = 0;
+	virtual int GetVertexShaderVersion() const = 0;
 
 	// Create Resources
-	virtual IScreenRenderTarget* CreateScreenRenderTarget(unsigned int width, unsigned int height, int hWindow, bool depthTestEnabled, IScreenRenderTarget::Quality quality) = 0;
-	virtual IFullscreenRenderTarget* CreateFullscreenRenderTarget(unsigned int width, unsigned int height, int hWindow, bool depthTestEnabled, IFullscreenRenderTarget::Quality quality) = 0;
-	virtual IRenderTargetTexture* CreateRenderTargetTexture(unsigned int width, unsigned int height, bool depthTestEnabled) = 0;
-	virtual IBitmapTexture* CreateBitmapTexture(void* pBitmap, unsigned int width, unsigned int height, IBitmapTexture::BitDepth bitDepth = IBitmapTexture::BIT32, ITexture::WrapStyle wrapStyle = ITexture::TILE) = 0;
-	virtual IVertexBuffer* CreateVertexBuffer(void* pVertices, unsigned int count, const IVertexBuffer::VertexDeclarationVector& vertexDeclaration) = 0;
-	virtual IIndexBuffer* CreateIndexBuffer(int* pIndices, unsigned int count, const IIndexBuffer::CullMode cullMode = IIndexBuffer::CULL_COUNTERCLOCKWIZE) = 0;
-	virtual IPixelShader* CreatePixelShader(const IPixelShader::ShaderBytes& shaderBytes) = 0;
-	virtual IVertexShader* CreateVertexShader(const IVertexShader::ShaderBytes& shaderBytes, const IVertexShader::VertexDeclarationVector& vertexDeclaration) = 0;
+	virtual IScreenRenderTarget* CreateScreenRenderTarget(const unsigned int& width, const unsigned int& height, const int& windowHandle, const bool& depthTestEnabled, const IScreenRenderTarget::Quality& quality) = 0;
+	virtual IFullscreenRenderTarget* CreateFullscreenRenderTarget(const unsigned int& width, const unsigned int& height, const int& hWindow, const bool& depthTestEnabled, const IFullscreenRenderTarget::Quality& quality) = 0;
+	virtual IRenderTargetTexture* CreateRenderTargetTexture(const unsigned int& width, const unsigned int& height, const bool& depthTestEnabled) = 0;
+	virtual IBitmapTexture* CreateBitmapTexture(const void* pBitmap, const unsigned int& width, const unsigned int& height, const IBitmapTexture::BitDepth bitDepth = IBitmapTexture::BIT_32, const ITexture::WrapStyle wrapStyle = ITexture::WRAP_TILE) = 0;
+	virtual IVertexBuffer* CreateVertexBuffer(const void* pVertices,const  unsigned int& count, const unsigned int& vertexSizeInBytes) = 0;
+	virtual IIndexBuffer* CreateIndexBuffer(const void* pIndices, const unsigned int& count, const IIndexBuffer::DataType& dataType = IIndexBuffer::INT_16, const IIndexBuffer::CullMode& cullMode = IIndexBuffer::CULL_COUNTERCLOCKWIZE) = 0;
+	virtual IPixelShader* CreatePixelShader(const void* shaderBytes, const unsigned int& sizeInBytes) = 0;
+	virtual IVertexShader* CreateVertexShader(const void* shaderBytes, const unsigned int& sizeInBytes, const IVertexShader::VertexDataType vertexDeclaration[], const unsigned int& vertexDataCount) = 0;
 	virtual IShaderProgram* CreateShaderProgram(IVertexShader* pVertexShader, IPixelShader* pPixelShader) = 0;
 
 	// Pipeline states
 
-	virtual IShaderProgram* GetShaderProgram(void) = 0;
+	virtual IShaderProgram* GetShaderProgram() const = 0;
 	virtual void SetShaderProgram(IShaderProgram* pShaderProgram) = 0;
 	
-	//virtual IPixelShader* GetPixelShader(void) = 0;
-	//virtual void SetPixelShader(IPixelShader* pPixelShader) = 0;
+	virtual ITexture* GetTexture(const unsigned int& index) const = 0;
+	virtual void SetTexture(ITexture* pTexture, const unsigned int& index) = 0;
 
-	//virtual IVertexShader* GetVertexShader(void) = 0;
-	//virtual void SetVertexShader(IVertexShader* pVertexShader) = 0;
-
-	virtual ITexture* GetTexture(unsigned int index) = 0;
-	virtual void SetTexture(ITexture* pTexture, unsigned int index) = 0;
-
-	virtual IRenderTarget* GetRenderTarget(void) = 0;
+	virtual IRenderTarget* GetRenderTarget() const = 0;
 	virtual void SetRenderTarget(IRenderTarget* pRenderTarget) = 0;
 
-	virtual IIndexBuffer* GetIndexBuffer(void) = 0;
+	virtual IIndexBuffer* GetIndexBuffer() const = 0;
 	virtual void SetIndexBuffer(IIndexBuffer* indexBuffer) = 0;
 
-	virtual IVertexBuffer* GetVertexBuffer(void) = 0;
+	virtual IVertexBuffer* GetVertexBuffer() const = 0;
 	virtual void SetVertexBuffer(IVertexBuffer* vertexBuffer) = 0;
 
 	// Shader Parameters
-	virtual void SetShaderParameterFloat(unsigned int index, const float* pData, unsigned int count) = 0;
-	virtual void SetShaderParameterInt(unsigned int index, const int* pData, unsigned int count) = 0;
-	virtual void SetShaderParameterMatrix(unsigned int index, const float* pData, unsigned int rows, unsigned int columns) = 0;
+	virtual void SetShaderParameterFloat(const unsigned int& index, const float* pData, const unsigned int& count) = 0;
+	virtual void SetShaderParameterInt(const unsigned int& index, const int* pData, const unsigned int& count) = 0;
+	virtual void SetShaderParameterMatrix(const unsigned int& index, const float* pData, const unsigned int& rows, const unsigned int& columns) = 0;
 
 	// Drawing
-	virtual void Clear(int color) = 0;
-	virtual void Draw(void) = 0;
-	virtual void DrawIndices(unsigned int startIndex, unsigned int numIndices) = 0;
+	virtual void Clear(const int& color) = 0;
+	virtual void Draw() = 0;
+	virtual void DrawIndices(const unsigned int& startIndex, const unsigned int& numIndices) = 0;
 
 };
 }

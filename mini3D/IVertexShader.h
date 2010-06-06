@@ -27,32 +27,18 @@ OTHER DEALINGS IN THE SOFTWARE.
 #ifndef AURORA_IVERTEXSHADER_H
 #define AURORA_IVERTEXSHADER_H
 
-#include <vector>
-
 namespace mini3d
 {
 class IVertexShader
 {
 public:
-	enum VertexDataType {	POSITION_FLOAT3 = 0, 
-							POSITION_FLOAT4 = 1, 
-							COLOR_INT = 2, 
-							COLOR_FLOAT4 = 3, 
-							TEXTURECOORDINATE_FLOAT2 = 4, 
-							NORMAL_FLOAT3 = 5, 
-							BINORMAL_FLOAT3 = 6, 
-							TANGENT_FLOAT3 = 7, 
-							BLENDWEIGHT_FLOAT = 8, 
-							BLENDINDICES_FLOAT = 9 };
+	enum VertexDataType { POSITION_FLOAT3 = 0, POSITION_FLOAT4 = 1, COLOR_INT = 2, COLOR_FLOAT4 = 3, TEXTURECOORDINATE_FLOAT2 = 4, NORMAL_FLOAT3 = 5, BINORMAL_FLOAT3 = 6, TANGENT_FLOAT3 = 7, BLENDWEIGHT_FLOAT = 8, BLENDINDICES_FLOAT = 9 };
 	
-	// Typedefs
-	typedef std::vector<int> VertexDeclarationVector;
-	typedef std::vector<char> ShaderBytes;
-
 public:
-	virtual ~IVertexShader(void) {};
-	virtual ShaderBytes GetVertexShader(void) = 0;
-	virtual VertexDeclarationVector GetVertexDeclaration(void) = 0;
+	virtual ~IVertexShader() {};
+
+	virtual void* GetVertexShader(unsigned int& sizeInBytes) const = 0;
+	virtual VertexDataType* GetVertexDeclaration(unsigned int& vertexDatacount) const = 0;
 };
 }
 

@@ -35,9 +35,9 @@ public:
 
 	virtual ~IDX9Resource(void) {};
 
-	virtual void LoadResource(void) = 0;
-	virtual void UnloadResource(void) = 0;
-	virtual bool GetIsDirty(void) = 0;
+	virtual void LoadResource() = 0;
+	virtual void UnloadResource() = 0;
+	virtual bool GetIsDirty() const = 0;
 };
 }
 

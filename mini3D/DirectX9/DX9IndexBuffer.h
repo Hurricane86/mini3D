@@ -33,41 +33,82 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 namespace mini3d
 {
-class DX9IndexBuffer : IIndexBuffer, IDX9Resource
+class DX9IndexBuffer : public IIndexBuffer, public IDX9Resource
 {
 
-	friend class DX9GraphicsService;
+public:
+	
+	// ::::: Constructor & Destructor :::::::::::::::::::::::::::::::::::::::::
+	
+	DX9IndexBuffer(DX9GraphicsService* graphicsService, const void* pIndices, const unsigned int& count, const DataType& dataType = INT_16, const CullMode& cullMode = CULL_COUNTERCLOCKWIZE);
+	~DX9IndexBuffer(void);
+
+
+	// ::::: IIndexBuffer :::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+	virtual void* GetIndices(unsigned int& sizeInBytes) const;
+	virtual void SetIndices(const void* pIndices, const unsigned int& count, const DataType& dataType = INT_16, const CullMode& cullMode = CULL_COUNTERCLOCKWIZE);
+
+	virtual void* Lock(unsigned int& sizeInBytes) const;
+	virtual void Unlock(const bool& dataIsChanged);
+
+	virtual unsigned int GetIndexCount() const { return indexCount; };
+
+	virtual CullMode GetCullMode() const { return cullMode; };
+	virtual void SetCullMode(const CullMode& cullMode) { this->cullMode = cullMode; };
+	
+
+	// ::::: IDX9Resource :::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+	virtual void LoadResource();
+	virtual void UnloadResource();
+	virtual bool GetIsDirty() const { return isDirty; };
+
+	
+	// ::::: Public Methods :::::::::::::::::::::::::::::::::::::::::::::::::::
+
+	virtual IDirect3DIndexBuffer9* GetIndexBuffer(void) { return pIndexBuffer; };
+
 
 private:
-	// Indices
-	void* pIndices;
-	int sizeInBytes;
 	
-	// Buffer
-	IDirect3DIndexBuffer9* pIndexBuffer;
-	int bufferSizeInBytes;
-	bool isDirty;
+	// ::::: Private Methods ::::::::::::::::::::::::::::::::::::::::::::::::::
+
+	void UnloadIndices(void);
+
+
+private:
+
+	// ::::: Private Member Varaibles :::::::::::::::::::::::::::::::::::::::::
 
 	// GraphicsDevice link
 	DX9GraphicsService* pGraphicsService;
 
-private:
-	virtual IDirect3DIndexBuffer9* GetIndexBuffer(void);
-	void UnloadIndices(void);
+	// Direct3D9 Index Buffer
+	IDirect3DIndexBuffer9* pIndexBuffer;
 
-public:
-	DX9IndexBuffer(DX9GraphicsService* graphicsService, void* pIndices, unsigned int count);
-	~DX9IndexBuffer(void);
+	// Indices
+	void* pIndices;
 
-	virtual void SetIndices(void* pIndices, unsigned int count);
-	virtual void* GetIndices(unsigned int& count);
-	virtual unsigned int GetIndexCount(void);
-	
+	// size of index buffer in bytes
+	unsigned int sizeInBytes;
 
-	// IDX9Resource
-	virtual void LoadResource(void);
-	virtual void UnloadResource(void);
-	virtual bool GetIsDirty(void);
+	// Number of indices in index list
+	unsigned int indexCount;
+
+	// Size of the allocated Direct3D9 Buffer in bytes
+	int bufferSizeInBytes;
+
+	// Cullmode for this index buffer
+	CullMode cullMode;
+
+	// Data type of the indices
+	DataType dataType;
+
+	// Keps track of the state of the resource
+	bool isDirty;
+
+
 };
 }
 

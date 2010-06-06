@@ -43,7 +43,7 @@ friend class OGL20GraphicsService;
 public:
 	// IBitmapTexture
 	virtual void* GetBitmap(unsigned int& width, unsigned int& height, IBitmapTexture::BitDepth& bitDepth, ITexture::WrapStyle& wrapStyle);
-	virtual void SetBitmap(void* pBitmap, unsigned int width, unsigned int height, IBitmapTexture::BitDepth bitDepth = IBitmapTexture::BIT32, ITexture::WrapStyle wrapStyle = ITexture::TILE);
+	virtual void SetBitmap(void* pBitmap, unsigned int width, unsigned int height, IBitmapTexture::BitDepth bitDepth = IBitmapTexture::BIT_32, ITexture::WrapStyle wrapStyle = ITexture::WRAP_TILE);
 	
 	virtual unsigned int GetWidth(void);
 	virtual unsigned int GetHeight(void);
@@ -51,7 +51,7 @@ public:
 	virtual BitDepth GetBitDepth(void);
 
 	//Constructor
-	OGL20BitmapTexture(OGL20GraphicsService* graphicsService, void* pBitmap, unsigned int width, unsigned int height, IBitmapTexture::BitDepth bitDepth = IBitmapTexture::BIT32, ITexture::WrapStyle wrapStyle = ITexture::TILE);
+	OGL20BitmapTexture(OGL20GraphicsService* graphicsService, void* pBitmap, unsigned int width, unsigned int height, IBitmapTexture::BitDepth bitDepth = IBitmapTexture::BIT_32, ITexture::WrapStyle wrapStyle = ITexture::WRAP_TILE);
 
 	// Destructor
 	~OGL20BitmapTexture(void);

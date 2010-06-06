@@ -28,59 +28,85 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include <d3d9.h>
 
 
-mini3d::DX9VertexShader::DX9VertexShader(DX9GraphicsService* pGraphicsService, const ShaderBytes& shaderBytes, const VertexDeclarationVector& vertexDeclaration) :
-	pGraphicsService_(pGraphicsService), shaderBytes_(shaderBytes), pShaderBuffer_(0), vertexDeclaration_(vertexDeclaration)
+mini3d::DX9VertexShader::DX9VertexShader(DX9GraphicsService* pGraphicsService, const void* pShaderBytes, const unsigned int& sizeInBytes, const IVertexShader::VertexDataType vertexDeclaration[], const unsigned int& vertexDataCount) :
+	pGraphicsService(pGraphicsService), pShaderBuffer(0)
 {
+	// Vertex shader data
+	this->sizeInBytes = sizeInBytes;
+
+	this->pShaderBytes = malloc(sizeInBytes);
+	memcpy(this->pShaderBytes, pShaderBytes, sizeInBytes);
+
+	// VertexDeclaration
+	this->vertexDataCount = vertexDataCount;
+
+	this->vertexDeclaration = new VertexDataType[vertexDataCount];
+	memcpy(this->vertexDeclaration, vertexDeclaration, vertexDataCount * sizeof(VertexDataType));
+
 	LoadResource();
 	pGraphicsService->AddResource(this);
 }
 
+mini3d::IVertexShader::VertexDataType* mini3d::DX9VertexShader::GetVertexDeclaration(unsigned int& vertexDataCount) const
+{ 
+	vertexDataCount = this->vertexDataCount;
+	unsigned int sizeInBytes = this->vertexDataCount * sizeof(VertexDataType);
+
+	VertexDataType* pVertexDeclarationCopy = new IVertexShader::VertexDataType[sizeInBytes]; 
+	memcpy(pVertexDeclarationCopy, vertexDeclaration, sizeInBytes);
+	
+	return pVertexDeclarationCopy;
+};
+
 mini3d::DX9VertexShader::~DX9VertexShader(void)
 {
 	UnloadResource();
-	pGraphicsService_->RemoveResource(this);
+	pGraphicsService->RemoveResource(this);
+
+	free(pShaderBytes);
+	delete[] vertexDeclaration;
 }
 
 void mini3d::DX9VertexShader::LoadResource(void)
 {
-	IDirect3DDevice9* pDevice = pGraphicsService_->GetDevice();
+	IDirect3DDevice9* pDevice = pGraphicsService->GetDevice();
 	if (pDevice == 0)
 		return;
 
 	// If the buffer exists tear it down.
-	if (pShaderBuffer_ != 0)
+	if (pShaderBuffer != 0)
 	{
 		UnloadResource();
 	}
 
-	if( FAILED( pDevice->CreateVertexShader((DWORD*)&shaderBytes_[0], &pShaderBuffer_)))
+	if( FAILED( pDevice->CreateVertexShader((DWORD*)pShaderBytes, &pShaderBuffer)))
 	{
-		isDirty_ = true;
+		isDirty = true;
 		return;
 	}
 
-	isDirty_ = false;
+	isDirty = false;
 
 	// load the vertex declaration into the pool
-	pGraphicsService_->PoolVertexDeclaration(vertexDeclaration_);
+	pGraphicsService->PoolVertexDeclaration(vertexDeclaration, vertexDataCount);
 }
 
 
 void mini3d::DX9VertexShader::UnloadResource(void)
 {
-	if (pShaderBuffer_ != 0)
+	if (pShaderBuffer != 0)
 	{
 		// if this is the currently loaded pixel shader, release it
-		if (pGraphicsService_->GetVertexShader() == this)
-			pGraphicsService_->SetVertexShader(0);
+		if (pGraphicsService->GetVertexShader() == this)
+			pGraphicsService->SetVertexShader(0);
 
-		pShaderBuffer_->Release();
-		pShaderBuffer_ = 0;
+		pShaderBuffer->Release();
+		pShaderBuffer = 0;
 	}
 
-	isDirty_ = true;
+	isDirty = true;
 
 	// remove the vertex declaration from the pool
-	pGraphicsService_->ReleaseVertexDeclaration(vertexDeclaration_);
+	pGraphicsService->ReleaseVertexDeclaration(vertexDeclaration, vertexDataCount);
 
 }

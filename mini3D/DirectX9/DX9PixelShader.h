@@ -33,34 +33,54 @@ OTHER DEALINGS IN THE SOFTWARE.
 namespace mini3d
 {
 class DX9GraphicsService;
-class DX9PixelShader : IPixelShader, IDX9Resource
+class DX9PixelShader : public IPixelShader, public IDX9Resource
 {
-	friend class DX9GraphicsService;
-
-private:
-	// Indices
-	ShaderBytes shaderBytes_;
-
-	// Buffer
-	IDirect3DPixelShader9* pShaderBuffer_;
-	bool isDirty_;
-
-	// GraphicsDevice link
-	DX9GraphicsService* pGraphicsService_;
 
 public:
-	DX9PixelShader(DX9GraphicsService* graphicsService, const ShaderBytes& shaderBytes);
+
+	// ::::: Constructor & Destructor :::::::::::::::::::::::::::::::::::::::::
+
+	DX9PixelShader(DX9GraphicsService* graphicsService, const void* pShaderBytes, const unsigned int& sizeInBytes);
 	~DX9PixelShader(void);
 
-	ShaderBytes GetPixelShader() { return shaderBytes_; };
 
-private:
-	inline IDirect3DPixelShader9* GetPixelShaderBuffer(void) { return pShaderBuffer_; }
+	// ::::: IIndexBuffer :::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-	// IDX9Resource
+	virtual void* GetPixelShader(unsigned int& sizeInBytes) { sizeInBytes = this->sizeInBytes; return pShaderBytes; };
+
+
+	// ::::: IDX9Resource :::::::::::::::::::::::::::::::::::::::::::::::::::::
+
 	void LoadResource(void);
 	void UnloadResource(void);
-	bool GetIsDirty(void) { return isDirty_; };
+	bool GetIsDirty(void) const { return isDirty; };
+
+
+	// ::::: Public Methods :::::::::::::::::::::::::::::::::::::::::::::::::::
+
+	inline IDirect3DPixelShader9* GetPixelShaderBuffer(void) { return pShaderBuffer; }
+
+
+private:
+
+	// ::::: Private Member Varaibles :::::::::::::::::::::::::::::::::::::::::
+
+	// GraphicsDevice link
+	DX9GraphicsService* pGraphicsService;
+
+	// Indices
+	void* pShaderBytes;
+
+	// Number of bytes in shaderBytes array
+	unsigned int sizeInBytes;
+
+	// Buffer
+	IDirect3DPixelShader9* pShaderBuffer;
+
+	// Keps track of the state of the resource
+	bool isDirty;
+
+
 };
 }
 

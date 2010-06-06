@@ -37,16 +37,16 @@ class IDX9Texture: public virtual ITexture
 friend class DX9GraphicsService;
 
 private:
-	virtual IDirect3DTexture9* GetTextureBuffer(void) = 0;
+	virtual IDirect3DTexture9* GetTextureBuffer() const = 0;
 
 public:
 
 	virtual ~IDX9Texture(void) {};
 
-	virtual unsigned int GetWidth(void) = 0;
-	virtual unsigned int GetHeight(void) = 0;
+	virtual unsigned int GetWidth() const= 0;
+	virtual unsigned int GetHeight() const = 0;
 
-	virtual WrapStyle GetWrapStyle(void) = 0;
+	virtual WrapStyle GetWrapStyle() const = 0;
 };
 }
 

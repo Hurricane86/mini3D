@@ -33,11 +33,11 @@ class IDepthStencil
 {
 public:
 
-	virtual ~IDepthStencil(void) {};
+	virtual ~IDepthStencil() {};
 
-	virtual void SetDepthStencil(unsigned int width, unsigned int height) = 0;
-	virtual unsigned int GetWidth(void) = 0;
-	virtual unsigned int GetHeight(void) = 0;
+	virtual void SetDepthStencil(const unsigned int& width, const unsigned int& height) = 0;
+	virtual unsigned int GetWidth() const = 0;
+	virtual unsigned int GetHeight() const = 0;
 };
 }
 

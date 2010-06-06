@@ -36,9 +36,12 @@ public:
 
 	virtual ~IRenderTarget(void) {};
 
-	virtual unsigned int GetWidth(void) = 0;
-	virtual unsigned int GetHeight(void) = 0;
-	virtual bool GetDepthTestEnabled(void) = 0;
+	virtual unsigned int GetWidth() const = 0;
+	virtual unsigned int GetHeight() const = 0;
+	
+	virtual void SetSize(const int& width, const int& height) = 0;
+
+	virtual bool GetDepthTestEnabled() const = 0;
 };
 }
 

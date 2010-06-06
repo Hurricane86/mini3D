@@ -33,19 +33,14 @@ class ITexture
 {
 public:
 
-	enum WrapStyle
-	{
-		TILE,
-		MIRROR,
-		CLAMP,
-	};
+	enum WrapStyle { WRAP_TILE, WRAP_MIRROR, WRAP_CLAMP, };
 
 	virtual ~ITexture(void) {};
 
-	virtual unsigned int GetWidth(void) = 0;
-	virtual unsigned int GetHeight(void) = 0;
+	virtual unsigned int GetWidth() const = 0;
+	virtual unsigned int GetHeight() const = 0;
 
-	virtual WrapStyle GetWrapStyle(void) = 0;
+	virtual WrapStyle GetWrapStyle() const = 0;
 };
 }
 

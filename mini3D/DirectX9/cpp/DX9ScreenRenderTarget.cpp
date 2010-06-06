@@ -31,7 +31,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 std::map<int, mini3d::DX9ScreenRenderTarget*> mini3d::DX9ScreenRenderTarget::windowMap;
 WNDPROC mini3d::DX9ScreenRenderTarget::pOrigProc;
 
-mini3d::DX9ScreenRenderTarget::DX9ScreenRenderTarget(DX9GraphicsService* pGraphicsService, unsigned int width, unsigned int height, int hWindow, bool depthTestEnabled, Quality quality) : 
+mini3d::DX9ScreenRenderTarget::DX9ScreenRenderTarget(DX9GraphicsService* pGraphicsService, const unsigned int& width, const unsigned int& height, const int& windowHandle, const bool& depthTestEnabled, const Quality& quality) : 
 	pGraphicsService(pGraphicsService), pScreenRenderTarget(0), pDepthStencil(0), quality(quality), depthTestEnabled(depthTestEnabled)
 {
 	if (depthTestEnabled == true)
@@ -39,7 +39,7 @@ mini3d::DX9ScreenRenderTarget::DX9ScreenRenderTarget(DX9GraphicsService* pGraphi
 		pDepthStencil = new DX9DepthStencil(pGraphicsService, width, height);
 	}
 
-	SetScreenRenderTarget(width, height, hWindow, depthTestEnabled, quality);
+	SetScreenRenderTarget(width, height, windowHandle, depthTestEnabled, quality);
 	LoadResource();
 	pGraphicsService->AddResource(this);
 }
@@ -53,9 +53,9 @@ mini3d::DX9ScreenRenderTarget::~DX9ScreenRenderTarget(void)
 		delete pDepthStencil;
 }
 
-void mini3d::DX9ScreenRenderTarget::SetScreenRenderTarget(unsigned int width, unsigned int height, int hWindow, bool depthTestEnabled, Quality quality)
+void mini3d::DX9ScreenRenderTarget::SetScreenRenderTarget(const unsigned int& width, const unsigned int& height, const int& windowHandle, const bool& depthTestEnabled, const Quality& quality)
 {
-	this->hWindow = hWindow;
+	this->hWindow = windowHandle;
 	this->width = width;
 	this->height = height;
 	this->depthTestEnabled = depthTestEnabled;
@@ -65,18 +65,6 @@ void mini3d::DX9ScreenRenderTarget::SetScreenRenderTarget(unsigned int width, un
 	pOrigProc = (WNDPROC)SetWindowLongPtr((HWND)hWindow, GWL_WNDPROC, (LONG)&HookWndProc);
 
 	this->isDirty = true;
-}
-unsigned int mini3d::DX9ScreenRenderTarget::GetWidth(void)
-{
-	return width;
-}
-unsigned int mini3d::DX9ScreenRenderTarget::GetHeight(void)
-{
-	return height;
-}
-bool mini3d::DX9ScreenRenderTarget::GetDepthTestEnabled(void)
-{
-	return depthTestEnabled;
 }
 void mini3d::DX9ScreenRenderTarget::Display(void)
 {
@@ -88,14 +76,6 @@ void mini3d::DX9ScreenRenderTarget::Display(void)
 		pGraphicsService->EndScene();
 
 	pScreenRenderTarget->Present(0,0,0,0,0);
-}
-IDirect3DSurface9*  mini3d::DX9ScreenRenderTarget::GetRenderTargetBuffer(void)
-{
-	return pRenderTargetSurface;
-}
-mini3d::IDepthStencil*  mini3d::DX9ScreenRenderTarget::GetDepthStencil(void)
-{
-	return pDepthStencil;
 }
 void mini3d::DX9ScreenRenderTarget::LoadResource(void)
 {
@@ -172,12 +152,7 @@ void mini3d::DX9ScreenRenderTarget::UnloadResource(void)
 	isDirty = true;
 }
 
-bool mini3d::DX9ScreenRenderTarget::GetIsDirty(void)
-{
-	return isDirty;
-}
-
-void mini3d::DX9ScreenRenderTarget::SetSize(int width, int height)
+void mini3d::DX9ScreenRenderTarget::SetSize(const int& width, const int& height)
 {
 	this->width = width;
 	this->height = height;

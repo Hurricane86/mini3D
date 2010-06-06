@@ -32,61 +32,88 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "DX9GraphicsService.h"
 #include "internal/IDX9Resource.h"
 
+// TODO: Power of two conversion for internal bitmaps
+
 namespace mini3d
 {
 class DX9BitmapTexture : public IBitmapTexture, public IDX9Texture, public IDX9Resource
 {
-friend class DX9GraphicsService;
 
 public:
-	// IBitmapTexture
-	virtual void* GetBitmap(unsigned int& width, unsigned int& height, IBitmapTexture::BitDepth& bitDepth, ITexture::WrapStyle& wrapStyle);
-	virtual void SetBitmap(void* pBitmap, unsigned int width, unsigned int height, IBitmapTexture::BitDepth bitDepth = IBitmapTexture::BIT32, ITexture::WrapStyle wrapStyle = ITexture::TILE);
-	
-	virtual unsigned int GetWidth(void);
-	virtual unsigned int GetHeight(void);
-	virtual WrapStyle GetWrapStyle(void);
-	virtual BitDepth GetBitDepth(void);
 
-	//Constructor
-	DX9BitmapTexture(DX9GraphicsService* graphicsService, void* pBitmap, unsigned int width, unsigned int height, IBitmapTexture::BitDepth bitDepth = IBitmapTexture::BIT32, ITexture::WrapStyle wrapStyle = ITexture::TILE);
+	// ::::: Constructor & Destructor :::::::::::::::::::::::::::::::::::::::::
 
-	// Destructor
+	DX9BitmapTexture(DX9GraphicsService* graphicsService, const void* pBitmap, const unsigned int& width, const unsigned int& height, const IBitmapTexture::BitDepth bitDepth = IBitmapTexture::BIT_32, const ITexture::WrapStyle wrapStyle = ITexture::WRAP_TILE);
 	~DX9BitmapTexture(void);
 
 
+	// ::::: IBitmapTexture :::::::::::::::::::::::::::::::::::::::::::::::::::
 
-private:
-	// Accessed by Graphics Service	
-	virtual IDirect3DTexture9* GetTextureBuffer(void);
+	virtual void* GetBitmap(unsigned int& sizeInBytes) const;
+	virtual void SetBitmap(const void* pBitmap, const unsigned int& width, const unsigned int& height, const IBitmapTexture::BitDepth bitDepth = IBitmapTexture::BIT_32, const ITexture::WrapStyle wrapStyle = ITexture::WRAP_TILE);
 	
-	// unload the bitmap data
-	void UnloadBitmap(void);
+	virtual void* Lock(unsigned int& sizeInBytes) const;
+	virtual void Unlock(const bool& dataIsChanged);
 
-	// IDX9Resource
+	inline unsigned int GetWidth() const { return width; };
+	inline unsigned int GetHeight() const { return height; };
+
+	inline WrapStyle GetWrapStyle() const { return wrapStyle; };
+	virtual void SetWrapStyle(const WrapStyle& wrapStyle) { this->wrapStyle = wrapStyle; };
+
+	inline BitDepth GetBitDepth() const { return bitDepth; };
+
+
+	// ::::: IDX9Resource :::::::::::::::::::::::::::::::::::::::::::::::::::::
+
 	virtual void LoadResource(void);
 	virtual void UnloadResource(void);
-	virtual bool GetIsDirty(void);
+	virtual bool GetIsDirty(void) const { return isDirty; };
+
+
+	// ::::: Public Methods :::::::::::::::::::::::::::::::::::::::::::::::::::
+	virtual IDirect3DTexture9* GetTextureBuffer(void) const { return pTexture; };
+
 
 private:
-	// Bitmap
-	void* pBitmap;
-	int width;
-	int height;
-	ITexture::WrapStyle wrapStyle;
-	IBitmapTexture::BitDepth bitDepth;
-	
-	// Buffer
-	IDirect3DTexture9* pTexture;
-	
-	// TODO: Fix this with power of 2 comparison agains width, height...
-	int bufferWidth;
-	int bufferHeight;
-	bool isDirty;
 
+	// ::::: Private Methods ::::::::::::::::::::::::::::::::::::::::::::::::::
+
+	void UnloadBitmap(void);
+
+
+private:
+
+	// ::::: Private Member Varaibles :::::::::::::::::::::::::::::::::::::::::
+	
 	// GraphicsDevice link
 	DX9GraphicsService* pGraphicsService;
 
+	// Pointer to bitmap data
+	void* pBitmap;
+
+	// Size of the bitmap
+	int width;
+	int height;
+
+	// Size of bitmap buffer in bytes
+	int sizeInBytes;
+	
+	// WrapStyle
+	ITexture::WrapStyle wrapStyle;
+
+	// Bitdepth
+	IBitmapTexture::BitDepth bitDepth;
+	
+	// Direct3D9 Buffer
+	IDirect3DTexture9* pTexture;
+	
+	// Size of the currently loaded buffer
+	int bufferWidth;
+	int bufferHeight;
+
+	// Keps track of the state of the resource
+	bool isDirty;
 };
 }
 

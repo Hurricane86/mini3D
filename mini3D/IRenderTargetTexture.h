@@ -36,15 +36,16 @@ class IRenderTargetTexture : public virtual IRenderTarget, public virtual ITextu
 {
 public:
 
-	virtual ~IRenderTargetTexture(void) {};
+	virtual ~IRenderTargetTexture() {};
 
-	virtual void SetRenderTarget(unsigned int width, unsigned int height, bool depthTestEnabled) = 0;
+	virtual void SetRenderTarget(const unsigned int& width, const unsigned int& height, const bool& depthTestEnabled) = 0;
 	
-	virtual unsigned int GetWidth(void) = 0;
-	virtual unsigned int GetHeight(void) = 0;
-	virtual bool GetDepthTestEnabled(void) = 0;
+	virtual unsigned int GetWidth() const = 0;
+	virtual unsigned int GetHeight() const = 0;
+	virtual WrapStyle GetWrapStyle() const = 0;
 
-	virtual WrapStyle GetWrapStyle(void) = 0;
+	virtual bool GetDepthTestEnabled() const = 0;
+
 };
 }
 

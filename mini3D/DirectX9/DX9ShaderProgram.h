@@ -36,11 +36,31 @@ OTHER DEALINGS IN THE SOFTWARE.
 namespace mini3d
 {
 class DX9GraphicsService;
-class DX9ShaderProgram : IShaderProgram, IDX9Resource
+class DX9ShaderProgram : public IShaderProgram, public IDX9Resource
 {
-	friend class DX9GraphicsService;
+
+public:
+	DX9ShaderProgram(DX9GraphicsService* pGraphicsService, IVertexShader* pVertexShader, IPixelShader* pPixelShader);
+	~DX9ShaderProgram();
+
+
+	// ::::: IShaderProgram :::::::::::::::::::::::::::::::::::::::::::::::::::
+
+	virtual IPixelShader* GetPixelShader() const { return pPixelShader; };
+	virtual IVertexShader* GetVertexShader() const { return pVertexShader; };
+
+
+	// ::::: IDX9Resource :::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+	void LoadResource();
+	void UnloadResource();
+	bool GetIsDirty() const { return isDirty; };
+
 
 private:
+
+	// ::::: Private Member Varaibles :::::::::::::::::::::::::::::::::::::::::
+
 	// Indices
 	IPixelShader* pPixelShader;
 	IVertexShader* pVertexShader;
@@ -50,16 +70,6 @@ private:
 	// GraphicsDevice link
 	DX9GraphicsService* pGraphicsService;
 
-public:
-	DX9ShaderProgram(DX9GraphicsService* graphicsService, IVertexShader* pVertexShader, IPixelShader* pPixelShader);
-	~DX9ShaderProgram(void);
-
-private:
-
-	// IDX9Resource
-	void LoadResource(void);
-	void UnloadResource(void);
-	bool GetIsDirty(void) { return isDirty; };
 };
 }
 

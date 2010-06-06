@@ -27,25 +27,22 @@ OTHER DEALINGS IN THE SOFTWARE.
 #ifndef AURORA_IVERTEXBUFFER_H
 #define AURORA_IVERTEXBUFFER_H
 
-#include <vector>
-
 namespace mini3d
 {
 class IVertexBuffer
 {
 public:
-	enum VertexDataType { POSITION = 0, COLOR = 1, TEXTURECOORDINATE = 2, NORMAL = 3, BINORMAL = 4, TANGENT = 5, BLENDWEIGHT = 6, BLENDINDICES = 7 };
-	
-	// Typedefs
-	typedef std::vector<int> VertexDeclarationVector;
 
-	virtual ~IVertexBuffer(void) {};
+	virtual ~IVertexBuffer() {};
 
-	virtual void SetVertices(void* pVertices, unsigned int count, const VertexDeclarationVector& vertexDeclaration) = 0;
-	virtual void* GetVertices(unsigned int& count, VertexDeclarationVector& vertexDeclaration) = 0;
+	virtual void* GetVertices(unsigned int& sizeInBytes) const = 0;
+	virtual void SetVertices(const void* pVertices, const unsigned int& count, const unsigned int& vertexSizeInBytes) = 0;
 
-	virtual unsigned int GetVertexCount() = 0;
-	virtual VertexDeclarationVector GetVertexDeclaration() = 0;
+	virtual void* Lock(unsigned int& sizeInBytes) const = 0;
+	virtual void Unlock(const bool& dataIsChanged) = 0;
+
+	virtual unsigned int GetVertexCount() const = 0;
+	virtual unsigned int GetVertexSizeInBytes() const = 0;
 };
 }
 

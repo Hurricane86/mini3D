@@ -39,10 +39,57 @@ class DX9ScreenRenderTarget : public IScreenRenderTarget, public IDX9RenderTarge
 {
 // TODO: Public and private
 
+
+public:
+	DX9ScreenRenderTarget(DX9GraphicsService* pGraphicsService, const unsigned int& width, const unsigned int& height, const int& windowHandle, const bool& depthTestEnabled, const Quality& quality);
+	virtual ~DX9ScreenRenderTarget(void);
+
+
+	// ::::: IDepthStencil ::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+	virtual void SetScreenRenderTarget(const unsigned int& width, const unsigned int& height, const int& windowHandle, const bool& depthTestEnabled, const Quality& quality);
+
+	virtual unsigned int GetWidth() const { return width; };
+	virtual unsigned int GetHeight() const { return height; };
+	virtual void SetSize(const int& width, const int& height);
+	
+	virtual bool GetDepthTestEnabled() const { return depthTestEnabled; };
+	virtual Quality GetQuality() const { return quality; }
+	virtual int GetWindowHandle() const { return hWindow; };
+
+	virtual void Display();
+
+	
+	// ::::: IDX9Resource :::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+	void LoadResource();
+	void UnloadResource();
+	bool GetIsDirty() const { return isDirty; }
+
+
+	// ::::: IDX9RenderTarget :::::::::::::::::::::::::::::::::::::::::::::::::
+
+	virtual bool GetFullscreenCompatible(void) const { return false; };
+	virtual bool GetWindowedCompatible(void) const { return true; };
+	
+	IDirect3DSurface9*  GetRenderTargetBuffer(void) const { return pRenderTargetSurface; }
+	virtual IDepthStencil* GetDepthStencil(void) const { return pDepthStencil; }
+
+
 private:
+
+	// ::::: Private Methods :::::::::::::::::::::::::::::::::::::::::::::::::::
+
+	static LRESULT CALLBACK HookWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+
+private:
+
+	// ::::: Private Member Varaibles :::::::::::::::::::::::::::::::::::::::::
+
 	DX9GraphicsService* pGraphicsService;
 	IDirect3DSwapChain9* pScreenRenderTarget;
-	DX9DepthStencil* pDepthStencil;
+	IDepthStencil* pDepthStencil;
 
 	IDirect3DSurface9* pRenderTargetSurface;
 
@@ -54,7 +101,6 @@ private:
 	static WNDPROC pOrigProc;
 	static std::map<int, DX9ScreenRenderTarget*> windowMap;
 
-	// TODO: Fix this with power of 2 comparison agains width, height...
 	int bufferWidth;
 	int bufferHeight;
 	int hBufferWindow;
@@ -62,28 +108,6 @@ private:
 	
 	bool isDirty;
 
-public:
-	DX9ScreenRenderTarget(DX9GraphicsService* pGraphicsService, unsigned int width, unsigned int height, int hWindow, bool depthTestEnabled, Quality quality);
-	virtual ~DX9ScreenRenderTarget(void);
-
-	virtual void SetScreenRenderTarget(unsigned int width, unsigned int height, int hWindow, bool depthTestEnabled, Quality quality);
-	IDirect3DSurface9*  GetRenderTargetBuffer(void);
-
-	void LoadResource(void);
-	void UnloadResource(void);
-
-	virtual unsigned int GetWidth(void);
-	virtual unsigned int GetHeight(void);
-	virtual bool GetDepthTestEnabled(void);
-	virtual IDepthStencil* GetDepthStencil(void);
-	virtual void Display(void);
-	bool GetIsDirty(void);
-	void SetSize(int width, int height);
-
-	virtual bool GetFullscreenCompatible(void) { return false; };
-	virtual bool GetWindowedCompatible(void) { return true; };
-
-	static LRESULT CALLBACK HookWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 };
 }
 

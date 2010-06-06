@@ -32,47 +32,76 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "internal/IDX9RenderTarget.h"
 #include "internal/IDX9Resource.h"
 
+// Todo: make a c-file with implementations of all this
+
 namespace mini3d
 {
 class DX9FullscreenRenderTarget : public IFullscreenRenderTarget, public IDX9RenderTarget, public IDX9Resource
 {
 
+public:
+
+	// ::::: Constructor & Destructor :::::::::::::::::::::::::::::::::::::::::
+
+	DX9FullscreenRenderTarget(DX9GraphicsService* pGraphicsService, const unsigned int& width, const unsigned int& height, const int& windowHandle, const bool& depthTestEnabled, const Quality& quality) : pGraphicsService(pGraphicsService), width(width), height(height), quality(quality), depthTestEnabled(depthTestEnabled), hWindow(hWindow) { };
+	~DX9FullscreenRenderTarget(void){};
+
+
+	// ::::: IFullscreenRenderTarget ::::::::::::::::::::::::::::::::::::::::::
+
+	virtual void SetFullScreenRenderTarget(const unsigned int& width, const unsigned int& height, const int& windowHandle, const bool& depthTestEnabled, const Quality& quality) { };
+	
+	virtual unsigned int GetWidth() const { return width; };
+	virtual unsigned int GetHeight() const { return height; };
+	virtual void SetSize(const int& width, const int& height) { this->width = width; this->height = height; };
+
+	virtual bool GetDepthTestEnabled() const { return depthTestEnabled; };
+	virtual Quality GetQuality() const { return quality; };
+	virtual int GetWindowHandle() const { return hWindow; };
+
+	virtual void Display();
+
+
+	// ::::: IDX9Resource ::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+	virtual void LoadResource() { return; };
+	virtual void UnloadResource(){ return; };
+	virtual bool GetIsDirty() const { return false; };
+
+
+	// ::::: IDX9RenderTarget ::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+	virtual IDirect3DSurface9* GetRenderTargetBuffer(void) const { return 0; };
+
+	virtual bool GetFullscreenCompatible(void) const { return true; };
+	virtual bool GetWindowedCompatible(void) const { return false; };
+	
+
+	// ::::: Public Methods ::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+	virtual IDepthStencil* GetDepthStencil(void) const { return 0; };
+
+
 private:
+
+	// ::::: Private Member Varaibles ::::::::::::::::::::::::::::::::::::::::::::
+
+	// GraphicsDevice link
 	DX9GraphicsService* pGraphicsService;
 
+	// Rendertarget dimensions	
 	int width;
 	int height;
+
+	// window handle to render target window
 	int hWindow;
+
+	// use depth stencil
 	bool depthTestEnabled;
+
+	// quality level
 	Quality quality;
 
-public:
-	DX9FullscreenRenderTarget(DX9GraphicsService* pGraphicsService, unsigned int width, unsigned int height, int hWindow, bool depthTestEnabled, Quality quality) : 
-	pGraphicsService(pGraphicsService), width(width), height(height), quality(quality), depthTestEnabled(depthTestEnabled), hWindow(hWindow)
-	{
-		
-	}
-
-	virtual ~DX9FullscreenRenderTarget(void){};
-
-	virtual void SetScreenRenderTarget(unsigned int width, unsigned int height, int hWindow, bool depthTestEnabled, Quality quality){};
-	virtual unsigned int GetWidth(void) { return width; };
-	virtual unsigned int GetHeight(void) { return height; };
-	
-	virtual void LoadResource(void) { return; };
-	virtual void UnloadResource(void){ return; };
-	virtual bool GetIsDirty(void) { return false; };
-
-	virtual IDirect3DSurface9* GetRenderTargetBuffer(void) { return 0; };
-	virtual IDepthStencil* GetDepthStencil(void) { return 0; };
-
-	virtual bool GetDepthTestEnabled(void) { return depthTestEnabled; };
-	virtual int GetWindow(void) { return hWindow; };
-	virtual Quality GetQuality(void) { return quality; };
-	virtual void Display(void);
-
-	virtual bool GetFullscreenCompatible(void) { return true; };
-	virtual bool GetWindowedCompatible(void) { return false; };
 };
 }
 #endif

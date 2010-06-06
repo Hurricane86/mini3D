@@ -33,21 +33,20 @@ namespace mini3d
 {
 class IDX9RenderTarget: public virtual IRenderTarget
 {
-friend class DX9GraphicsService;
-
-private:
-	virtual IDirect3DSurface9* GetRenderTargetBuffer(void) = 0;
-
 public:
 	virtual ~IDX9RenderTarget(void) {};
 
-	virtual unsigned int GetWidth(void) = 0;
-	virtual unsigned int GetHeight(void) = 0;
-	virtual bool GetDepthTestEnabled(void) = 0;
-	virtual bool GetFullscreenCompatible(void) = 0;
-	virtual bool GetWindowedCompatible(void) = 0;
+	virtual unsigned int GetWidth() const = 0;
+	virtual unsigned int GetHeight() const = 0;
+	virtual void SetSize(const int& width, const int& height) = 0;
 
-	virtual IDepthStencil* GetDepthStencil(void) = 0;
+	virtual bool GetDepthTestEnabled() const = 0;
+	virtual bool GetFullscreenCompatible() const = 0;
+	virtual bool GetWindowedCompatible() const = 0;
+
+	virtual IDepthStencil* GetDepthStencil() const = 0;
+
+	virtual IDirect3DSurface9* GetRenderTargetBuffer() const = 0;
 };
 }
 

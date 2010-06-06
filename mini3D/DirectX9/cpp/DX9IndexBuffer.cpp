@@ -27,11 +27,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "../DX9VertexBuffer.h"
 #include <d3d9.h>
 
-mini3d::DX9IndexBuffer::DX9IndexBuffer(DX9GraphicsService* pGraphicsService, void* pIndices, unsigned int count) : 
+mini3d::DX9IndexBuffer::DX9IndexBuffer(DX9GraphicsService* pGraphicsService, const void* pIndices, const unsigned int& count, const DataType& dataType, const CullMode& cullMode) : 
 	pGraphicsService(pGraphicsService), bufferSizeInBytes(0), pIndices(0), pIndexBuffer(0)
 {
-	SetIndices(pIndices, count);
-	LoadResource();	
+	SetIndices(pIndices, count, dataType, cullMode);
 	pGraphicsService->AddResource(this);
 }
 
@@ -42,47 +41,64 @@ mini3d::DX9IndexBuffer::~DX9IndexBuffer(void)
 	pGraphicsService->RemoveResource(this);
 }
 
-void mini3d::DX9IndexBuffer::SetIndices(void* pIndices, unsigned int count)
+void* mini3d::DX9IndexBuffer::GetIndices(unsigned int& sizeInBytes) const
+{
+	sizeInBytes = this->sizeInBytes;
+
+	void* pIndicesCopy = malloc(sizeInBytes);
+	memcpy(pIndicesCopy, pIndices, sizeInBytes);
+	
+	return pIndicesCopy;
+}
+
+void mini3d::DX9IndexBuffer::SetIndices(const void* pIndices, const unsigned int& count, const DataType& dataType, const CullMode& cullMode)
 {
 	UnloadIndices();
 
 	this->sizeInBytes = count * 4; // TODO: depends on index type
+	this->pIndices = malloc(sizeInBytes);
+	memcpy(this->pIndices, pIndices, sizeInBytes);
 
-	this->pIndices = pIndices;
+	this->indexCount = count;
 
-	isDirty = true;
-}
-void* mini3d::DX9IndexBuffer::GetIndices(unsigned int& count)
-{
-	void* pReturnIndices = pIndices;
-	count = GetIndexCount(); // TODO: depends on index type
-
-	// reset the data because we are "removing it" when we do a GetVertices!
-	pIndices = 0;
-	sizeInBytes = 0;
+	this->dataType = dataType;
+	this->cullMode = cullMode;
 
 	isDirty = true;
+	LoadResource();	
+}
 
-	return pReturnIndices;
-}
-unsigned int mini3d::DX9IndexBuffer::GetIndexCount(void)
-{
-	return sizeInBytes / 4;
-}
-IDirect3DIndexBuffer9* mini3d::DX9IndexBuffer::GetIndexBuffer(void)
-{
-	return pIndexBuffer;
-}
 void mini3d::DX9IndexBuffer::UnloadIndices(void)
 {
 	if (pIndices != 0)
+	{
 		operator delete(pIndices);
 
-	pIndices = 0;
-	sizeInBytes = 0;
+		pIndices = 0;
+		sizeInBytes = 0;
 
-	isDirty = true;
+		cullMode = CULL_COUNTERCLOCKWIZE;
+		dataType = INT_16;
+
+		isDirty = true;
+	}
 }
+
+void* mini3d::DX9IndexBuffer::Lock(unsigned int& sizeInBytes) const
+{
+	sizeInBytes = this->sizeInBytes;
+	return pIndices;
+}
+
+void mini3d::DX9IndexBuffer::Unlock(const bool& dataIsChanged)
+{
+	if (dataIsChanged)
+	{
+		isDirty = true;
+		LoadResource();
+	}
+}
+
 void mini3d::DX9IndexBuffer::LoadResource(void)
 {
 	/// Allocate buffer on the graphics card and add index data.
@@ -141,8 +157,4 @@ void mini3d::DX9IndexBuffer::UnloadResource(void)
 	}
 
 	isDirty = true;
-}
-bool mini3d::DX9IndexBuffer::GetIsDirty(void)
-{
-	return isDirty;
 }

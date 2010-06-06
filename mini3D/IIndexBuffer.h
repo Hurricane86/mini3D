@@ -33,13 +33,20 @@ class IIndexBuffer
 {
 public:
 	enum CullMode { CULL_CLOCKWIZE = 0, CULL_COUNTERCLOCKWIZE = 1, CULL_NONE = 2 };
+	enum DataType { INT_16 = 0, INT_32 = 1 };
 
-	virtual ~IIndexBuffer(void) {};
+	virtual ~IIndexBuffer() {};
 	
-	virtual void* GetIndices(unsigned int& sizeInBytes) = 0;
-	virtual void SetIndices(void* pIndices, unsigned int count) = 0;
+	virtual void* GetIndices(unsigned int& sizeInBytes) const = 0;
+	virtual void SetIndices(const void* pIndices, const unsigned int& count, const IIndexBuffer::DataType& dataType = IIndexBuffer::INT_16, const IIndexBuffer::CullMode& cullMode = IIndexBuffer::CULL_COUNTERCLOCKWIZE) = 0;
 
-	virtual unsigned int GetIndexCount(void) = 0;
+	virtual void* Lock(unsigned int& sizeInBytes) const = 0;
+	virtual void Unlock(const bool& dataIsChanged) = 0;
+
+	virtual unsigned int GetIndexCount() const = 0;
+
+	virtual CullMode GetCullMode() const = 0;
+	virtual void SetCullMode(const CullMode& cullMode) = 0;
 };
 }
 

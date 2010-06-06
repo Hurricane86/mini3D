@@ -28,17 +28,12 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "../DX9DepthStencil.h"
 #include <d3d9.h>
 
-mini3d::DX9RenderTargetTexture::DX9RenderTargetTexture(DX9GraphicsService* pGraphicsService, unsigned int width, unsigned int height, bool depthTestEnabled) : 
+mini3d::DX9RenderTargetTexture::DX9RenderTargetTexture(DX9GraphicsService* pGraphicsService, const unsigned int& width, const unsigned int& height, const bool& depthTestEnabled) : 
 	pGraphicsService(pGraphicsService), pDepthStencil(0), pRenderTarget(0)
 {
-	timesAllocated = 0;
-
 	SetRenderTarget(width, height, depthTestEnabled);
-	LoadResource();	
 	pGraphicsService->AddResource(this);
 
-	if (depthTestEnabled == true)
-		pDepthStencil = new DX9DepthStencil(pGraphicsService, width, height);
 }
 
 mini3d::DX9RenderTargetTexture::~DX9RenderTargetTexture(void)
@@ -50,40 +45,24 @@ mini3d::DX9RenderTargetTexture::~DX9RenderTargetTexture(void)
 		delete pDepthStencil;
 }
 
-void mini3d::DX9RenderTargetTexture::SetRenderTarget(unsigned int width, unsigned int height, bool depthTestEnabled)
+void mini3d::DX9RenderTargetTexture::SetRenderTarget(const unsigned int& width, const unsigned int& height, const bool& depthTestEnabled)
 {
 	this->width = width;
 	this->height = height;
 	this->depthTestEnabled = depthTestEnabled;
 	this->isDirty = true;
-}
-unsigned int mini3d::DX9RenderTargetTexture::GetWidth(void)
-{
-	return width;
-}
-unsigned int mini3d::DX9RenderTargetTexture::GetHeight(void)
-{
-	return height;
-}
-bool mini3d::DX9RenderTargetTexture::GetDepthTestEnabled(void)
-{
-	return depthTestEnabled;
-}
-mini3d::ITexture::WrapStyle mini3d::DX9RenderTargetTexture::GetWrapStyle(void)
-{
-	return CLAMP;
-}
-IDirect3DSurface9* mini3d::DX9RenderTargetTexture::GetRenderTargetBuffer(void)
-{
-	return pRenderTargetSurface;
-}
-mini3d::IDepthStencil* mini3d::DX9RenderTargetTexture::GetDepthStencil(void)
-{
-	return pDepthStencil;
-}
-IDirect3DTexture9* mini3d::DX9RenderTargetTexture::GetTextureBuffer(void)
-{
-	return pRenderTarget;
+
+	LoadResource();	
+
+	if (depthTestEnabled == true && pDepthStencil == 0)
+	{
+		pDepthStencil = new DX9DepthStencil(pGraphicsService, width, height);
+	}
+	else if (depthTestEnabled == false && pDepthStencil != 0)
+	{
+		delete pDepthStencil;
+		pDepthStencil = 0;
+	}
 }
 void mini3d::DX9RenderTargetTexture::LoadResource(void)
 {
@@ -112,7 +91,6 @@ void mini3d::DX9RenderTargetTexture::LoadResource(void)
 		
 		// Capture the render target surfrace to avoid reference counting in directx
 		pRenderTarget->GetSurfaceLevel(0, &pRenderTargetSurface);
-		timesAllocated++;
 	}
 
 	bufferWidth = width;
@@ -136,16 +114,10 @@ void mini3d::DX9RenderTargetTexture::UnloadResource(void)
 
 		pRenderTargetSurface->Release();
 		pRenderTargetSurface = 0;
-		timesAllocated --;
 
 		pRenderTarget->Release();
 		pRenderTarget = 0;
 	}
 
 	isDirty = true;
-}
-
-bool mini3d::DX9RenderTargetTexture::GetIsDirty(void)
-{
-	return isDirty;
 }

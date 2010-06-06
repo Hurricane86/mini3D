@@ -41,7 +41,7 @@ namespace utilites
 			_00 = _01 = _02 = _03 = _10 = _11 = _12 = _13 = _20 = _21 = _22 = _23 = _30 = _31 = _32 = _33 = 0;
 		}
 
-		static Matrix4& Identity()
+		static Matrix4 Identity()
 		{
 			Matrix4 m;
 			m._00 = m._11 = m._22 = m._33 = 1;

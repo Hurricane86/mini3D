@@ -37,14 +37,18 @@ public:
 
 	enum Quality{QUALITY_MINIMUM, QUALITY_LOW, QUALITY_MEDIUM, QUALITY_HIGH, QUALITY_MAXIMUM};
 
-	virtual ~IScreenRenderTarget(void) {};
+	virtual ~IScreenRenderTarget() {};
 
-	virtual void SetScreenRenderTarget(unsigned int width, unsigned int height, int hWindow, bool depthTestEnabled, Quality quality) = 0;
-	virtual unsigned int GetWidth(void) = 0;
-	virtual unsigned int GetHeight(void) = 0;
-	virtual bool GetDepthTestEnabled(void) = 0;
+	virtual void SetScreenRenderTarget(const unsigned int& width, const unsigned int& height, const int& windowHandle, const bool& depthTestEnabled, const Quality& quality) = 0;
+	
+	virtual unsigned int GetWidth() const = 0;
+	virtual unsigned int GetHeight() const = 0;
 
-	virtual void Display(void) = 0;
+	virtual bool GetDepthTestEnabled() const = 0;
+	virtual Quality GetQuality() const = 0;
+	virtual int GetWindowHandle() const = 0;
+	
+	virtual void Display() = 0;
 };
 }
 

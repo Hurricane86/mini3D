@@ -36,9 +36,53 @@ namespace mini3d
 class DX9DepthStencil;
 class DX9RenderTargetTexture : public IRenderTargetTexture, public IDX9Texture, public IDX9RenderTarget, public IDX9Resource
 {
-friend class DX9GraphicsService;
+
+public:
+
+	// ::::: Constructor & Destructor :::::::::::::::::::::::::::::::::::::::::
+
+	DX9RenderTargetTexture(DX9GraphicsService* graphicsService, const unsigned int& width, const unsigned int& height, const bool& depthTestEnabled);
+	~DX9RenderTargetTexture(void);
+
+
+	// ::::: IRenderTargetTexture :::::::::::::::::::::::::::::::::::::::::::::
+
+	void SetRenderTarget(const unsigned int& width, const unsigned int& height, const bool& depthTestEnabled);
+	
+	virtual unsigned int GetWidth() const { return width; };
+	virtual unsigned int GetHeight() const { return height; }
+	virtual void SetSize(const int& width, const int& height) { SetRenderTarget(width, height, depthTestEnabled); };
+
+	virtual WrapStyle GetWrapStyle() const { return WRAP_CLAMP; };
+
+	virtual bool GetDepthTestEnabled() const { return depthTestEnabled; };
+
+
+	// ::::: IDX9Resource :::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+	virtual void LoadResource();
+	virtual void UnloadResource();
+	virtual bool GetIsDirty() const { return isDirty; };
+
+
+	// ::::: IDX9RenderTarget :::::::::::::::::::::::::::::::::::::::::::::::::
+
+	virtual IDirect3DSurface9* GetRenderTargetBuffer() const { return pRenderTargetSurface; };
+	virtual IDepthStencil* GetDepthStencil() const { return pDepthStencil; };
+	virtual bool GetFullscreenCompatible() const { return true; };
+	virtual bool GetWindowedCompatible() const { return true; };
+
+	
+	// ::::: IDX9Texture ::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+	virtual IDirect3DTexture9* GetTextureBuffer() const { return pRenderTarget; };
+
 
 private:
+
+	// GraphicsDevice link
+	DX9GraphicsService* pGraphicsService;
+		
 	// Bitmap
 	unsigned int width;
 	unsigned int height;
@@ -49,36 +93,9 @@ private:
 	unsigned int bufferWidth;
 	unsigned int bufferHeight;
 	IDirect3DTexture9* pRenderTarget;
-	DX9DepthStencil* pDepthStencil;
+	IDepthStencil* pDepthStencil;
 	IDirect3DSurface9* pRenderTargetSurface;
 	
-	// GraphicsDevice link
-	DX9GraphicsService* pGraphicsService;
-
-	int timesAllocated;
-
-private:
-	virtual IDirect3DSurface9* GetRenderTargetBuffer(void);
-	virtual IDirect3DTexture9* GetTextureBuffer(void);
-
-public:
-	DX9RenderTargetTexture(DX9GraphicsService* graphicsService, unsigned int width, unsigned int height, bool depthTestEnabled);
-	~DX9RenderTargetTexture(void);
-
-	void SetRenderTarget(unsigned int width, unsigned int height, bool depthTestEnabled);
-	virtual unsigned int GetWidth(void);
-	virtual unsigned int GetHeight(void);
-	virtual bool GetDepthTestEnabled(void);
-	virtual IDepthStencil* GetDepthStencil(void);
-	virtual WrapStyle GetWrapStyle(void);
-	
-	virtual bool GetFullscreenCompatible(void) { return true; };
-	virtual bool GetWindowedCompatible(void) { return true; };
-
-	// IDX9Resource
-	virtual void LoadResource(void);
-	virtual void UnloadResource(void);
-	virtual bool GetIsDirty(void);
 
 };
 }

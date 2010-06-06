@@ -29,10 +29,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include <sstream>
 #include <string>
 
-#include <vector>
-
-using namespace std;
-
 namespace mini3d
 {
 namespace utilites
@@ -40,22 +36,24 @@ namespace utilites
 class BinaryFileReader
 {
 public:
-	static std::vector<char> ReadBytesFromFile(wstring file)
+	static char* ReadBytesFromFile(std::wstring file, unsigned int& sizeInBytes)
 	{
-		std::vector<char> shaderBytes;
+		char* data;
 
-		fstream fileStream(file.c_str(), ios_base::binary | ios_base::in);
+		std::fstream fileStream(file.c_str(), std::ios_base::binary | std::ios_base::in);
 		if (fileStream)
 		{
-			fileStream.seekg(0, ios::end);
-			long fileSize = long(fileStream.tellg()); // pretty safe downcast since shader files will not be gazillions of bytes long
-			fileStream.seekg(0, ios::beg);
+			fileStream.seekg(0, std::ios::end);
+			long fileSize = long(fileStream.tellg()); // pretty safe downcast since this is not supposed to be used with files that arae gazillions of bytes long
+			fileStream.seekg(0, std::ios::beg);
 
-			shaderBytes.resize(fileSize);
-			fileStream.read(&shaderBytes[0], fileSize);
+			data = new char[fileSize];
+			fileStream.read(&data[0], fileSize);
 			fileStream.close();
+
+			sizeInBytes = fileSize;
 		}
-		return shaderBytes;
+		return data;
 	}
 };
 

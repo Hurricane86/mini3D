@@ -37,7 +37,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 #include "mini3d/IGraphicsService.h"
 #include "mini3d/DirectX9/DX9GraphicsService.h"
-#include "mini3d/OpenGL20/OGL20GraphicsService.h"
+//#include "mini3d/OpenGL20/OGL20GraphicsService.h"
 
 #include <iostream>
 #include <fstream>
@@ -103,8 +103,10 @@ HWND createWindow(void)
 	return hWindow;
 }
 
-struct VertexPCT { float x,y,z,w; float r,g,b,a;	float u,v; };
+// Vertex Data Structure
+struct VertexPCT { float x,y,z,w;  float r,g,b,a;  float u,v; };
 
+// Vertex array
 VertexPCT vertices[] = {{-5.0f,-5.0f, 5.0f, 1.0f,  1.0f, 1.0f, 0.0f, 1.0f,  0.0f, 0.0f},
 						{ 5.0f,-5.0f, 5.0f, 1.0f,  1.0f, 0.0f, 0.0f, 1.0f,  0.99f, 0.0f},
 						{ 5.0f, 5.0f, 5.0f, 1.0f,  0.0f, 1.0f, 1.0f, 1.0f,  0.99f, 0.99f},
@@ -115,7 +117,11 @@ VertexPCT vertices[] = {{-5.0f,-5.0f, 5.0f, 1.0f,  1.0f, 1.0f, 0.0f, 1.0f,  0.0f
 						{ 5.0f, 5.0f, -5.0f, 1.0f,  0.0f, 1.0f, 1.0f, 1.0f,  0.99f, 0.99f},
 						{-5.0f, 5.0f, -5.0f, 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,  0.0f, 0.99f}};
 
+// Index array
 int indices[] = {0, 1, 2, 0, 2, 3,   4, 0, 3, 4, 3, 7,  5, 4, 7, 5, 7, 6,  1, 5, 6, 1, 6, 2,  1, 0, 4, 1, 4, 5,  3, 2, 6, 3, 6, 7};
+
+// Vertex declaration for the vertex shader
+mini3d::IVertexShader::VertexDataType vertexDeclaration[] = { mini3d::IVertexShader::POSITION_FLOAT4, mini3d::IVertexShader::COLOR_FLOAT4, mini3d::IVertexShader::TEXTURECOORDINATE_FLOAT2 };
 
 INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 {
@@ -135,29 +141,26 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	mini3d::IRenderTargetTexture* pRenderTargetTexture = graphics->CreateRenderTargetTexture(512, 512, true);
 
 	// create index buffer
-	mini3d::IIndexBuffer* iBuffer = graphics->CreateIndexBuffer(indices, 36, mini3d::IIndexBuffer::CULL_NONE);
-
-	// create a vertex declaration for the vertex buffer and the vertex shader
-	mini3d::IVertexShader::VertexDeclarationVector vd;
-		vd.push_back(mini3d::IVertexShader::POSITION_FLOAT4);
-		vd.push_back(mini3d::IVertexShader::COLOR_FLOAT4);
-		vd.push_back(mini3d::IVertexShader::TEXTURECOORDINATE_FLOAT2);
+	mini3d::IIndexBuffer* iBuffer = graphics->CreateIndexBuffer(indices, 36, mini3d::IIndexBuffer::INT_32, mini3d::IIndexBuffer::CULL_NONE);
 
 	// create vertex buffer
-	mini3d::IVertexBuffer* vBuffer = graphics->CreateVertexBuffer(vertices, 8, vd);
+	mini3d::IVertexBuffer* vBuffer = graphics->CreateVertexBuffer(vertices, 8, sizeof(VertexPCT));
 	
 	// create texture
 	int* pBitmap = new int[512 * 512 * 4]; for(int i = 0; i < 512 * 512; i++) { pBitmap[i] = 0xFFFFFFFF * ((i / 128) % 2); }
 	mini3d::IBitmapTexture* pTexture = graphics->CreateBitmapTexture(pBitmap, 512, 512);
-
+	delete[] pBitmap;
+	
+	unsigned int sizeInBytes;
+	
 	// create vertex shader
-	mini3d::IVertexShader::ShaderBytes shaderBytes2 = mini3d::utilites::BinaryFileReader::ReadBytesFromFile(L"vertexshader.hlsl");
-	mini3d::IVertexShader* pVertexShader = graphics->CreateVertexShader(shaderBytes2, vd);
+	char* shaderBytes = mini3d::utilites::BinaryFileReader::ReadBytesFromFile(L"vertexshader.hlsl", sizeInBytes);
+	mini3d::IVertexShader* pVertexShader = graphics->CreateVertexShader(shaderBytes, sizeInBytes, vertexDeclaration, 3);
 
 	// create pixel shader
-	mini3d::IPixelShader::ShaderBytes shaderBytes = mini3d::utilites::BinaryFileReader::ReadBytesFromFile(L"pixelshader.hlsl");
-	mini3d::IPixelShader* pPixelShader = graphics->CreatePixelShader(shaderBytes);
-	
+	char* shaderBytes2 = mini3d::utilites::BinaryFileReader::ReadBytesFromFile(L"pixelshader.hlsl", sizeInBytes);
+	mini3d::IPixelShader* pPixelShader = graphics->CreatePixelShader(shaderBytes2, sizeInBytes);
+
 	// create shader program
 	mini3d::IShaderProgram* pShaderProgram = graphics->CreateShaderProgram(pVertexShader, pPixelShader);
 

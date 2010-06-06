@@ -27,11 +27,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "../DX9BitmapTexture.h"
 #include <d3d9.h>
 
-mini3d::DX9BitmapTexture::DX9BitmapTexture(DX9GraphicsService* pGraphicsService, void* pBitmap, unsigned int width, unsigned int height, IBitmapTexture::BitDepth bitDepth, ITexture::WrapStyle wrapStyle) :
+mini3d::DX9BitmapTexture::DX9BitmapTexture(DX9GraphicsService* pGraphicsService, const void* pBitmap, const unsigned int& width, const unsigned int& height, const IBitmapTexture::BitDepth bitDepth, const ITexture::WrapStyle wrapStyle) :
 	pGraphicsService(pGraphicsService), bufferWidth(0), bufferHeight(0), pBitmap(0), pTexture(0)
 {
 	SetBitmap(pBitmap, width, height);
-	LoadResource();
 	pGraphicsService->AddResource(this);
 }
 
@@ -41,37 +40,23 @@ mini3d::DX9BitmapTexture::~DX9BitmapTexture(void)
 	UnloadBitmap();
 	pGraphicsService->RemoveResource(this);
 }
-IDirect3DTexture9* mini3d::DX9BitmapTexture::GetTextureBuffer(void)
+void* mini3d::DX9BitmapTexture::GetBitmap(unsigned int& sizeInBytes) const
 {
-	return pTexture;
-}
-void* mini3d::DX9BitmapTexture::GetBitmap(unsigned int& width, unsigned int& height, IBitmapTexture::BitDepth& bitDepth, ITexture::WrapStyle& wrapStyle)
-{
-	void* pReturnBitmap = pBitmap;
-	width = this->width;
-	height = this->height;
-	wrapStyle = this->wrapStyle;
-	bitDepth = this->bitDepth;
+	sizeInBytes = this->sizeInBytes;
+
+	void* pBitmapCopy = malloc(sizeInBytes);
+	memcpy(pBitmapCopy, pBitmap, sizeInBytes);
 	
-
-	// reset the bitmap information because we are "removing" the bitmap from the texture when we get it!
-	this->width = 0;
-	this->height = 0;
-	this->pBitmap = 0;
-
-	wrapStyle = IBitmapTexture::TILE;
-	bitDepth = IBitmapTexture::BIT32;
-
-	this->isDirty = true;
-
-	return pReturnBitmap;
+	return pBitmapCopy;
 }
-void mini3d::DX9BitmapTexture::SetBitmap(void* pBitmap, unsigned int width, unsigned int height, IBitmapTexture::BitDepth bitDepth, ITexture::WrapStyle wrapStyle)
+
+void mini3d::DX9BitmapTexture::SetBitmap(const void* pBitmap, const unsigned int& width, const unsigned int& height, const IBitmapTexture::BitDepth bitDepth, const ITexture::WrapStyle wrapStyle)
 {
 	UnloadBitmap();
 	
-	int sizeInBytes = width * height * 4;  // TODO: Depends on graphics settings
-	this->pBitmap = pBitmap;
+	sizeInBytes = width * height * 4;  // TODO: Depends on graphics settings
+	this->pBitmap = malloc(sizeInBytes);
+	memcpy(this->pBitmap, pBitmap, sizeInBytes);
 
 	this->width = width;
 	this->height = height;
@@ -80,34 +65,35 @@ void mini3d::DX9BitmapTexture::SetBitmap(void* pBitmap, unsigned int width, unsi
 	this->bitDepth = bitDepth;
 
 	isDirty = true;
+	LoadResource();
 }
+
 void mini3d::DX9BitmapTexture::UnloadBitmap(void)
 {
 	if (pBitmap != 0)
-		operator delete(pBitmap);
+		free(pBitmap);
 
 	pBitmap = 0;
 	width = 0;
 	height = 0;
-	wrapStyle = IBitmapTexture::TILE;
-	bitDepth = IBitmapTexture::BIT32;
+	wrapStyle = IBitmapTexture::WRAP_TILE;
+	bitDepth = IBitmapTexture::BIT_32;
 }
-unsigned int mini3d::DX9BitmapTexture::GetWidth(void)
+
+void* mini3d::DX9BitmapTexture::Lock(unsigned int& sizeInBytes) const
 {
-	return width;
+	sizeInBytes = this->sizeInBytes;
+	return pBitmap;
 }
-unsigned int mini3d::DX9BitmapTexture::GetHeight(void)
+void mini3d::DX9BitmapTexture::Unlock(const bool& dataIsChanged)
 {
-	return height;
+	if (dataIsChanged)
+	{
+		isDirty = true;
+		LoadResource();
+	}
 }
-mini3d::ITexture::WrapStyle mini3d::DX9BitmapTexture::GetWrapStyle(void)
-{
-	return wrapStyle;
-}
-mini3d::IBitmapTexture::BitDepth mini3d::DX9BitmapTexture::GetBitDepth(void)
-{
-	return bitDepth;
-}
+
 void mini3d::DX9BitmapTexture::LoadResource(void)
 {
 	IDirect3DDevice9* pDevice = pGraphicsService->GetDevice();
@@ -135,19 +121,18 @@ void mini3d::DX9BitmapTexture::LoadResource(void)
 
 		switch (bitDepth)
 		{
-		case IBitmapTexture::BIT16:
+		case IBitmapTexture::BIT_16:
 			fmt = D3DFMT_X4R4G4B4;
 			break;
-		case IBitmapTexture::BIT32:
+		case IBitmapTexture::BIT_32:
 			fmt = D3DFMT_X8R8G8B8;
 			break;
-		case IBitmapTexture::BIT64:
+		case IBitmapTexture::BIT_64:
 			fmt = D3DFMT_A16B16G16R16;
 			break;
 		default:
 			fmt = D3DFMT_X8R8G8B8;
 		}
-
 
 		if( FAILED( pDevice->CreateTexture(width, height, 1, D3DUSAGE_DYNAMIC, fmt, D3DPOOL_DEFAULT, &pTexture, 0 ) ) ) 
 		{
@@ -192,8 +177,4 @@ void mini3d::DX9BitmapTexture::UnloadResource(void)
 	}
 
 	isDirty = true;
-}
-bool mini3d::DX9BitmapTexture::GetIsDirty(void)
-{
-	return isDirty;
 }

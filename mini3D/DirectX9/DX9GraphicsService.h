@@ -55,25 +55,30 @@ namespace mini3d
 
 struct VertexDeclarationContainer
 {
-	VertexDeclarationContainer(IVertexShader::VertexDeclarationVector mini3dDeclaration, IDirect3DVertexDeclaration9* direct3dDeclaration, int counter) : 
-								mini3dDeclaration(mini3dDeclaration), direct3dDeclaration(direct3dDeclaration), counter(counter)
+	// TOFO: leeks memory like crazy (vertexDeclarations should be deleted properly)
+	VertexDeclarationContainer(IVertexShader::VertexDataType mini3dDeclaration[], const unsigned int& count, IDirect3DVertexDeclaration9* direct3dDeclaration) : 
+								mini3dDeclaration(mini3dDeclaration), direct3dDeclaration(direct3dDeclaration), count(count), counter(1)
 	{
+
 	}
 
 	VertexDeclarationContainer() : 
-	mini3dDeclaration(IVertexShader::VertexDeclarationVector()), direct3dDeclaration(0), counter(0)
+	mini3dDeclaration(0), count(count), direct3dDeclaration(0), counter(0)
 	{
+
 	}
 
 	VertexDeclarationContainer( VertexDeclarationContainer& other)
 	{
+		this->count = other.count;
 		this->counter = other.counter;
 		this->direct3dDeclaration = other.direct3dDeclaration;
 		this->mini3dDeclaration = other.mini3dDeclaration;
 	}
 
-	IVertexShader::VertexDeclarationVector mini3dDeclaration;
+	IVertexShader::VertexDataType* mini3dDeclaration;
 	IDirect3DVertexDeclaration9* direct3dDeclaration;
+	int count;
 	int counter;
 };
 	
@@ -170,56 +175,56 @@ public:
 	};
 
 	// Get Graphics Card Capabilities
-	virtual int GetMaxTextures(void);
-	virtual int GetMaxTextureSize(void);
-	virtual int GetPixelShaderVersion(void);
-	virtual int GetVertexShaderVersion(void);
+	virtual int GetMaxTextures() const;
+	virtual int GetMaxTextureSize() const;
+	virtual int GetPixelShaderVersion() const;
+	virtual int GetVertexShaderVersion() const;
 
 	// Create Resources
-	virtual IScreenRenderTarget* CreateScreenRenderTarget(unsigned int width, unsigned int height, int hWindow, bool depthTestEnabled, IScreenRenderTarget::Quality quality);
-	virtual IFullscreenRenderTarget* CreateFullscreenRenderTarget(unsigned int width, unsigned int height, int hWindow, bool depthTestEnabled, IFullscreenRenderTarget::Quality quality);
-	virtual IRenderTargetTexture* CreateRenderTargetTexture(unsigned int width, unsigned int height, bool depthTestEnabled);
-	virtual IBitmapTexture* CreateBitmapTexture(void* pBitmap, unsigned int width, unsigned int height, IBitmapTexture::BitDepth bitDepth = IBitmapTexture::BIT32, ITexture::WrapStyle wrapStyle = ITexture::TILE);
-	virtual IVertexBuffer* CreateVertexBuffer(void* pVertices, unsigned int count, const IVertexBuffer::VertexDeclarationVector& vertexDeclaration);
-	virtual IIndexBuffer* CreateIndexBuffer(int* pIndices,  unsigned int count, const IIndexBuffer::CullMode cullMode = IIndexBuffer::CULL_COUNTERCLOCKWIZE);
-	virtual IPixelShader* CreatePixelShader(const IPixelShader::ShaderBytes& shaderBytes);
-	virtual IVertexShader* CreateVertexShader(const IVertexShader::ShaderBytes& shaderBytes, const IVertexShader::VertexDeclarationVector& vertexDeclaration);
-	virtual IShaderProgram* CreateShaderProgram(mini3d::IVertexShader* pVertexShader, mini3d::IPixelShader* pPixelShader);
+	virtual IScreenRenderTarget* CreateScreenRenderTarget(const unsigned int& width, const unsigned int& height, const int& hWindow, const bool& depthTestEnabled, const IScreenRenderTarget::Quality& quality);
+	virtual IFullscreenRenderTarget* CreateFullscreenRenderTarget(const unsigned int& width, const unsigned int& height, const int& hWindow, const bool& depthTestEnabled, const IFullscreenRenderTarget::Quality& quality);
+	virtual IRenderTargetTexture* CreateRenderTargetTexture(const unsigned int& width, const unsigned int& height, const bool& depthTestEnabled);
+	virtual IBitmapTexture* CreateBitmapTexture(const void* pBitmap, const unsigned int& width, const unsigned int& height, const IBitmapTexture::BitDepth bitDepth = IBitmapTexture::BIT_32, const ITexture::WrapStyle wrapStyle = ITexture::WRAP_TILE);
+	virtual IVertexBuffer* CreateVertexBuffer(const void* pVertices,const  unsigned int& count, const unsigned int& vertexSizeInBytes);
+	virtual IIndexBuffer* CreateIndexBuffer(const void* pIndices, const unsigned int& count, const IIndexBuffer::DataType& dataType = IIndexBuffer::INT_16, const IIndexBuffer::CullMode& cullMode = IIndexBuffer::CULL_COUNTERCLOCKWIZE);
+	virtual IPixelShader* CreatePixelShader(const void* shaderBytes, const unsigned int& sizeInBytes);
+	virtual IVertexShader* CreateVertexShader(const void* shaderBytes, const unsigned int& sizeInBytes, const IVertexShader::VertexDataType vertexDeclaration[], const unsigned int& vertexDataCount);
+	virtual IShaderProgram* CreateShaderProgram(IVertexShader* pVertexShader, IPixelShader* pPixelShader);
 
 	// Pipeline States
-	virtual IPixelShader* GetPixelShader(void);
+	virtual IPixelShader* GetPixelShader() const;
 	virtual void SetPixelShader(IPixelShader* pPixelShader);
 	
-	virtual IVertexShader* GetVertexShader(void);
+	virtual IVertexShader* GetVertexShader() const;
 	virtual void SetVertexShader(IVertexShader* pVertexShader);
 
-	virtual IShaderProgram* GetShaderProgram(void);
+	virtual IShaderProgram* GetShaderProgram() const;
 	virtual void SetShaderProgram(IShaderProgram* ShaderProgram);
 	
-	virtual ITexture* GetTexture(unsigned int index);
-	virtual void SetTexture(ITexture* pTexture, unsigned int index);
+	virtual ITexture* GetTexture(const unsigned int& index) const;
+	virtual void SetTexture(ITexture* pTexture, const unsigned int& index);
 	
-	virtual IRenderTarget* GetRenderTarget(void);
+	virtual IRenderTarget* GetRenderTarget() const;
 	virtual void SetRenderTarget(IRenderTarget* pRenderTarget);
 	
-	virtual IDepthStencil* GetDepthStencil(void);
+	virtual IDepthStencil* GetDepthStencil() const;
 	virtual void SetDepthStencil(IDepthStencil* pDepthStencil);
 
 	// Shader Parameters
-	virtual void SetShaderParameterFloat(unsigned int index, const float* pData, unsigned int count);
-	virtual void SetShaderParameterInt(unsigned int index, const int* pData, unsigned int count);
-	virtual void SetShaderParameterMatrix(unsigned int index, const float* pData, unsigned int rows, unsigned int columns);
+	virtual void SetShaderParameterFloat(const unsigned int& index, const float* pData, const unsigned int& count);
+	virtual void SetShaderParameterInt(const unsigned int& index, const int* pData, const unsigned int& count);
+	virtual void SetShaderParameterMatrix(const unsigned int& index, const float* pData, const unsigned int& rows, const unsigned int& columns);
 	
-	virtual IIndexBuffer* GetIndexBuffer(void);
+	virtual IIndexBuffer* GetIndexBuffer(void) const;
 	virtual void SetIndexBuffer(IIndexBuffer* indexBuffer);
 	
-	virtual IVertexBuffer* GetVertexBuffer(void);
+	virtual IVertexBuffer* GetVertexBuffer(void) const;
 	virtual void SetVertexBuffer(IVertexBuffer* vertexBuffer);
 
 	// Drawing
-	virtual void Clear(int color);
-	virtual void Draw(void);
-	virtual void DrawIndices(unsigned int startIndex, unsigned int numIndices);
+	virtual void Clear(const int& color);
+	virtual void Draw();
+	virtual void DrawIndices(const unsigned int& startIndex, const unsigned int& numIndices);
 
 private:
 	
@@ -259,10 +264,10 @@ private:
 	void RestoreDevice(void);
 
 	// Vertex declaration pooling
-	void PoolVertexDeclaration(const IVertexShader::VertexDeclarationVector& vertexDeclaration);
-	void ReleaseVertexDeclaration(const IVertexShader::VertexDeclarationVector& vertexDeclaration);
-	IDirect3DVertexDeclaration9* mini3d::DX9GraphicsService::CreateDX9VertexDeclaration(const IVertexShader::VertexDeclarationVector& vertexDeclaration);
-	std::string CreateVertexDeclarationKey(const IVertexShader::VertexDeclarationVector& vertexDeclaration);
+	void PoolVertexDeclaration(IVertexShader::VertexDataType vertexDeclaration[], const unsigned int& count);
+	void ReleaseVertexDeclaration(IVertexShader::VertexDataType vertexDeclaration[], const unsigned int& count);
+	IDirect3DVertexDeclaration9* mini3d::DX9GraphicsService::CreateDX9VertexDeclaration(const IVertexShader::VertexDataType vertexDeclaration[], const unsigned int& count);
+	std::string CreateVertexDeclarationKey(const IVertexShader::VertexDataType vertexDeclaration[], const unsigned int& count);
 
 };
 }

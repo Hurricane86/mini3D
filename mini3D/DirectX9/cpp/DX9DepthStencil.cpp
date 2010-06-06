@@ -27,11 +27,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "../DX9DepthStencil.h"
 #include <d3d9.h>
 
-mini3d::DX9DepthStencil::DX9DepthStencil(DX9GraphicsService* pGraphicsService, unsigned int width, unsigned int height) : 
+mini3d::DX9DepthStencil::DX9DepthStencil(DX9GraphicsService* pGraphicsService,  const unsigned int& width, const unsigned int& height) :
 	pGraphicsService(pGraphicsService), pDepthStencil(0)
 {
 	SetDepthStencil(width, height);
-	LoadResource();
 	pGraphicsService->AddResource(this);
 }
 
@@ -41,23 +40,13 @@ mini3d::DX9DepthStencil::~DX9DepthStencil(void)
 	pGraphicsService->RemoveResource(this);
 }
 
-void mini3d::DX9DepthStencil::SetDepthStencil(unsigned int width, unsigned int height)
+void mini3d::DX9DepthStencil::SetDepthStencil(const unsigned int& width, const unsigned int& height)
 {
 	this->width = width;
 	this->height = height;
+	
 	this->isDirty = true;
-}
-unsigned int mini3d::DX9DepthStencil::GetWidth(void)
-{
-	return width;
-}
-unsigned int mini3d::DX9DepthStencil::GetHeight(void)
-{
-	return height;
-}
-IDirect3DSurface9*  mini3d::DX9DepthStencil::GetDepthStencilBuffer(void)
-{
-	return pDepthStencil;
+	LoadResource();
 }
 void mini3d::DX9DepthStencil::LoadResource(void)
 {
@@ -106,9 +95,4 @@ void mini3d::DX9DepthStencil::UnloadResource(void)
 	}
 
 	isDirty = true;
-}
-
-bool mini3d::DX9DepthStencil::GetIsDirty(void)
-{
-	return isDirty;
 }

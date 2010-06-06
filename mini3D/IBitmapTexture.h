@@ -35,23 +35,23 @@ class IBitmapTexture : public virtual ITexture
 {
 public:
 
-	enum BitDepth
-	{
-		BIT16,
-		BIT32,
-		BIT64
-	};
+	enum BitDepth {	BIT_16, BIT_32, BIT_64 };
 
-	virtual ~IBitmapTexture(void) {};
+	virtual ~IBitmapTexture() {};
 
-	virtual void* GetBitmap(unsigned int& width, unsigned int& height, IBitmapTexture::BitDepth& bitDepth, ITexture::WrapStyle& wrapStyle) = 0;
-	virtual void SetBitmap(void* pBitmap, unsigned int width, unsigned int height, IBitmapTexture::BitDepth bitDepth = IBitmapTexture::BIT32, ITexture::WrapStyle wrapStyle = ITexture::TILE) = 0;
+	virtual void* GetBitmap(unsigned int& sizeInBytes) const = 0;
+	virtual void SetBitmap(const void* pBitmap, const unsigned int& width, const unsigned int& height, const IBitmapTexture::BitDepth bitDepth = IBitmapTexture::BIT_32, const ITexture::WrapStyle wrapStyle = ITexture::WRAP_TILE) = 0;
 	
-	virtual unsigned int GetWidth(void) = 0;
-	virtual unsigned int GetHeight(void) = 0;
+	virtual void* Lock(unsigned int& sizeInBytes) const = 0;
+	virtual void Unlock(const bool& dataIsChanged) = 0;
 
-	virtual WrapStyle GetWrapStyle(void) = 0;
-	virtual BitDepth GetBitDepth(void) = 0;
+	virtual unsigned int GetWidth() const = 0;
+	virtual unsigned int GetHeight() const = 0;
+
+	virtual WrapStyle GetWrapStyle() const = 0;
+	virtual void SetWrapStyle(const WrapStyle& wrapStyle) = 0;
+
+	virtual BitDepth GetBitDepth() const = 0;
 };
 }
 

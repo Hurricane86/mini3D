@@ -28,9 +28,14 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "../DX9GraphicsService.h"
 #include <d3d9.h>
 
-mini3d::DX9PixelShader::DX9PixelShader(DX9GraphicsService* pGraphicsService, const ShaderBytes& shaderBytes) :
-	pGraphicsService_(pGraphicsService), shaderBytes_(shaderBytes), pShaderBuffer_(0)
+mini3d::DX9PixelShader::DX9PixelShader(DX9GraphicsService* pGraphicsService, const void* pShaderBytes, const unsigned int& sizeInBytes) :
+	pGraphicsService(pGraphicsService), pShaderBuffer(0)
 {
+	this->sizeInBytes = sizeInBytes;
+
+	this->pShaderBytes = malloc(sizeInBytes);
+	memcpy(this->pShaderBytes, pShaderBytes, sizeInBytes);
+
 	LoadResource();
 	pGraphicsService->AddResource(this);
 }
@@ -38,41 +43,43 @@ mini3d::DX9PixelShader::DX9PixelShader(DX9GraphicsService* pGraphicsService, con
 mini3d::DX9PixelShader::~DX9PixelShader(void)
 {
 	UnloadResource();
-	pGraphicsService_->RemoveResource(this);
+	pGraphicsService->RemoveResource(this);
+
+	free(pShaderBytes);
 }
 
 void mini3d::DX9PixelShader::LoadResource(void)
 {
-	IDirect3DDevice9* pDevice = pGraphicsService_->GetDevice();
+	IDirect3DDevice9* pDevice = pGraphicsService->GetDevice();
 	if (pDevice == 0)
 		return;
 
 	// If the buffer exists tear it down.
-	if (pShaderBuffer_ != 0)
+	if (pShaderBuffer != 0)
 	{
 		UnloadResource();
 	}
 
-	if( FAILED( pDevice->CreatePixelShader((DWORD*)&shaderBytes_[0], &pShaderBuffer_)))
+	if( FAILED( pDevice->CreatePixelShader((DWORD*)pShaderBytes, &pShaderBuffer)))
 	{
-		isDirty_ = true;
+		isDirty = true;
 		return;
 	}
 
-	isDirty_ = false;
+	isDirty = false;
 }
 
 void mini3d::DX9PixelShader::UnloadResource(void)
 {
-	if (pShaderBuffer_ != 0)
+	if (pShaderBuffer != 0)
 	{
 		// if this is the currently loaded pixel shader, release it
-		if (pGraphicsService_->GetPixelShader() == this)
-			pGraphicsService_->SetPixelShader(0);
+		if (pGraphicsService->GetPixelShader() == this)
+			pGraphicsService->SetPixelShader(0);
 
-		pShaderBuffer_->Release();
-		pShaderBuffer_ = 0;
+		pShaderBuffer->Release();
+		pShaderBuffer = 0;
 	}
 
-	isDirty_ = true;
+	isDirty = true;
 }

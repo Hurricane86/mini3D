@@ -39,6 +39,9 @@ class IShaderProgram
 public:
 	// Methods
 	virtual ~IShaderProgram(void) {};
+
+	virtual IPixelShader* GetPixelShader() const = 0;
+	virtual IVertexShader* GetVertexShader() const = 0;
 };
 }
 

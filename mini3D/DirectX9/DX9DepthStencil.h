@@ -35,39 +35,54 @@ namespace mini3d
 {
 class DX9DepthStencil : public IDepthStencil, public IDX9Resource
 {
-friend class DX9ScreenRenderTarget;
-friend class DX9RenderTargetTexture;
-friend class DX9GraphicsService;
+
+public:
+
+	// ::::: Constructor & Destructor :::::::::::::::::::::::::::::::::::::::::
+
+	DX9DepthStencil(DX9GraphicsService* graphicsService, const unsigned int& width, const unsigned int& height);
+	~DX9DepthStencil(void);
+
+	// ::::: IDepthStencil ::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+	virtual void SetDepthStencil(const unsigned int& width, const unsigned int& height);
+	virtual unsigned int GetWidth() const { return width; };
+	virtual unsigned int GetHeight() const { return height; };
+
+	
+	// ::::: IDX9Resource :::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+	virtual void LoadResource();
+	virtual void UnloadResource();
+	virtual bool GetIsDirty() const { return isDirty; };
+
+
+	// ::::: Public Methods :::::::::::::::::::::::::::::::::::::::::::::::::::
+
+	virtual IDirect3DSurface9* GetDepthStencilBuffer(void) { return pDepthStencil; };
+
 
 private:
-	// Bitmap
-	unsigned int width;
-	unsigned int height;
-	bool isDirty;
 
-	// Buffer
-	unsigned int bufferWidth;
-	unsigned int bufferHeight;
-	IDirect3DSurface9* pDepthStencil;
-	
+	// ::::: Private Member Varaibles :::::::::::::::::::::::::::::::::::::::::
+
 	// GraphicsDevice link
 	DX9GraphicsService* pGraphicsService;
 
-private:
-	virtual IDirect3DSurface9* GetDepthStencilBuffer(void);
+	// Stencil dimentions
+	unsigned int width;
+	unsigned int height;
 
-public:
-	DX9DepthStencil(DX9GraphicsService* graphicsService, unsigned int width, unsigned int height);
-	~DX9DepthStencil(void);
+	// Direct3D9 Stencil Surface
+	IDirect3DSurface9* pDepthStencil;
+	
+	// Size of the currently loaded buffer
+	unsigned int bufferWidth;
+	unsigned int bufferHeight;
 
-	void SetDepthStencil(unsigned int width, unsigned int height);
-	virtual unsigned int GetWidth(void);
-	virtual unsigned int GetHeight(void);
+	// Keps track of the state of the resource
+	bool isDirty;
 
-	// IDX9Resource
-	virtual void LoadResource(void);
-	virtual void UnloadResource(void);
-	virtual bool GetIsDirty(void);
 
 };
 }
