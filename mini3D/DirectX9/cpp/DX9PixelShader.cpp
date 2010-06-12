@@ -29,10 +29,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include <d3d9.h>
 
 mini3d::DX9PixelShader::DX9PixelShader(DX9GraphicsService* pGraphicsService, const void* pShaderBytes, const unsigned int& sizeInBytes) :
-	pGraphicsService(pGraphicsService), pShaderBuffer(0)
+	pGraphicsService(pGraphicsService), pShaderBuffer(0), sizeInBytes(sizeInBytes)
 {
-	this->sizeInBytes = sizeInBytes;
-
 	this->pShaderBytes = malloc(sizeInBytes);
 	memcpy(this->pShaderBytes, pShaderBytes, sizeInBytes);
 

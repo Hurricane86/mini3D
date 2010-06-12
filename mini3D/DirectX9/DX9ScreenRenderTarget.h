@@ -98,7 +98,8 @@ private:
 	int hWindow;
 	bool depthTestEnabled;
 	Quality quality;
-	static WNDPROC pOrigProc;
+	WNDPROC pOrigProc;
+
 	static std::map<int, DX9ScreenRenderTarget*> windowMap;
 
 	int bufferWidth;

@@ -49,6 +49,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "DX9ScreenRenderTarget.h"
 #include "DX9FullscreenRenderTarget.h"
 
+// TODO: keep track of states for renderstates (cull mode, zbuffer) and initialize them to proper values in constructor
 
 namespace mini3d
 {
@@ -111,7 +112,6 @@ private:
 	
 	// currently loaded resources
 	IRenderTarget* pCurrentRenderTarget;
-	IDirect3DSurface9* pCurrentRenderTargetBuffer;
 	IDepthStencil* pCurrentDepthStencil;
 	IVertexBuffer* pCurrentVertexBuffer;
 	IIndexBuffer* pCurrentIndexBuffer;
@@ -132,6 +132,8 @@ private:
 	// other state tracking
 	bool isDrawingScene;
 	
+	IIndexBuffer::CullMode currentCullMode;
+
 	// other variables
 	HWND hWindow;
 	HWND hInternalWindow;
@@ -139,7 +141,7 @@ private:
 	IDirect3DDevice9* pDevice;
 	bool deviceLost;
 	bool isFullscreen;
-	IDX9RenderTarget* pFullscreenRenderTarget;
+	IRenderTarget* pFullscreenRenderTarget;
 	bool defaultDepthStencil;
 
 	//IDirect3DSurface9* pCurrentDepthStencilBuffer;
@@ -231,8 +233,8 @@ private:
 	// INTERNAL HELPER FUNCTIONS ----------------------------------------------
 	
 	// These functions are accessed by the DX9Resources
-	IDirect3DDevice9* GetDevice(void);
-	D3DPRESENT_PARAMETERS GetPresentationParameters(void);
+	IDirect3DDevice9* GetDevice();
+	D3DPRESENT_PARAMETERS GetPresentationParameters();
 	void CheckMultisampleFormat(IScreenRenderTarget::Quality& quality, bool fullscreen);
 	D3DMULTISAMPLE_TYPE FromMultisampleFormat(IScreenRenderTarget::Quality quality);
 
@@ -240,28 +242,29 @@ private:
 
 	// Device creation
 	void CreateDevice();
-	void CreateInternalWindow(void);
-	D3DFORMAT GetCorrectBackBufferFormat(void);
-	D3DFORMAT GetCorrectDepthStencilFormat(void);
+	void CreateInternalWindow();
+	D3DFORMAT GetCorrectBackBufferFormat();
+	D3DFORMAT GetCorrectDepthStencilFormat();
 
 	// Drawing Graphics
-	virtual void BeginScene(void);
-	virtual void EndScene(void);
-	virtual void SetRenderStates(void);
+	virtual void BeginScene();
+	virtual void EndScene();
+	virtual void SetRenderStates();
 
 	// Resource Management
-	void UpdateResources(void);
-	void UnloadResources(void);
+	void UpdateResources();
+	void UnloadResources();
 	void AddResource(IDX9Resource* resource);
 	void RemoveResource(IDX9Resource* resource);
 	
 	// Lost device stuff
-	void SaveGraphicsState(void);
-	void RestoreGraphicsState(void);
-	void HandleLostDevice(void);
-	void RecreateDevice(void);
-	void ReleaseDevice(void);
-	void RestoreDevice(void);
+	void SaveGraphicsState();
+	void RestoreGraphicsState();
+	void HandleLostDevice();
+	void RecreateDevice();
+	void ResetDevice();
+	void ReleaseDevice();
+	void RestoreDevice();
 
 	// Vertex declaration pooling
 	void PoolVertexDeclaration(IVertexShader::VertexDataType vertexDeclaration[], const unsigned int& count);

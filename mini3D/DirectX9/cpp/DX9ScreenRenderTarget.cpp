@@ -24,23 +24,18 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
+// TODO: Automatically handle window size
+
 #include "../DX9ScreenRenderTarget.h"
 #include "../DX9DepthStencil.h"
 #include <d3d9.h>
 
 std::map<int, mini3d::DX9ScreenRenderTarget*> mini3d::DX9ScreenRenderTarget::windowMap;
-WNDPROC mini3d::DX9ScreenRenderTarget::pOrigProc;
 
 mini3d::DX9ScreenRenderTarget::DX9ScreenRenderTarget(DX9GraphicsService* pGraphicsService, const unsigned int& width, const unsigned int& height, const int& windowHandle, const bool& depthTestEnabled, const Quality& quality) : 
 	pGraphicsService(pGraphicsService), pScreenRenderTarget(0), pDepthStencil(0), quality(quality), depthTestEnabled(depthTestEnabled)
 {
-	if (depthTestEnabled == true)
-	{
-		pDepthStencil = new DX9DepthStencil(pGraphicsService, width, height);
-	}
-
 	SetScreenRenderTarget(width, height, windowHandle, depthTestEnabled, quality);
-	LoadResource();
 	pGraphicsService->AddResource(this);
 }
 
@@ -55,16 +50,61 @@ mini3d::DX9ScreenRenderTarget::~DX9ScreenRenderTarget(void)
 
 void mini3d::DX9ScreenRenderTarget::SetScreenRenderTarget(const unsigned int& width, const unsigned int& height, const int& windowHandle, const bool& depthTestEnabled, const Quality& quality)
 {
+	if (pOrigProc != 0)
+	{
+	}
+
+	if (windowHandle != hWindow)
+	{
+		// if this is the first time we set this up, just replace the window process
+		if (pOrigProc == 0)
+		{
+			// overwrite the window process for the window (our override window process will call the original window process saved in pOrigProc)
+			pOrigProc = (WNDPROC)SetWindowLongPtr((HWND)windowHandle, GWL_WNDPROC, (LONG)&HookWndProc);
+			
+			// make a map so the window process can find this class from the window handle
+			windowMap.insert(std::pair<int, DX9ScreenRenderTarget*>(windowHandle, this));
+		}
+		// else we need to restore the old one first and then setup the new one
+		else
+		{
+			// restore old
+			(WNDPROC)SetWindowLongPtr((HWND)hWindow, GWL_WNDPROC, (LONG)&pOrigProc);
+			windowMap.erase(hWindow);
+
+			// set new
+			pOrigProc = (WNDPROC)SetWindowLongPtr((HWND)windowHandle, GWL_WNDPROC, (LONG)&HookWndProc);
+			windowMap.insert(std::pair<int, DX9ScreenRenderTarget*>(windowHandle, this));
+		}
+	}
+
+	// set the variables from the call
 	this->hWindow = windowHandle;
 	this->width = width;
 	this->height = height;
 	this->depthTestEnabled = depthTestEnabled;
-
-	windowMap.insert(std::pair<int, DX9ScreenRenderTarget*>(hWindow, this));
-
-	pOrigProc = (WNDPROC)SetWindowLongPtr((HWND)hWindow, GWL_WNDPROC, (LONG)&HookWndProc);
-
+	
+	// load the buffer
 	this->isDirty = true;
+	LoadResource();
+
+	// Create/Update depth Stencil as needed
+	if (depthTestEnabled == true)
+	{
+		if (pDepthStencil == 0)
+			pDepthStencil = new DX9DepthStencil(pGraphicsService, width, height);
+		else
+			pDepthStencil->SetDepthStencil(width, height);
+	}
+	else
+	{
+		if (pDepthStencil != 0)
+		{
+			delete pDepthStencil;
+			pDepthStencil = 0;
+		}
+	}
+
 }
 void mini3d::DX9ScreenRenderTarget::Display(void)
 {
@@ -79,6 +119,11 @@ void mini3d::DX9ScreenRenderTarget::Display(void)
 }
 void mini3d::DX9ScreenRenderTarget::LoadResource(void)
 {
+
+	if (pGraphicsService->GetIsFullScreen() == true)
+	{
+		return;
+	}
 
 	bool setRenderTargetToThis = false;
 
@@ -154,26 +199,19 @@ void mini3d::DX9ScreenRenderTarget::UnloadResource(void)
 
 void mini3d::DX9ScreenRenderTarget::SetSize(const int& width, const int& height)
 {
-	this->width = width;
-	this->height = height;
-	LoadResource();
-	
-	if (depthTestEnabled == true)
-	{
-		// TODO: this needs to be implemented in IDepthStencil!!
-		// pDepthStencil->SetSize(width, height);
-	}
+	SetScreenRenderTarget(width, height, hWindow, depthTestEnabled, quality);
 }
 
 LRESULT CALLBACK mini3d::DX9ScreenRenderTarget::HookWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+	DX9ScreenRenderTarget* screenRenderTarget = windowMap.find((int)hwnd)->second;
+
 	switch(msg)
 	{
 	case WM_SIZE:
-		DX9ScreenRenderTarget* screenRenderTarget = windowMap.find((int)hwnd)->second;
 		screenRenderTarget->SetSize(LOWORD(lParam), HIWORD(lParam));
 		break;
 	}
 
-	return CallWindowProc(pOrigProc, hwnd, msg, wParam, lParam);
+	return CallWindowProc(screenRenderTarget->pOrigProc, hwnd, msg, wParam, lParam);
 }

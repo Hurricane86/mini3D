@@ -31,6 +31,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "DX9GraphicsService.h"
 #include "internal/IDX9Resource.h"
 
+// TODO: heed to specified index formats INT_32, INT_16
+
 namespace mini3d
 {
 class DX9IndexBuffer : public IIndexBuffer, public IDX9Resource

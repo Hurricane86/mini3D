@@ -25,100 +25,43 @@ OTHER DEALINGS IN THE SOFTWARE.
 */
 #define NOMINMAX
 
-#include "mini3d/utilities/math3d.h"
+#include "mini3d/utilities/Math3d.h"
+#include "mini3d/utilities/Window.h"
 #include "mini3d/utilities/BinaryFileReader.h"
-
-#include <Eigen/Core>
-#include <eigen/src/Core/Matrix.h>
-#include <Eigen/Geometry>
-
-#include "d3d9.h"
-#include <d3dx9.h>
 
 #include "mini3d/IGraphicsService.h"
 #include "mini3d/DirectX9/DX9GraphicsService.h"
 //#include "mini3d/OpenGL20/OGL20GraphicsService.h"
 
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <string>
 #include <math.h>
 
-using namespace std;
-USING_PART_OF_NAMESPACE_EIGEN
-#define Vector3 D3DXVECTOR3
+using namespace mini3d::utilites;
 
-LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-    switch(msg)
-    {
-        case WM_CLOSE:
-            DestroyWindow(hwnd);
-        break;
-        case WM_DESTROY:
-            PostQuitMessage(0);
-        break;
-        default:
-            return DefWindowProc(hwnd, msg, wParam, lParam);
-    }
-    return 0;
-}
-
-HWND createWindow(void)
-{
-	HINSTANCE hInstance = GetModuleHandle(NULL);
-
-    WNDCLASSEX wc;
-
-    wc.cbSize        = sizeof(WNDCLASSEX);
-    wc.style         = 0;
-    wc.lpfnWndProc   = WndProc;
-    wc.cbClsExtra    = 0;
-    wc.cbWndExtra    = 0;
-    wc.hInstance     = hInstance;
-    wc.hIcon         = LoadIcon(NULL, IDI_APPLICATION);
-    wc.hCursor       = LoadCursor(NULL, IDC_ARROW);
-    wc.hbrBackground = (HBRUSH)(COLOR_WINDOW+1);
-    wc.lpszMenuName  = NULL;
-    wc.lpszClassName = L"mini3d";
-    wc.hIconSm       = LoadIcon(NULL, IDI_APPLICATION);
-
-    if(!RegisterClassEx(&wc))
-    {
-        MessageBox(NULL, L"Window Registration Failed!", L"Error!",
-            MB_ICONEXCLAMATION | MB_OK);
-        return 0;
-    }
-
-
-	HWND hWindow = CreateWindowEx(
-        WS_EX_CLIENTEDGE,
-        L"mini3d",
-        L"The title of my window",
-        WS_OVERLAPPEDWINDOW,
-        CW_USEDEFAULT, CW_USEDEFAULT, 512, 512,
-        NULL, NULL, hInstance, NULL);
-
-	return hWindow;
-}
+LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 // Vertex Data Structure
 struct VertexPCT { float x,y,z,w;  float r,g,b,a;  float u,v; };
 
 // Vertex array
-VertexPCT vertices[] = {{-5.0f,-5.0f, 5.0f, 1.0f,  1.0f, 1.0f, 0.0f, 1.0f,  0.0f, 0.0f},
-						{ 5.0f,-5.0f, 5.0f, 1.0f,  1.0f, 0.0f, 0.0f, 1.0f,  0.99f, 0.0f},
-						{ 5.0f, 5.0f, 5.0f, 1.0f,  0.0f, 1.0f, 1.0f, 1.0f,  0.99f, 0.99f},
-						{-5.0f, 5.0f, 5.0f, 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,  0.0f, 0.99f},
-						
-						{-5.0f,-5.0f, -5.0f, 1.0f,  1.0f, 1.0f, 0.0f, 1.0f,  0.0f, 0.0f},
-						{ 5.0f,-5.0f, -5.0f, 1.0f,  1.0f, 0.0f, 0.0f, 1.0f,  0.99f, 0.0f},
-						{ 5.0f, 5.0f, -5.0f, 1.0f,  0.0f, 1.0f, 1.0f, 1.0f,  0.99f, 0.99f},
-						{-5.0f, 5.0f, -5.0f, 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,  0.0f, 0.99f}};
+VertexPCT vertices[] = {{-5.0f,-5.0f,  5.0f, 1.0f,  1.0f, 1.0f, 1.0f, 1.0f,  0.0f, 0.0f},    { 5.0f,-5.0f,  5.0f, 1.0f,  1.0f, 1.0f, 1.0f, 1.0f,  1.0f, 0.0f},    { 5.0f, 5.0f,  5.0f, 1.0f,  0.5f, 0.5f, 0.5f, 1.0f,  1.0f, 1.0f},    {-5.0f, 5.0f,  5.0f, 1.0f,  0.5f, 0.5f, 0.5f, 1.0f,  0.0f, 1.0f},
+						{-5.0f,-5.0f, -5.0f, 1.0f,  1.0f, 1.0f, 1.0f, 1.0f,  0.0f, 0.0f},    { 5.0f,-5.0f, -5.0f, 1.0f,  1.0f, 1.0f, 1.0f, 1.0f,  1.0f, 0.0f},    { 5.0f, 5.0f, -5.0f, 1.0f,  0.5f, 0.5f, 0.5f, 1.0f,  1.0f, 1.0f},    {-5.0f, 5.0f, -5.0f, 1.0f,  0.5f, 0.5f, 0.5f, 1.0f,  0.0f, 1.0f}};
 
 // Index array
-int indices[] = {0, 1, 2, 0, 2, 3,   4, 0, 3, 4, 3, 7,  5, 4, 7, 5, 7, 6,  1, 5, 6, 1, 6, 2,  1, 0, 4, 1, 4, 5,  3, 2, 6, 3, 6, 7};
+unsigned int indices[] = {0, 1, 2, 0, 2, 3,    4, 0, 3, 4, 3, 7,    5, 4, 7, 5, 7, 6,    1, 5, 6, 1, 6, 2,  1, 0, 4, 1, 4, 5,    3, 2, 6, 3, 6, 7};
+
+// create a texture
+unsigned int texture[] = {0xFFFF0000, 0xFF00FF00, 0xFF0000FF, 0xFFFF0000,    0xFFFFFFFF, 0xFF0000FF, 0xFFFF0000, 0xFF00FF00,    0xFF0000FF, 0xFFFF0000, 0xFF00FF00, 0xFF0000FF,    0xFFFF0000, 0xFF00FF00, 0xFF0000FF, 0xFFFFFFFF};
+
+// state variables
+unsigned int width =  640;
+unsigned int height = 480;
+
+int fullscreenWidth =  1680;
+int fullscreenHeight = 1050;
+
+int mouseX, mouseY;
+float rotX, rotY;
+bool fullscreen = false;
 
 // Vertex declaration for the vertex shader
 mini3d::IVertexShader::VertexDataType vertexDeclaration[] = { mini3d::IVertexShader::POSITION_FLOAT4, mini3d::IVertexShader::COLOR_FLOAT4, mini3d::IVertexShader::TEXTURECOORDINATE_FLOAT2 };
@@ -126,40 +69,40 @@ mini3d::IVertexShader::VertexDataType vertexDeclaration[] = { mini3d::IVertexSha
 INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 {
 	// create a window
-	HWND hWindow = createWindow();
-		ShowWindow(hWindow, SW_SHOW);
-		UpdateWindow(hWindow);
+	mini3d::utilites::Window window(WndProc, width, height);
+	HWND hWindow = (HWND)window.GetWindowHandle();
+	ShowWindow(hWindow, SW_SHOW);
 
 	// create a graphics service
 	mini3d::IGraphicsService* graphics = new mini3d::DX9GraphicsService(false);
 	
 	// create a render target (mini3d does not have a default render target)
-	mini3d::IScreenRenderTarget* pScreenRenderTarget = graphics->CreateScreenRenderTarget(512,512,(int)hWindow, true, mini3d::IScreenRenderTarget::QUALITY_MINIMUM);
-	//mini3d::IFullscreenRenderTarget* pScreenRenderTarget = graphics->CreateFullscreenRenderTarget(1280,800,(int)hWindow, false, mini3d::IFullscreenRenderTarget::QUALITY_MINIMUM);
+	mini3d::IScreenRenderTarget* pScreenRenderTarget = graphics->CreateScreenRenderTarget(width,height,(int)hWindow, true, mini3d::IScreenRenderTarget::QUALITY_MINIMUM);
+	mini3d::IFullscreenRenderTarget* pFullScreenRenderTarget = graphics->CreateFullscreenRenderTarget(fullscreenWidth, fullscreenHeight,(int)hWindow, true, mini3d::IFullscreenRenderTarget::QUALITY_MINIMUM);
 
 	// Create a render target texture
 	mini3d::IRenderTargetTexture* pRenderTargetTexture = graphics->CreateRenderTargetTexture(512, 512, true);
 
 	// create index buffer
-	mini3d::IIndexBuffer* iBuffer = graphics->CreateIndexBuffer(indices, 36, mini3d::IIndexBuffer::INT_32, mini3d::IIndexBuffer::CULL_NONE);
+	mini3d::IIndexBuffer* iBuffer = graphics->CreateIndexBuffer(indices, 36);
 
 	// create vertex buffer
 	mini3d::IVertexBuffer* vBuffer = graphics->CreateVertexBuffer(vertices, 8, sizeof(VertexPCT));
 	
 	// create texture
-	int* pBitmap = new int[512 * 512 * 4]; for(int i = 0; i < 512 * 512; i++) { pBitmap[i] = 0xFFFFFFFF * ((i / 128) % 2); }
-	mini3d::IBitmapTexture* pTexture = graphics->CreateBitmapTexture(pBitmap, 512, 512);
-	delete[] pBitmap;
+	mini3d::IBitmapTexture* pTexture = graphics->CreateBitmapTexture(texture, 4, 4);
 	
 	unsigned int sizeInBytes;
 	
 	// create vertex shader
 	char* shaderBytes = mini3d::utilites::BinaryFileReader::ReadBytesFromFile(L"vertexshader.hlsl", sizeInBytes);
 	mini3d::IVertexShader* pVertexShader = graphics->CreateVertexShader(shaderBytes, sizeInBytes, vertexDeclaration, 3);
+	delete shaderBytes;
 
 	// create pixel shader
 	char* shaderBytes2 = mini3d::utilites::BinaryFileReader::ReadBytesFromFile(L"pixelshader.hlsl", sizeInBytes);
 	mini3d::IPixelShader* pPixelShader = graphics->CreatePixelShader(shaderBytes2, sizeInBytes);
+	delete shaderBytes2;
 
 	// create shader program
 	mini3d::IShaderProgram* pShaderProgram = graphics->CreateShaderProgram(pVertexShader, pPixelShader);
@@ -170,15 +113,15 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	graphics->SetShaderProgram(pShaderProgram);
 	
 	
-	// run the application while the window is shwoing
+	// run the application while the window is showing
 	while(true)
 	{
 		// For keeping track of window messages
 		MSG Msg;
 
 		// Matrix4f
-		Matrix4f viewMatrixE;
-		Matrix4f projectionMatrixE;
+		Matrix4 viewMatrixE;
+		Matrix4 projectionMatrixE;
 
 		// keeps track of what texture unit the texture is assigned to. This value is sent to the shader program
 		int* textureUnit = new int(0);
@@ -191,25 +134,29 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 		{
 
 			// update camera
-			mini3d::utilites::math3d::setuplookat(&viewMatrixE[0], &Vector3f(20 * cos(frame), -8, 20 * sin(frame)).x(), &Vector3f(0,0,0).x(), &Vector3f(0,-1,0).x());
-			mini3d::utilites::math3d::BuildPerspProjMat(&projectionMatrixE[0], (float)(3.1415f / 4.0f), 1, 40.0f / 100.0f, 80.0f);
-			Matrix4f viewProjectionMatrixE = projectionMatrixE * viewMatrixE;
+			mini3d::utilites::math3d::setuplookat(&viewMatrixE._00, (float*)&Vector3(30 * cos(rotY) * cos((float)rotX), 30 * sin(rotY), 30 * cos(rotY) * sin(rotX)), (float*)&Vector3(0,0,0), (float*)&Vector3(0,-1,0));
+			mini3d::utilites::math3d::BuildPerspProjMat(&projectionMatrixE._00, (float)(3.1415f / 4.0f), (float)width/(float)height, 40.0f / 100.0f, 80.0f);
+			Matrix4 viewProjectionMatrixE = viewMatrixE * projectionMatrixE;
 
 			// set up the scene with the renderTargetTexture
 			graphics->SetRenderTarget(pRenderTargetTexture);
 			graphics->SetTexture(pTexture, 0);
 
 			// set a shader parameter
-			graphics->SetShaderParameterMatrix(0, &viewProjectionMatrixE[0], 4, 4);
+			graphics->SetShaderParameterMatrix(0, &viewProjectionMatrixE._00, 4, 4);
 			graphics->SetShaderParameterInt(1, textureUnit, 1);
 			
 			// clear render target with color
-			graphics->Clear(0x55FF55FF);
+			graphics->Clear(0x5555FFFF);
 
 			// draw the scene to the renderTargetTexture
 			graphics->Draw();
 			
-			graphics->SetRenderTarget(pScreenRenderTarget);
+			if (fullscreen == true)
+				graphics->SetRenderTarget(pFullScreenRenderTarget);
+			else
+				graphics->SetRenderTarget(pScreenRenderTarget);
+			
 			graphics->SetTexture(pRenderTargetTexture, 0);
 
 			//// clear render target with color
@@ -219,7 +166,11 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 			graphics->Draw();
 
 			// do a flip
-			pScreenRenderTarget->Display();
+			if (fullscreen == true)
+				pFullScreenRenderTarget->Display();
+			else
+				pScreenRenderTarget->Display();
+			
 
 			// windows message stuff
 			TranslateMessage(&Msg);
@@ -235,12 +186,66 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 		delete pPixelShader;
 		delete pVertexShader;
 		delete pScreenRenderTarget;
+		delete pRenderTargetTexture;
 		delete graphics;
 
 		return Msg.wParam;
 	}
 
-
-
 	return 1;
+}
+
+LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	switch(msg)
+	{
+		case WM_CLOSE:
+			DestroyWindow(hwnd);
+		break;
+		case WM_DESTROY:
+			PostQuitMessage(0);
+		break;
+		case WM_SIZE:
+			width = LOWORD(lParam);
+			height = HIWORD(lParam);
+		break;
+		case WM_LBUTTONDOWN:
+			mouseX = LOWORD(lParam); 
+			mouseY = HIWORD(lParam);
+			SetCapture(hwnd);
+		break;
+		case WM_KEYDOWN:
+			if ((wParam & VK_F12) == VK_F12)
+			{
+				fullscreen = !fullscreen;
+			}
+		break;
+			
+		break;
+		case WM_MOUSEMOVE:
+			if ((wParam & MK_LBUTTON) == MK_LBUTTON)
+			{
+				int x = LOWORD(lParam); 
+				int y = HIWORD(lParam);
+
+				rotX += (x - mouseX) / 100.0f;
+				rotY -= (y - mouseY) / 100.0f;
+
+				if (rotY > 3.1416f / 2.0f)
+					rotY = 3.1416f / 2.0f;
+				else if (rotY < -3.1416f / 2.0f)
+					rotY = -3.1416f / 2.0f;
+
+				mouseX = x;
+				mouseY = y;
+			}
+		break;
+		case WM_LBUTTONUP:
+		{
+			ReleaseCapture();
+		}
+		default:
+			return DefWindowProc(hwnd, msg, wParam, lParam);
+	}
+	return 0;
 }

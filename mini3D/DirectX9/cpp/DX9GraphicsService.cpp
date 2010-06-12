@@ -30,18 +30,21 @@ OTHER DEALINGS IN THE SOFTWARE.
 // Constructor Destructor -----------------------------------------------------
 
 mini3d::DX9GraphicsService::DX9GraphicsService(bool isFullscreen) :
-pD3D(0), pDevice(0), pCurrentDepthStencil(0), isDrawingScene(false), deviceLost(true), pCurrentRenderTargetBuffer(0), lostDeviceCurrentITextures(0), currentITextures(0), pFullscreenRenderTarget(0), isFullscreen(false), pCurrentRenderTarget(0) 
+pD3D(0), pDevice(0), pCurrentDepthStencil(0), isDrawingScene(false), deviceLost(true), lostDeviceCurrentITextures(0), currentITextures(0), pFullscreenRenderTarget(0), isFullscreen(false), pCurrentRenderTarget(0) 
 {
 	CreateInternalWindow();
 	CreateDevice();
 }
-mini3d::DX9GraphicsService::~DX9GraphicsService(void)
+mini3d::DX9GraphicsService::~DX9GraphicsService()
 {
 
 	UnloadResources();
 
 	if (pDefaultRenderTarget != 0)
 		pDefaultRenderTarget->Release();
+	
+	if (pDefaultDepthStencilSurface != 0)
+		pDefaultDepthStencilSurface->Release();
 
 	if (pDevice != 0)
 		pDevice->Release();
@@ -54,12 +57,12 @@ mini3d::DX9GraphicsService::~DX9GraphicsService(void)
 
 // Friend Functions -----------------------------------------------------------
 
-IDirect3DDevice9* mini3d::DX9GraphicsService::GetDevice(void)
+IDirect3DDevice9* mini3d::DX9GraphicsService::GetDevice()
 {
 	DX9GraphicsService* gs = this;
 	return pDevice;
 }
-D3DPRESENT_PARAMETERS mini3d::DX9GraphicsService::GetPresentationParameters(void)
+D3DPRESENT_PARAMETERS mini3d::DX9GraphicsService::GetPresentationParameters()
 {
 	return presentationParameters;
 }
@@ -154,16 +157,9 @@ void mini3d::DX9GraphicsService::CreateDevice()
 
 	// store the default back buffer so we can put it back when we reset the device
 	pDevice->GetRenderTarget(0, &pDefaultRenderTarget);
-	
-	// set the default depht stencil
-	if (isFullscreen == true && pFullscreenRenderTarget->GetDepthTestEnabled() == true)
-	{
-		pDevice->GetDepthStencilSurface(&pDefaultDepthStencilSurface);
-	}
-	else
-	{
-		pDefaultDepthStencilSurface = 0;
-	}
+
+	// get the depthstencil even if it might be 0
+	pDevice->GetDepthStencilSurface(&pDefaultDepthStencilSurface);
 }
 
 LRESULT CALLBACK DX9WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -182,7 +178,7 @@ LRESULT CALLBACK DX9WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
-void mini3d::DX9GraphicsService::CreateInternalWindow(void)
+void mini3d::DX9GraphicsService::CreateInternalWindow()
 {
 	HINSTANCE hInstance = GetModuleHandle(NULL);
 
@@ -212,7 +208,7 @@ void mini3d::DX9GraphicsService::CreateInternalWindow(void)
 }
 
 // Resource Management
-void mini3d::DX9GraphicsService::UpdateResources(void)
+void mini3d::DX9GraphicsService::UpdateResources()
 {
 	// update resources
 	for(ResourceContainer::iterator it = resourceList.begin(); it != resourceList.end(); it++)
@@ -223,7 +219,7 @@ void mini3d::DX9GraphicsService::UpdateResources(void)
 		}
 	}
 }
-void mini3d::DX9GraphicsService::UnloadResources(void)
+void mini3d::DX9GraphicsService::UnloadResources()
 {
 	// update resources
 	for(ResourceContainer::iterator it = resourceList.begin(); it != resourceList.end(); it++)
@@ -241,23 +237,37 @@ void mini3d::DX9GraphicsService::RemoveResource(IDX9Resource* resource)
 	resourceList.erase(resource);
 }
 
-void mini3d::DX9GraphicsService::SaveGraphicsState(void)
+void mini3d::DX9GraphicsService::SaveGraphicsState()
 {
-	pLostDeviceRenderTarget = pCurrentRenderTarget;
-	pLostDeviceDepthStencil = pCurrentDepthStencil;
-	pLostDeviceVertexBuffer = pCurrentVertexBuffer;
-	pLostDeviceIndexBuffer = pCurrentIndexBuffer;
-	pLostDevicePixelShader = pCurrentPixelShader;
-	pLostDeviceVertexShader = pCurrentVertexShader;
+	pLostDeviceRenderTarget = pCurrentRenderTarget; 
+	pCurrentRenderTarget = 0;
+
+//	pLostDeviceDepthStencil = pCurrentDepthStencil; 
+//	pCurrentDepthStencil = 0;
+
+	pLostDeviceVertexBuffer = pCurrentVertexBuffer; 
+	pCurrentVertexBuffer = 0;
+
+	pLostDeviceIndexBuffer = pCurrentIndexBuffer; 
+	pCurrentIndexBuffer = 0;
+
+	pLostDevicePixelShader = pCurrentPixelShader; 
+	pCurrentPixelShader = 0;
+
+	pLostDeviceVertexShader = pCurrentVertexShader; 
+	pCurrentVertexShader = 0;
 
 	for (int i = 0; i < GetMaxTextures(); i++)
-		lostDeviceCurrentITextures[i] = currentITextures[i];
+	{
+		lostDeviceCurrentITextures[i] = currentITextures[i]; 
+		currentITextures[i] = 0;
+	}
 
 }
-void mini3d::DX9GraphicsService::RestoreGraphicsState(void)
+void mini3d::DX9GraphicsService::RestoreGraphicsState()
 {
 	SetRenderTarget(pLostDeviceRenderTarget);
-	SetDepthStencil(pLostDeviceDepthStencil);
+//	SetDepthStencil(pLostDeviceDepthStencil);
 	SetVertexBuffer(pLostDeviceVertexBuffer);
 	SetIndexBuffer(pLostDeviceIndexBuffer);
 	SetPixelShader(pLostDevicePixelShader);
@@ -298,6 +308,57 @@ void mini3d::DX9GraphicsService::HandleLostDevice()
 	}
 }
 
+void mini3d::DX9GraphicsService::ResetDevice()
+{
+	ReleaseDevice();
+
+		// get the display mode
+	D3DDISPLAYMODE d3ddm;
+	pD3D->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &d3ddm);
+
+	// set the presentation parameters
+	D3DPRESENT_PARAMETERS d3dpp;
+	ZeroMemory(&d3dpp, sizeof(d3dpp));
+
+	IScreenRenderTarget::Quality quality;
+	if (isFullscreen == true)
+	{
+		// safe because only DX9FullscreenRenderTargets are assigned to pFullscreenRenderTarget
+		DX9FullscreenRenderTarget* pDX9FullscreenRenderTarget = dynamic_cast<DX9FullscreenRenderTarget*>(pFullscreenRenderTarget);
+		quality = (IScreenRenderTarget::Quality)pDX9FullscreenRenderTarget->GetQuality();
+		d3dpp.BackBufferWidth = pFullscreenRenderTarget->GetWidth();
+		d3dpp.BackBufferHeight = pFullscreenRenderTarget->GetHeight();
+		d3dpp.Windowed = false;
+		d3dpp.EnableAutoDepthStencil = pDX9FullscreenRenderTarget->GetDepthTestEnabled();
+	}
+	else
+	{
+		quality = IScreenRenderTarget::QUALITY_MINIMUM;
+		d3dpp.BackBufferWidth = 1; // Default backbuffer should be 1x1 and is never used
+		d3dpp.BackBufferHeight = 1; // Default backbuffer should be 1x1 and is never used
+		d3dpp.Windowed = true;
+		d3dpp.EnableAutoDepthStencil = false; // we manage swap chains manually
+	}
+
+	// TODO: need to set back buffer format fist
+
+	CheckMultisampleFormat(quality, false);
+
+	d3dpp.BackBufferCount = 1;	// TODO: More than one backbuffer?? What is it good for?
+	d3dpp.BackBufferFormat = GetCorrectBackBufferFormat(); 
+	d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
+	d3dpp.AutoDepthStencilFormat = GetCorrectDepthStencilFormat(); 
+	d3dpp.FullScreen_RefreshRateInHz = D3DPRESENT_RATE_DEFAULT;
+	d3dpp.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
+	d3dpp.MultiSampleType = FromMultisampleFormat(quality);
+	d3dpp.MultiSampleQuality = 0;
+
+
+	presentationParameters = d3dpp;
+
+	RestoreDevice();
+}
+
 void mini3d::DX9GraphicsService::RecreateDevice()
 {
 	ReleaseDevice();
@@ -335,6 +396,12 @@ void mini3d::DX9GraphicsService::ReleaseDevice()
 		pDefaultRenderTarget->Release();
 		pDefaultRenderTarget = 0;
 	}
+
+	if (pDefaultDepthStencilSurface != 0)
+	{
+		pDefaultDepthStencilSurface->Release();
+		pDefaultDepthStencilSurface = 0;
+	}
 }
 
 void mini3d::DX9GraphicsService::RestoreDevice()
@@ -347,6 +414,7 @@ void mini3d::DX9GraphicsService::RestoreDevice()
 
 	// capture the new default render target
 	pDevice->GetRenderTarget(0, &pDefaultRenderTarget);
+	pDevice->GetDepthStencilSurface(&pDefaultDepthStencilSurface);
 
 	//if it was succesful, reload all resources and set device lost to false
 	UpdateResources();
@@ -497,7 +565,9 @@ void mini3d::DX9GraphicsService::BeginScene(void)
 	}
 
 	// Todo: Move this to device reset and update resources immidiatly
-	UpdateResources();
+	//UpdateResources();
+
+	SetRenderStates();
 
 	pDevice->BeginScene();
 
@@ -513,28 +583,25 @@ void mini3d::DX9GraphicsService::EndScene(void)
 void mini3d::DX9GraphicsService::SetRenderStates()
 {
 	// Set Render States
-	pDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
-	pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE); //D3DCULL_CCW
-	pDevice->SetRenderState(D3DRS_ZENABLE, true);
-	pDevice->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
+	//pDevice->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
+	//pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE); //D3DCULL_CCW
+	//pDevice->SetRenderState(D3DRS_ZENABLE, true);
+	//pDevice->SetRenderState(D3DRS_ZFUNC, D3DCMP_LESSEQUAL);
 	pDevice->SetRenderState(D3DRS_ZWRITEENABLE, true);
 	pDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, true);
 	pDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
 	pDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 	pDevice->SetRenderState(D3DRS_AMBIENT, D3DCOLOR_ARGB(255, 255, 255, 255));
 
-	pDevice->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_TEXTURE);
-	pDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_DIFFUSE);
-	pDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
-	pDevice->SetTextureStageState(0, D3DTSS_ALPHAARG2, D3DTA_TEXTURE);
-	pDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_DIFFUSE);
-	pDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
+	//pDevice->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_TEXTURE);
+	//pDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_DIFFUSE);
+	//pDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
+	//pDevice->SetTextureStageState(0, D3DTSS_ALPHAARG2, D3DTA_TEXTURE);
+	//pDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_DIFFUSE);
+	//pDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
 
-	pDevice->SetRenderState(D3DRS_LIGHTING, false);
-	pDevice->SetRenderState(D3DRS_CLIPPING, true);
-
-	pDevice->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
-	pDevice->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
+	//pDevice->SetRenderState(D3DRS_LIGHTING, false);
+	//pDevice->SetRenderState(D3DRS_CLIPPING, true);
 }
 
 
@@ -682,7 +749,12 @@ void mini3d::DX9GraphicsService::SetTexture(ITexture* pTexture, const unsigned i
 		pDevice->SetSamplerState(index, D3DSAMP_ADDRESSU, adressMode);
 		pDevice->SetSamplerState(index, D3DSAMP_ADDRESSV, adressMode);
 		pDevice->SetSamplerState(index, D3DSAMP_ADDRESSW, adressMode);
-	
+
+		pDevice->SetSamplerState(index, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
+		pDevice->SetSamplerState(index, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
+		pDevice->SetSamplerState(index, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR);
+
+
 		// set the texture
 		pDevice->SetTexture(index, pDX9Texture->GetTextureBuffer());
 	}
@@ -701,9 +773,8 @@ void mini3d::DX9GraphicsService::SetRenderTarget(IRenderTarget* pRenderTarget)
 
 	if (pRenderTarget == 0  || pRenderTarget == pFullscreenRenderTarget)
 	{
-		pDevice->SetRenderTarget(0,  pDefaultRenderTarget);
-		SetDepthStencil(0);
-		pCurrentRenderTargetBuffer = 0;
+		pDevice->SetRenderTarget(0, pDefaultRenderTarget);
+		pDevice->SetDepthStencilSurface(pDefaultDepthStencilSurface);
 	}
 	else
 	{
@@ -717,9 +788,13 @@ void mini3d::DX9GraphicsService::SetRenderTarget(IRenderTarget* pRenderTarget)
 			// recreate the device to fit this screen mode
 			pCurrentRenderTarget = pRenderTarget;
 			isFullscreen = pDX9RenderTarget->GetFullscreenCompatible();
-			pFullscreenRenderTarget = isFullscreen ? pDX9RenderTarget : 0;
+			pFullscreenRenderTarget = isFullscreen ? pRenderTarget : 0;
 			hWindow = isFullscreen ? (HWND)pDX9FullscreenRenderTarget->GetWindowHandle() : hInternalWindow;
-			RecreateDevice();
+
+			// we need to set this to the current render target so it is recreated after the device recreation.
+			pCurrentRenderTarget = pRenderTarget;
+
+			ResetDevice();
 			return;
 		}
 
@@ -733,8 +808,6 @@ void mini3d::DX9GraphicsService::SetRenderTarget(IRenderTarget* pRenderTarget)
 		{
 			SetDepthStencil(0);
 		}
-
-		pCurrentRenderTargetBuffer = pRenderTargetBuffer; 
 	}
 
 	pCurrentRenderTarget = pRenderTarget;
@@ -756,12 +829,22 @@ void mini3d::DX9GraphicsService::SetDepthStencil(IDepthStencil* pDepthStencil)
 	if (pDepthStencil == 0)
 	{
 		pDevice->SetDepthStencilSurface(0);
-		pDevice->SetRenderState(D3DRS_ZENABLE, true);
+
+		if (pCurrentDepthStencil != 0)
+		{
+			pDevice->SetRenderState(D3DRS_ZENABLE, false);
+			pDevice->SetRenderState(D3DRS_ZWRITEENABLE, false);
+		}
 	}
 	else
 	{
 		pDevice->SetDepthStencilSurface(pDX9DepthStencil->GetDepthStencilBuffer());
-		pDevice->SetRenderState(D3DRS_ZENABLE, true);
+
+		if (pCurrentDepthStencil == 0)
+		{
+			pDevice->SetRenderState(D3DRS_ZENABLE, true);
+			pDevice->SetRenderState(D3DRS_ZWRITEENABLE, true);
+		}
 	}
 
 	pCurrentDepthStencil = pDepthStencil;
@@ -785,6 +868,23 @@ void mini3d::DX9GraphicsService::SetIndexBuffer(IIndexBuffer* pIndexBuffer)
 	{
 		DX9IndexBuffer* pDX9IndexBuffer = (DX9IndexBuffer*)pIndexBuffer;
 		pDevice->SetIndices(pDX9IndexBuffer->GetIndexBuffer());
+		
+		// set the cullMode
+		if (pIndexBuffer->GetCullMode() != currentCullMode)
+		{
+			if (pIndexBuffer->GetCullMode() == IIndexBuffer::CULL_NONE)
+			{
+				pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+			}
+			else if (pIndexBuffer->GetCullMode() == IIndexBuffer::CULL_CLOCKWIZE)
+			{
+				pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CW);
+			}
+			else
+			{
+				pDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+			}
+		}
 	}
 
 	pCurrentIndexBuffer = pIndexBuffer;
@@ -841,6 +941,9 @@ void mini3d::DX9GraphicsService::SetShaderParameterMatrix(const unsigned int& in
 // Drawing
 void mini3d::DX9GraphicsService::Draw(void)
 {
+	if (pCurrentVertexBuffer == 0 || pCurrentIndexBuffer == 0)
+		return;
+
 	BeginScene();
 	pDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, pCurrentVertexBuffer->GetVertexCount(), 0, pCurrentIndexBuffer->GetIndexCount() / 3);
 }

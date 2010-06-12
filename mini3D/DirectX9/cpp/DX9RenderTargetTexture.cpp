@@ -50,18 +50,25 @@ void mini3d::DX9RenderTargetTexture::SetRenderTarget(const unsigned int& width, 
 	this->width = width;
 	this->height = height;
 	this->depthTestEnabled = depthTestEnabled;
-	this->isDirty = true;
 
+	this->isDirty = true;
 	LoadResource();	
 
-	if (depthTestEnabled == true && pDepthStencil == 0)
+	// Update depth Stencil
+	if (depthTestEnabled == true)
 	{
-		pDepthStencil = new DX9DepthStencil(pGraphicsService, width, height);
+		if (pDepthStencil == 0)
+			pDepthStencil = new DX9DepthStencil(pGraphicsService, width, height);
+		else
+			pDepthStencil->SetDepthStencil(width, height);
 	}
-	else if (depthTestEnabled == false && pDepthStencil != 0)
+	else
 	{
-		delete pDepthStencil;
-		pDepthStencil = 0;
+		if (pDepthStencil != 0)
+		{
+			delete pDepthStencil;
+			pDepthStencil = 0;
+		}
 	}
 }
 void mini3d::DX9RenderTargetTexture::LoadResource(void)

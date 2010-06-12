@@ -31,7 +31,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 namespace mini3d
 {
-class IFullscreenRenderTarget : public IRenderTarget
+class IFullscreenRenderTarget : public virtual IRenderTarget
 {
 public:
 

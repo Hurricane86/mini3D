@@ -93,11 +93,11 @@ private:
 	void* pBitmap;
 
 	// Size of the bitmap
-	int width;
-	int height;
+	unsigned int width;
+	unsigned int height;
 
 	// Size of bitmap buffer in bytes
-	int sizeInBytes;
+	unsigned int sizeInBytes;
 	
 	// WrapStyle
 	ITexture::WrapStyle wrapStyle;
@@ -109,8 +109,8 @@ private:
 	IDirect3DTexture9* pTexture;
 	
 	// Size of the currently loaded buffer
-	int bufferWidth;
-	int bufferHeight;
+	unsigned int bufferWidth;
+	unsigned int bufferHeight;
 
 	// Keps track of the state of the resource
 	bool isDirty;

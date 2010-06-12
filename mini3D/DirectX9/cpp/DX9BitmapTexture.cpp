@@ -24,6 +24,8 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
+// TODO: Bitmap shall be recreate if call to SetBitmap with new bitDepth format
+
 #include "../DX9BitmapTexture.h"
 #include <d3d9.h>
 
@@ -71,13 +73,16 @@ void mini3d::DX9BitmapTexture::SetBitmap(const void* pBitmap, const unsigned int
 void mini3d::DX9BitmapTexture::UnloadBitmap(void)
 {
 	if (pBitmap != 0)
+	{
 		free(pBitmap);
 
-	pBitmap = 0;
-	width = 0;
-	height = 0;
-	wrapStyle = IBitmapTexture::WRAP_TILE;
-	bitDepth = IBitmapTexture::BIT_32;
+		pBitmap = 0;
+		width = 0;
+		height = 0;
+		sizeInBytes = 0;
+		wrapStyle = IBitmapTexture::WRAP_TILE;
+		bitDepth = IBitmapTexture::BIT_32;
+	}
 }
 
 void* mini3d::DX9BitmapTexture::Lock(unsigned int& sizeInBytes) const
@@ -99,8 +104,6 @@ void mini3d::DX9BitmapTexture::LoadResource(void)
 	IDirect3DDevice9* pDevice = pGraphicsService->GetDevice();
 	if (pDevice == 0)
 		return;
-
-	int sizeInBytes = width * height * 4;  // TODO: Depends on graphics settings
 
     if (pBitmap == 0 || sizeInBytes == 0)
     {
@@ -134,7 +137,7 @@ void mini3d::DX9BitmapTexture::LoadResource(void)
 			fmt = D3DFMT_X8R8G8B8;
 		}
 
-		if( FAILED( pDevice->CreateTexture(width, height, 1, D3DUSAGE_DYNAMIC, fmt, D3DPOOL_DEFAULT, &pTexture, 0 ) ) ) 
+		if( FAILED( pDevice->CreateTexture(width, height, 1, D3DUSAGE_DYNAMIC, fmt, D3DPOOL_DEFAULT, &pTexture, 0) ) ) 
 		{
 			isDirty = true;
 			return;
@@ -154,7 +157,19 @@ void mini3d::DX9BitmapTexture::LoadResource(void)
 		return;
 	}
 
-	memcpy(textureDataRectangle.pBits, pBitmap, sizeInBytes);
+	// Copy the data from pBitmap to d3dbuffer.
+	// if the width (pitch) of the bitmap is small, it might be smaller than the d3dbuffer pitch so we have to take this into account when copying.
+	unsigned int rowSizeInBytes = sizeInBytes / height;
+	char* pD3DData;
+	char* pBitmapData;
+	
+	for (unsigned int i = 0; i < height; i++)
+	{
+		pD3DData = (char*)textureDataRectangle.pBits + i * textureDataRectangle.Pitch;
+		pBitmapData = (char*)pBitmap + width * i * 4; // TODO: depends on data type
+		memcpy(pD3DData, pBitmapData, rowSizeInBytes);
+	}
+
 	pSurface->UnlockRect();
 	pSurface->Release();
 

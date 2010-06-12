@@ -24,6 +24,9 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#ifndef MINI3D_MATH3D_H
+#define MINI3D_MATH3D_H
+
 #include <math.h>
 
 namespace mini3d
@@ -69,16 +72,15 @@ namespace utilites
 
 	struct Vector3
 	{
-		float EPSILON;
 		float x,y,z;
 
-		Vector3() : EPSILON(0.001f) {	x = y = z = 0.0f; }
-		Vector3(float x, float y, float z) : EPSILON(0.001f), x(x), y(y), z(z) { }
+		Vector3() { x = y = z = 0.0f; }
+		Vector3(float x, float y, float z) : x(x), y(y), z(z) { }
 
 		Vector3 operator + (const Vector3& v ) const { return Vector3( x + v.x, y + v.y, z + v.z ); }
 		Vector3 operator - (const Vector3& v ) const { return Vector3( x - v.x, y - v.y, z - v.z ); }
 		Vector3 operator -() const { return Vector3( -x, -y, -z ); }
-		bool operator == (const Vector3& v) const { return (fabs(x - v.x) < EPSILON) &&	(fabs(y - v.y) < EPSILON) && (fabs(z - v.z) < EPSILON); }
+		bool operator == (const Vector3& v) const { float EPSILON = 0.001f; return (fabs(x - v.x) < EPSILON) &&	(fabs(y - v.y) < EPSILON) && (fabs(z - v.z) < EPSILON); }
 		bool operator != (const Vector3& v) const { return ! (*this == v); }
 		const Vector3& operator += (const Vector3& v) { x += v.x; y += v.y; z += v.z; return *this; }
 		const Vector3& operator -= (const Vector3& v) { x -= v.x; y -= v.y; z -= v.z; return *this; }
@@ -155,3 +157,5 @@ public:
 };
 };
 }
+
+#endif

@@ -24,41 +24,58 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef MINI3D_BINARYFILEREADER_H
-#define MINI3D_BINARYFILEREADER_H
+#ifndef MINI3D_PNGREADER_H
+#define MINI3D_PNGREADER_H
+
+#include <Windows.h>
+#include <GdiPlus.h>
+#include <GdiPlusBitmap.h>
 
 #include <iostream>
 #include <fstream>
 #include <sstream>
 
+#include "BinaryFileReader.h"
+
 namespace mini3d
 {
 namespace utilites
 {
-class BinaryFileReader
+class PNGReader
 {
 public:
-	static char* ReadBytesFromFile(WCHAR* fileName, unsigned int& sizeInBytes)
+	 
+	static void* LoadPNGFromFile(WCHAR* fileName, unsigned int& width, unsigned int& height)
 	{
-		char* data;
+		Gdiplus::GdiplusStartupInput gdiplusStartupInput;
+		ULONG_PTR gdiplusToken;
+		GdiplusStartup(&gdiplusToken,&gdiplusStartupInput,0);
 
-		std::fstream fileStream(fileName, std::ios_base::binary | std::ios_base::in);
-		if (fileStream)
+		unsigned int sizeInBytes;
+		Gdiplus::Bitmap* b = Gdiplus::Bitmap::FromFile(fileName);
+
+		Gdiplus::BitmapData bitmapData;
+		b->LockBits(0, 0, PixelFormat32bppARGB, &bitmapData);
+
+		width = bitmapData.Width;
+		height = bitmapData.Height;
+
+		void* pBitmapData = malloc(width * height * 4);
+		for(int row = 0; row < height; ++row)
 		{
-			fileStream.seekg(0, std::ios::end);
-			long fileSize = long(fileStream.tellg()); // pretty safe downcast since this is not supposed to be used with files that arae gazillions of bytes long
-			fileStream.seekg(0, std::ios::beg);
-
-			data = new char[fileSize];
-			fileStream.read(&data[0], fileSize);
-			fileStream.close();
-
-			sizeInBytes = fileSize;
+			memcpy((char*)pBitmapData + (row * width * 4), (char*)(bitmapData.Scan0) + (row * bitmapData.Stride), width * 4);
 		}
-		return data;
-	}
-};
+		
+		b->UnlockBits(&bitmapData);
+		delete b;
 
+		Gdiplus::GdiplusShutdown(gdiplusToken);
+
+		return pBitmapData;
+
+	}
+
+};
 }
 }
 
