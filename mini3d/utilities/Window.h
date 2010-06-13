@@ -44,7 +44,7 @@ public:
 
 	~Window()
 	{
-		UnregisterClass(L"mini3d", GetModuleHandle(NULL));
+		UnregisterClass("mini3d", GetModuleHandle(NULL));
 	}
 
 	int GetWindowHandle() const
@@ -72,12 +72,12 @@ private:
 		wc.hCursor       = LoadCursor(NULL, IDC_ARROW);
 		wc.hbrBackground = (HBRUSH)(COLOR_WINDOW+1);
 		wc.lpszMenuName  = NULL;
-		wc.lpszClassName = L"mini3d";
+		wc.lpszClassName = "mini3d";
 		wc.hIconSm       = LoadIcon(NULL, IDI_APPLICATION);
 
 		if(!RegisterClassEx(&wc))
 		{
-			MessageBox(NULL, L"Window Registration Failed!", L"Error!",
+			MessageBox(NULL, "Window Registration Failed!", "Error!",
 				MB_ICONEXCLAMATION | MB_OK);
 			return 0;
 		}
@@ -87,8 +87,8 @@ private:
 
 		HWND hWindow = CreateWindowEx(
 			WS_EX_CLIENTEDGE,
-			L"mini3d",
-			L"The title of my window",
+			"mini3d",
+			"The title of my window",
 			WS_OVERLAPPEDWINDOW,
 			CW_USEDEFAULT, CW_USEDEFAULT, width, height,
 			NULL, NULL, hInstance, NULL);

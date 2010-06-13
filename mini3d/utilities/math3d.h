@@ -55,8 +55,13 @@ namespace utilites
 		{
 			return Multiply(*(Matrix4*)this, m);
 		}
-
+		
 		inline float* operator () (unsigned int i, unsigned int j) { return (&_00 + i * 4 + j); };
+
+		inline float* At (unsigned int i, unsigned int j)
+		{ 
+			return (&_00 + i * 4 + j); 
+		};
 
 		static Matrix4 Multiply(Matrix4& A, Matrix4& B)
 		{
@@ -92,7 +97,7 @@ namespace utilites
 		double Norm() const	{ return ( x*x ) + ( y*y ) + (z*z);}
 		double Length() const { return sqrt( Norm() ); }
 		double Distance( const Vector3& v ) const { return (v - *this).Length(); }
-		void Normalize() { float l = Length(); x /= l; y /= l; z /= l;};
+		void Normalize() { float l = (float)Length(); x /= l; y /= l; z /= l;};
 	};
 
 class math3d
@@ -154,6 +159,98 @@ public:
 	  m[14] = (znear*zfar)/neg_depth;
 	  m[15] = 0;
 	}
+
+	// code from:
+	// http://chi3x10.wordpress.com/2008/05/28/calculate-matrix-inversion-in-c/
+
+	// matrix inversioon
+	// the result is put in Y
+	static void MatrixInversion(float* A, int order, float* Y)
+	{
+		Matrix4* AMat = (Matrix4*)A;
+		Matrix4* YMat = (Matrix4*)Y;
+
+		// get the determinant of a
+		float det = 1.0f/CalcDeterminant(&AMat->_00, 4);
+
+		// memory allocation
+		Matrix4* minor = new Matrix4();		
+
+		for(unsigned int j = 0; j < 4; j++)
+		{
+			for(unsigned int i = 0; i<4; i++)
+			{
+				// get the co-factor (matrix) of A(j,i)
+				GetMinor(&AMat->_00 , &minor->_00, j, i);
+				*YMat->At(i, j) = det * CalcDeterminant(&minor->_00, 3);
+				if( (i + j) % 2 == 1)
+					*YMat->At(i, j) = -*YMat->At(i, j);
+			}
+		}
+
+		// release memory
+		delete minor;
+	}
+
+	// calculate the cofactor of element (row,col)
+	static int GetMinor(float* src, float *dest, int row, int col)
+	{
+		Matrix4* srcMat = (Matrix4*)src;
+		Matrix4* destMat = (Matrix4*)dest;
+		
+		// indicate which col and row is being copied to dest
+		int colCount=0,rowCount=0;
+
+		for(int i = 0; i < 4; i++ )
+		{
+			if( i != row )
+			{
+				colCount = 0;
+				for(int j = 0; j < 4; j++ )
+				{
+					// when j is not the element
+					if( j != col )
+					{
+						*destMat->At(rowCount, colCount) = *srcMat->At(i,j);
+						colCount++;
+					}
+				}
+				rowCount++;
+			}
+		}
+
+		return 1;
+	}
+
+	// Calculate the determinant recursively.
+	static float CalcDeterminant(float* mat, int order)
+	{
+		Matrix4* pMat = (Matrix4*)mat;
+
+		// order must be >= 0
+		// stop the recursion when matrix is a single element
+		if( order == 1 )
+			return *pMat->At(0, 0);
+		
+		// the determinant value
+		float det = 0;
+
+		// allocate the cofactor matrix
+		Matrix4* minor = new Matrix4();
+
+		for(int i = 0; i < order; i++ )
+		{
+			// get minor of element (0,i)
+			GetMinor(&pMat->_00, &minor->_00, 0, i);
+			// the recusion is here!
+			det += (float)pow(-1.0, i ) * *pMat->At(0, i) * CalcDeterminant(&minor->_00, order - 1);
+		}
+
+		// release memory
+		delete minor;
+		return det;
+	}
+
 };
 };
 }

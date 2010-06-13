@@ -484,6 +484,7 @@ IDirect3DVertexDeclaration9* mini3d::DX9GraphicsService::CreateDX9VertexDeclarat
 	int uvStream = 0;
 	int positionUsageIndex = 0;
 	int colorUsageIndex = 0;
+	int normalUsageIndex = 0;
 
 	for (unsigned int i = 0; i < count; i++)
 	{
@@ -530,6 +531,18 @@ IDirect3DVertexDeclaration9* mini3d::DX9GraphicsService::CreateDX9VertexDeclarat
 			pVertexElements[i].UsageIndex = textureUsageIndex++;
 			offset += 8;
 			break;
+		case IVertexShader::NORMAL_FLOAT3:
+			pVertexElements[i].Method = D3DDECLMETHOD_DEFAULT;
+			pVertexElements[i].Type = D3DDECLTYPE_FLOAT3;
+			pVertexElements[i].Usage = D3DDECLUSAGE_NORMAL;
+			pVertexElements[i].UsageIndex = normalUsageIndex++;
+			offset += 12;
+		case IVertexShader::NORMAL_FLOAT4:
+			pVertexElements[i].Method = D3DDECLMETHOD_DEFAULT;
+			pVertexElements[i].Type = D3DDECLTYPE_FLOAT3;
+			pVertexElements[i].Usage = D3DDECLUSAGE_NORMAL;
+			pVertexElements[i].UsageIndex = normalUsageIndex++;
+			offset += 16;
 		}
 	}
 

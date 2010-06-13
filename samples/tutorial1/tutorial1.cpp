@@ -27,19 +27,9 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 #include <math.h>
 
-#include "mini3d/utilities/PNGReader.h"
+#include "..\..\mini3d.h"
 
-#define NOMINMAX
-//#include "mini3d/OpenGL20/OGL20GraphicsService.h"
-#include "mini3d/DirectX9/DX9GraphicsService.h"
-
-
-#include "mini3d/utilities/Math3d.h"
-#include "mini3d/utilities/Window.h"
-#include "mini3d/utilities/BinaryFileReader.h"
-
-#include "mini3d/IGraphicsService.h"
-
+#include <Windows.h>
 
 // ----- FORWARD DECLARATIONS -------------------------------------------------
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -172,19 +162,19 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	
 	// create texture
 	unsigned int bitmapWidth, bitmapHeight;
-	void* pBitmap = mini3d::utilites::PNGReader::LoadPNGFromFile(L"box.png", bitmapWidth, bitmapHeight);
+	void* pBitmap = mini3d::utilites::PNGReader::LoadPNGFromFile(L"textures/box.png", bitmapWidth, bitmapHeight);
 	pTexture = graphics->CreateBitmapTexture(pBitmap, bitmapWidth, bitmapHeight); 
 	delete pBitmap;
 
 	unsigned int sizeInBytes;
 	
 	// create vertex shader
-	char* shaderBytes = mini3d::utilites::BinaryFileReader::ReadBytesFromFile(L"vertexshader.hlsl", sizeInBytes);
+	char* shaderBytes = mini3d::utilites::BinaryFileReader::ReadBytesFromFile(L"shaders/hlsl/vertexshader.hlsl", sizeInBytes);
 	pVertexShader = graphics->CreateVertexShader(shaderBytes, sizeInBytes, vertexDeclaration, 3);
 	delete shaderBytes;
 
 	// create pixel shader
-	char* shaderBytes2 = mini3d::utilites::BinaryFileReader::ReadBytesFromFile(L"pixelshader.hlsl", sizeInBytes);
+	char* shaderBytes2 = mini3d::utilites::BinaryFileReader::ReadBytesFromFile(L"shaders/hlsl/pixelshader.hlsl", sizeInBytes);
 	pPixelShader = graphics->CreatePixelShader(shaderBytes2, sizeInBytes);
 	delete shaderBytes2;
 
@@ -336,4 +326,5 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			return DefWindowProc(hwnd, msg, wParam, lParam);
 			break;
 	}
+	return DefWindowProc(hwnd, msg, wParam, lParam);
 }

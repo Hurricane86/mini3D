@@ -51,7 +51,6 @@ public:
 		ULONG_PTR gdiplusToken;
 		GdiplusStartup(&gdiplusToken,&gdiplusStartupInput,0);
 
-		unsigned int sizeInBytes;
 		Gdiplus::Bitmap* b = Gdiplus::Bitmap::FromFile(fileName);
 
 		Gdiplus::BitmapData bitmapData;
@@ -61,7 +60,7 @@ public:
 		height = bitmapData.Height;
 
 		void* pBitmapData = malloc(width * height * 4);
-		for(int row = 0; row < height; ++row)
+		for(unsigned int row = 0; row < height; ++row)
 		{
 			memcpy((char*)pBitmapData + (row * width * 4), (char*)(bitmapData.Scan0) + (row * bitmapData.Stride), width * 4);
 		}
