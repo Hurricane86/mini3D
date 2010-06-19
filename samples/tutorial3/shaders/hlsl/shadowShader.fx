@@ -1,51 +1,23 @@
+float4x4 g_LightViewProjectionMatrix : register(c4); //our world view projection matrix
 
-float4x4 ModelViewProj : register(c0); //our world view projection matrix
-
-sampler2D texSampler : register(s0) = sampler_state
+// SHADOW PIXEL SHADER
+void vertexShaderShadow ( in float4 iPos		: POSITION,
+						  in float4 iNormal		: NORMAL, 
+						  in float2 iTex0		: TEXCOORD0, 
+						  out float4 oPos		: POSITION, 
+						  out float2 vTex0		: TEXCOORD0)
 {
-    Texture	  = <texture0>;
-    MIPFILTER = LINEAR;
-    MAGFILTER = LINEAR;
-    MINFILTER = LINEAR;
-};
+	// calculate the position by multiplying with light view projection matrix
+    oPos = mul(iPos, g_LightViewProjectionMatrix);
 
-
-//application to vertex structure
-struct a2v
-{ 
-    float4 position   : POSITION;
-    float4 normal	  : NORMAL;
-    float2 tex0       : TEXCOORD0;
-};
-
-//vertex to pixel shader structure
-struct v2p
-{
-    float4 position    : POSITION;
-    float4 normal      : TEXCOORD1;
-    float2 tex0        : TEXCOORD0;
-};
-
-//pixel shader to screen
-struct p2f
-{
-    float4 color    : COLOR0;
-}; 
-
-// Shadow Vertex Shader
-void vs( in a2v IN, out v2p OUT ) 
-{
-    //getting to position to object space
-    OUT.position = mul(IN.position, ModelViewProj);
- 	OUT.normal = IN.normal;
-    OUT.tex0.xy = OUT.position.zw;
+	// send the depth coordinates to the pixel shader 
+    vTex0.xy = oPos.zw;
 }
 
 //SHADOW PIXEL SHADER
-void ps( in v2p IN, out p2f OUT )
+void pixelShaderShadow( in float2 tex0			: TEXCOORD0,
+						out float4 oColor		: COLOR)
 {
-    //
-    // Depth is z / w
-    //
-    OUT.color = IN.tex0.x / IN.tex0.y;
+    // calculate the normalized depth (between 0.0 and 1.0) and store this as the pixel value in the render target (shadow map)
+    oColor = tex0.x / tex0.y;
 }

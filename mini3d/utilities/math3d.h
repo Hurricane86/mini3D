@@ -112,7 +112,6 @@ public:
 		Vector3 f = targ - pos;
 		f.Normalize();
 	
-		//right.CrossProduct((targ-pos),up);
 		Vector3 s = upv.Cross(f);
 		Vector3 u = f.Cross(s);
 		s.Normalize();

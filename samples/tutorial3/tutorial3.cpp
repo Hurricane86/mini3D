@@ -236,6 +236,10 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	// Set the ViewProjection matrix
 	UpdateViewProjectionMatrix();
 
+	// set the viewprojection parameter for the shader
+	UpdateLightMatrix();
+
+
 
 	// ----- RENDER LOOP ------------------------------------------------------
 
@@ -253,9 +257,6 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 
 		// set the usual texture as texture
 		graphics->SetTexture(pTexture, 0);
-
-		// set the viewprojection parameter for the shader
-		UpdateLightMatrix();
 
 		// clear render target with color
 		graphics->Clear(0xFFFFFFFF);
@@ -312,6 +313,10 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 		DispatchMessage(&Msg);
 
 		lightAnimationProgress += 0.01f;
+
+		// set the viewprojection parameter for the shader
+		UpdateLightMatrix();
+
 	}
 
 
@@ -351,11 +356,12 @@ void UpdateViewProjectionMatrix()
 
 	// update camera
 	mini3d::utilites::math3d::setuplookat(&viewMatrix._00, (float*)&eye, (float*)&target, (float*)&up);
-	mini3d::utilites::math3d::BuildPerspProjMat(&projectionMatrix._00, (float)(3.1415f / 4.0f), (float)width/(float)height, 40.0f / 100.0f, 80.0f);
+	mini3d::utilites::math3d::BuildPerspProjMat(&projectionMatrix._00, (float)(3.1415f / 4.0f), (float)width/(float)height, 1.0f, 80.0f);
 	mini3d::utilites::Matrix4 viewprojectionMatrix = viewMatrix * projectionMatrix;
 
 	// set a shader parameter
 	graphics->SetShaderParameterMatrix(0, &viewprojectionMatrix._00, 4, 4);
+	graphics->SetShaderParameterFloat(9, &eye.x, 4);
 }
 
 // sets the view, projection matrix as a shader parameter
@@ -365,21 +371,20 @@ void UpdateLightMatrix()
 	mini3d::utilites::Matrix4 lightViewMatrix;
 	mini3d::utilites::Matrix4 lightProjection;
 
-	mini3d::utilites::Vector3 lightPos(10.0f * cos(lightAnimationProgress), -9.0f + sin(lightAnimationProgress * 2.1f), 10.0f * sin(lightAnimationProgress)); // cos(lightAnimationProgress) * sin(lightAnimationProgress)
+	mini3d::utilites::Vector3 lightPos(10.0f * cos(lightAnimationProgress), -8.0f + sin(lightAnimationProgress * 2.1f), 10.0f * sin(lightAnimationProgress)); // cos(lightAnimationProgress) * sin(lightAnimationProgress)
 	mini3d::utilites::Vector3 lightTarget(0,0,0);
 	mini3d::utilites::Vector3 up(0,-1,0);
 
 	// update camera
 	mini3d::utilites::math3d::setuplookat(&lightViewMatrix._00, (float*)&lightPos, (float*)&lightTarget, (float*)&up);
-	mini3d::utilites::math3d::BuildPerspProjMat(&lightProjection._00, (float)(3.1415f / 8.0f), (float)width/(float)height, 0.1f, 40.0f);
+	mini3d::utilites::math3d::BuildPerspProjMat(&lightProjection._00, (float)(3.1415f / 8.0f), 1, 1.0f, 40.0f);
 	mini3d::utilites::Matrix4 lightViewProjectionMatrix = lightViewMatrix * lightProjection;
 
 
 	// set a shader parameter
-	graphics->SetShaderParameterMatrix(0, &lightViewProjectionMatrix._00, 4, 4);
 	graphics->SetShaderParameterMatrix(4, &lightViewProjectionMatrix._00, 4, 4);
 
-	lightPos.Normalize();
+	//lightPos.Normalize();
 	graphics->SetShaderParameterFloat(8, &lightPos.x, 4);
 }
 
