@@ -39,52 +39,58 @@ void UpdateLightMatrix();
 // ----- GEOMETRY DATA --------------------------------------------------------
 
 // Vertex Data Structure
-struct VertexPCT { float x,y,z,w;  float r,g,b,a;  float u,v; };
+struct VertexPCT { 
+	float x,y,z,w;  // Position
+	float n1x,n1y,n1z; // Normal (Red channel)
+	float n2x,n2y,n2z; // Tangent (Green channel)
+	float n3x,n3y,n3z; // Bitangent (Blue Channel)
+	float u,v; // Texture coordinates
+};
 
 // Vertex array
 VertexPCT vertices[] = {
 	// Front
-	{-1.0f, -1.0f,  1.0f, 1.0f,  0.0f, 0.0f, 1.0f, 1.0f,  0.5f, 0.0f}, // Corner 0
-	{ 1.0f, -1.0f,  1.0f, 1.0f,  0.0f, 0.0f, 1.0f, 1.0f, 0.75f, 0.0f}, // Corner 1
-	{ 1.0f,  1.0f,  1.0f, 1.0f,  0.0f, 0.0f, 1.0f, 1.0f, 0.75f, 0.5f}, // Corner 2
-	{-1.0f,  1.0f,  1.0f, 1.0f,  0.0f, 0.0f, 1.0f, 1.0f,  0.5f, 0.5f}, // Corner 3
-
+	{-1.0f, -1.0f,  1.0f, 1.0f,   1.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f,  0.0f, 0.0f, 1.0f,   0.50f, 0.0f}, // Corner 0
+	{ 1.0f, -1.0f,  1.0f, 1.0f,   1.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f,  0.0f, 0.0f, 1.0f,   0.75f, 0.0f}, // Corner 1
+	{ 1.0f,  1.0f,  1.0f, 1.0f,   1.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f,  0.0f, 0.0f, 1.0f,   0.75f, 0.5f}, // Corner 2
+	{-1.0f,  1.0f,  1.0f, 1.0f,   1.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f,  0.0f, 0.0f, 1.0f,   0.50f, 0.5f}, // Corner 3
+	
 	// Back
-	{ 1.0f, -1.0f, -1.0f, 1.0f,  0.0f, 0.0f, -1.0f, 1.0f,  0.5f, 0.5f}, // Corner 4
-	{-1.0f, -1.0f, -1.0f, 1.0f,  0.0f, 0.0f, -1.0f, 1.0f, 0.75f, 0.5f}, // Corner 5
-	{-1.0f,  1.0f, -1.0f, 1.0f,  0.0f, 0.0f, -1.0f, 1.0f, 0.75f, 1.0f}, // Corner 6
-	{ 1.0f,  1.0f, -1.0f, 1.0f,  0.0f, 0.0f, -1.0f, 1.0f,  0.5f, 1.0f}, // Corner 7
+	{ 1.0f, -1.0f, -1.0f, 1.0f,   -1.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f,  0.0f, 0.0f, -1.0f,   0.50f, 0.5f}, // Corner 4
+	{-1.0f, -1.0f, -1.0f, 1.0f,   -1.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f,  0.0f, 0.0f, -1.0f,   0.75f, 0.5f}, // Corner 5
+	{-1.0f,  1.0f, -1.0f, 1.0f,   -1.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f,  0.0f, 0.0f, -1.0f,   0.75f, 1.0f}, // Corner 6
+	{ 1.0f,  1.0f, -1.0f, 1.0f,   -1.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f,  0.0f, 0.0f, -1.0f,   0.50f, 1.0f}, // Corner 7
 
 	// Right
-	{ 1.0f, -1.0f,  1.0f, 1.0f,  1.0f, 0.0f, 0.0f, 1.0f, 0.25f, 0.5f}, // Corner 1
-	{ 1.0f, -1.0f, -1.0f, 1.0f,  1.0f, 0.0f, 0.0f, 1.0f,  0.5f, 0.5f}, // Corner 4
-	{ 1.0f,  1.0f, -1.0f, 1.0f,  1.0f, 0.0f, 0.0f, 1.0f,  0.5f, 1.0f}, // Corner 7
-	{ 1.0f,  1.0f,  1.0f, 1.0f,  1.0f, 0.0f, 0.0f, 1.0f, 0.25f, 1.0f}, // Corner 2
+	{ 1.0f, -1.0f,  1.0f, 1.0f,   0.0f, 0.0f, -1.0f,  0.0f, -1.0f, 0.0f,  1.0f, 0.0f, 0.0f,   0.25f, 0.5f}, // Corner 1
+	{ 1.0f, -1.0f, -1.0f, 1.0f,   0.0f, 0.0f, -1.0f,  0.0f, -1.0f, 0.0f,  1.0f, 0.0f, 0.0f,   0.50f, 0.5f}, // Corner 4
+	{ 1.0f,  1.0f, -1.0f, 1.0f,   0.0f, 0.0f, -1.0f,  0.0f, -1.0f, 0.0f,  1.0f, 0.0f, 0.0f,   0.50f, 1.0f}, // Corner 7
+	{ 1.0f,  1.0f,  1.0f, 1.0f,   0.0f, 0.0f, -1.0f,  0.0f, -1.0f, 0.0f,  1.0f, 0.0f, 0.0f,   0.25f, 1.0f}, // Corner 2
 
 	// Left
-	{-1.0f, -1.0f, -1.0f, 1.0f,  -1.0f, 0.0f, 0.0f, 1.0f, 0.25f, 0.0f}, // Corner 5
-	{-1.0f, -1.0f,  1.0f, 1.0f,  -1.0f, 0.0f, 0.0f, 1.0f,  0.5f, 0.0f}, // Corner 0
-	{-1.0f,  1.0f,  1.0f, 1.0f,  -1.0f, 0.0f, 0.0f, 1.0f,  0.5f, 0.5f}, // Corner 3
-	{-1.0f,  1.0f, -1.0f, 1.0f,  -1.0f, 0.0f, 0.0f, 1.0f, 0.25f, 0.5f}, // Corner 6
+	{-1.0f, -1.0f, -1.0f, 1.0f,   0.0f, 0.0f, 1.0f,  0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f,   0.25f, 0.0f}, // Corner 5
+	{-1.0f, -1.0f,  1.0f, 1.0f,   0.0f, 0.0f, 1.0f,  0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f,   0.5f, 0.0f}, // Corner 0
+	{-1.0f,  1.0f,  1.0f, 1.0f,   0.0f, 0.0f, 1.0f,  0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f,   0.5f, 0.5f}, // Corner 3
+	{-1.0f,  1.0f, -1.0f, 1.0f,   0.0f, 0.0f, 1.0f,  0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f,   0.25f, 0.5f}, // Corner 6
 
 	// Top
-	{-1.0f, -1.0f, -1.0f, 1.0f,  0.0f, -1.0f, 0.0f, 1.0f,  0.0f, 0.0f}, // Corner 5
-	{ 1.0f, -1.0f, -1.0f, 1.0f,  0.0f, -1.0f, 0.0f, 1.0f, 0.25f, 0.0f}, // Corner 4
-	{ 1.0f, -1.0f,  1.0f, 1.0f,  0.0f, -1.0f, 0.0f, 1.0f, 0.25f, 0.5f}, // Corner 1
-	{-1.0f, -1.0f,  1.0f, 1.0f,  0.0f, -1.0f, 0.0f, 1.0f,  0.0f, 0.5f}, // Corner 0
+	{-1.0f, -1.0f, -1.0f, 1.0f,   1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f,  0.0f, -1.0f, 0.0f,   0.00f, 0.0f}, // Corner 5
+	{ 1.0f, -1.0f, -1.0f, 1.0f,   1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f,  0.0f, -1.0f, 0.0f,   0.25f, 0.0f}, // Corner 4
+	{ 1.0f, -1.0f,  1.0f, 1.0f,   1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f,  0.0f, -1.0f, 0.0f,   0.25f, 0.5f}, // Corner 1
+	{-1.0f, -1.0f,  1.0f, 1.0f,   1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f,  0.0f, -1.0f, 0.0f,   0.00f, 0.5f}, // Corner 0
 
 	//Bottom
-	{ 1.0f,  1.0f, -1.0f, 1.0f,  0.0f, 1.0f, 0.0f, 1.0f,  0.0f, 0.5f}, // Corner 7
-	{-1.0f,  1.0f, -1.0f, 1.0f,  0.0f, 1.0f, 0.0f, 1.0f, 0.25f, 0.5f}, // Corner 6
-	{-1.0f,  1.0f,  1.0f, 1.0f,  0.0f, 1.0f, 0.0f, 1.0f, 0.25f, 1.0f}, // Corner 3
-	{ 1.0f,  1.0f,  1.0f, 1.0f,  0.0f, 1.0f, 0.0f, 1.0f,  0.0f, 1.0f}  // Corner 2
+	{ 1.0f,  1.0f, -1.0f, 1.0f,   -1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f,  0.0f, 1.0f, 0.0f,   0.00f, 0.5f}, // Corner 7
+	{-1.0f,  1.0f, -1.0f, 1.0f,   -1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f,  0.0f, 1.0f, 0.0f,   0.25f, 0.5f}, // Corner 6
+	{-1.0f,  1.0f,  1.0f, 1.0f,   -1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f,  0.0f, 1.0f, 0.0f,   0.25f, 1.0f}, // Corner 3
+	{ 1.0f,  1.0f,  1.0f, 1.0f,   -1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f,  0.0f, 1.0f, 0.0f,   0.00f, 1.0f}  // Corner 2
 };
 
 VertexPCT vertices2[] = {
-	{-5.0f, 1.0f, -5.0f, 1.0f,  0.0f, -1.0f, 0.0f, 1.0f,  0.0f, 0.0f}, // Corner 0
-	{ 5.0f, 1.0f, -5.0f, 1.0f,  0.0f, -1.0f, 0.0f, 1.0f, 0.25f, 0.0f}, // Corner 1
-	{ 5.0f, 1.0f,  5.0f, 1.0f,  0.0f, -1.0f, 0.0f, 1.0f, 0.25f, 0.5f}, // Corner 2
-	{-5.0f, 1.0f,  5.0f, 1.0f,  0.0f, -1.0f, 0.0f, 1.0f,  0.0f, 0.5f}  // Corner 3
+	{-5.0f, 1.0f, -5.0f, 1.0f,   1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f,  0.0f, -1.0f, 0.0f,   0.00f, 0.0f}, // Corner 0
+	{ 5.0f, 1.0f, -5.0f, 1.0f,   1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f,  0.0f, -1.0f, 0.0f,   0.25f, 0.0f}, // Corner 1
+	{ 5.0f, 1.0f,  5.0f, 1.0f,   1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f,  0.0f, -1.0f, 0.0f,   0.25f, 0.5f}, // Corner 2
+	{-5.0f, 1.0f,  5.0f, 1.0f,   1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f,  0.0f, -1.0f, 0.0f,   0.00f, 0.5f}  // Corner 3
 };
 
 // Index array
@@ -93,7 +99,7 @@ unsigned int indices[] = {0, 1, 2, 0, 2, 3,    4, 5, 6, 4, 6, 7,    8, 9, 10, 8,
 unsigned int indices2[] = {0, 1, 2, 0, 2, 3};
 
 // Vertex declaration for the vertex shader
-mini3d::IVertexShader::VertexDataType vertexDeclaration[] = { mini3d::IVertexShader::POSITION_FLOAT4, mini3d::IVertexShader::NORMAL_FLOAT4, mini3d::IVertexShader::TEXTURECOORDINATE_FLOAT2 };
+mini3d::IVertexShader::VertexDataType vertexDeclaration[] = { mini3d::IVertexShader::POSITION_FLOAT4, mini3d::IVertexShader::NORMAL_FLOAT3, mini3d::IVertexShader::NORMAL_FLOAT3, mini3d::IVertexShader::NORMAL_FLOAT3, mini3d::IVertexShader::TEXTURECOORDINATE_FLOAT2 };
 
 
 // ----- DECLARE VARIABLES ----------------------------------------------------
@@ -138,6 +144,7 @@ mini3d::IIndexBuffer* iBufferGround;
 mini3d::IVertexBuffer* vBufferGround;
 
 mini3d::IBitmapTexture* pTexture;
+mini3d::IBitmapTexture* pNormalTexture;
 
 mini3d::IVertexShader* pSceneVertexShader;
 mini3d::IPixelShader* pScenePixelShader;
@@ -188,12 +195,18 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	pTexture = graphics->CreateBitmapTexture(pBitmap, bitmapWidth, bitmapHeight); 
 	delete pBitmap;
 
+	// create normal texture
+	pBitmap = mini3d::utilites::PNGReader::LoadPNGFromFile(L"textures/boxnormal.png", bitmapWidth, bitmapHeight);
+	pNormalTexture = graphics->CreateBitmapTexture(pBitmap, bitmapWidth, bitmapHeight); 
+	delete pBitmap;
+
+
 	unsigned int sizeInBytes;
 	
 	// create vertex shader
 	char* shaderBytes;
 	shaderBytes = mini3d::utilites::BinaryFileReader::ReadBytesFromFile(L"shaders/hlsl/scenevs.hlsl", sizeInBytes);
-	pSceneVertexShader = graphics->CreateVertexShader(shaderBytes, sizeInBytes, vertexDeclaration, 3);
+	pSceneVertexShader = graphics->CreateVertexShader(shaderBytes, sizeInBytes, vertexDeclaration, 5);
 	delete shaderBytes;
 
 	// create pixel shader
@@ -203,7 +216,7 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 
 	// create shadow vertex shader
 	shaderBytes = mini3d::utilites::BinaryFileReader::ReadBytesFromFile(L"shaders/hlsl/shadowvs.hlsl", sizeInBytes);
-	pShadowVertexShader = graphics->CreateVertexShader(shaderBytes, sizeInBytes, vertexDeclaration, 3);
+	pShadowVertexShader = graphics->CreateVertexShader(shaderBytes, sizeInBytes, vertexDeclaration, 5);
 	delete shaderBytes;
 
 	// create shadow pixel shader
@@ -232,6 +245,7 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 
 	// Set the Texture
 	graphics->SetTexture(pTexture, 0);
+	graphics->SetTexture(pNormalTexture, 2);
 
 	// Set the ViewProjection matrix
 	UpdateViewProjectionMatrix();
@@ -325,6 +339,7 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	delete vBuffer;
 	delete iBuffer;
 	delete pTexture;
+	delete pNormalTexture;
 
 	delete pScenePixelShader;
 	delete pSceneVertexShader;
@@ -371,7 +386,7 @@ void UpdateLightMatrix()
 	mini3d::utilites::Matrix4 lightViewMatrix;
 	mini3d::utilites::Matrix4 lightProjection;
 
-	mini3d::utilites::Vector3 lightPos(10.0f * cos(lightAnimationProgress), -8.0f + sin(lightAnimationProgress * 2.1f), 10.0f * sin(lightAnimationProgress)); // cos(lightAnimationProgress) * sin(lightAnimationProgress)
+	mini3d::utilites::Vector3 lightPos(10.0f * cos(lightAnimationProgress), -1.0f + 0 * sin(lightAnimationProgress * 2.1f), 10.0f * sin(lightAnimationProgress)); // cos(lightAnimationProgress) * sin(lightAnimationProgress)
 	mini3d::utilites::Vector3 lightTarget(0,0,0);
 	mini3d::utilites::Vector3 up(0,-1,0);
 

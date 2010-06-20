@@ -2,7 +2,9 @@ float4x4 g_LightViewProjectionMatrix : register(c4); //our world view projection
 
 // SHADOW PIXEL SHADER
 void vertexShaderShadow ( in float4 iPos		: POSITION,
-						  in float4 iNormal		: NORMAL, 
+						  in float3 iTangent	: NORMAL, 
+						  in float3 iBiTangent	: NORMAL, 
+						  in float3 iNormal		: NORMAL, 
 						  in float2 iTex0		: TEXCOORD0, 
 						  out float4 oPos		: POSITION, 
 						  out float2 vTex0		: TEXCOORD0)

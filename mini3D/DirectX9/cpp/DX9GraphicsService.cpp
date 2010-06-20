@@ -537,9 +537,10 @@ IDirect3DVertexDeclaration9* mini3d::DX9GraphicsService::CreateDX9VertexDeclarat
 			pVertexElements[i].Usage = D3DDECLUSAGE_NORMAL;
 			pVertexElements[i].UsageIndex = normalUsageIndex++;
 			offset += 12;
+			break;
 		case IVertexShader::NORMAL_FLOAT4:
 			pVertexElements[i].Method = D3DDECLMETHOD_DEFAULT;
-			pVertexElements[i].Type = D3DDECLTYPE_FLOAT3;
+			pVertexElements[i].Type = D3DDECLTYPE_FLOAT4;
 			pVertexElements[i].Usage = D3DDECLUSAGE_NORMAL;
 			pVertexElements[i].UsageIndex = normalUsageIndex++;
 			offset += 16;
