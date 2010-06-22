@@ -93,6 +93,15 @@ VertexPCT vertices2[] = {
 	{-5.0f, 1.0f,  5.0f, 1.0f,   1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f,  0.0f, -1.0f, 0.0f,   0.00f, 0.5f}  // Corner 3
 };
 
+
+// A quad for drawing the bloom on top of the scene
+VertexPCT vertices3[] = {
+	{ -1.0f, -1.0f, 0.1f, 1.0f,   1.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f,  0.0f, 0.0f, 1.0f,   0.0f, 0.0f}, // Corner 0
+	{ 1.0f, -1.0f,  0.1f, 1.0f,   1.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f,  0.0f, 0.0f, 1.0f,   1.0f, 0.0f}, // Corner 1
+	{ 1.0f,  1.0f,  0.1f, 1.0f,   1.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f,  0.0f, 0.0f, 1.0f,   1.0f, 1.0f}, // Corner 2
+	{-1.0f,  1.0f,  0.1f, 1.0f,   1.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f,  0.0f, 0.0f, 1.0f,   0.0f, 1.0f}, // Corner 3
+};
+
 // Index array
 unsigned int indices[] = {0, 1, 2, 0, 2, 3,    4, 5, 6, 4, 6, 7,    8, 9, 10, 8, 10, 11,    12, 13, 14, 12, 14, 15,    16, 17, 18, 16, 18, 19,    20, 21, 22, 20, 22, 23};
 
@@ -136,12 +145,16 @@ mini3d::IScreenRenderTarget* pScreenRenderTarget;
 mini3d::IFullscreenRenderTarget* pFullScreenRenderTarget;
 
 mini3d::IRenderTargetTexture* pShadowRenderTargetTexture;
+mini3d::IRenderTargetTexture* pGlowRenderTargetTexture;
+mini3d::IRenderTargetTexture* pGlowSourceRenderTargetTexture;
 
 mini3d::IIndexBuffer* iBuffer;
 mini3d::IVertexBuffer* vBuffer;
 
 mini3d::IIndexBuffer* iBufferGround;
 mini3d::IVertexBuffer* vBufferGround;
+
+mini3d::IVertexBuffer* vBufferOverlay;
 
 mini3d::IBitmapTexture* pTexture;
 mini3d::IBitmapTexture* pNormalTexture;
@@ -154,6 +167,11 @@ mini3d::IVertexShader* pShadowVertexShader;
 mini3d::IPixelShader* pShadowPixelShader;
 mini3d::IShaderProgram* pShadowShaderProgram;
 
+mini3d::IVertexShader* pGlowVertexShader;
+mini3d::IPixelShader* pGlowPixelShader;
+mini3d::IPixelShader* pGlowVertPixelShader;
+mini3d::IShaderProgram* pGlowShaderProgram;
+mini3d::IShaderProgram* pGlowVertShaderProgram;
 
 // Tutorial Application
 INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
@@ -180,6 +198,10 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 
 	// Shadow render target texture
 	pShadowRenderTargetTexture = graphics->CreateRenderTargetTexture(512, 512, true);
+	
+	// Glow render target texture, one eight the size of the render target
+	pGlowSourceRenderTargetTexture = graphics->CreateRenderTargetTexture(160, 120, true);
+	pGlowRenderTargetTexture = graphics->CreateRenderTargetTexture(160, 120, false);
 
 	// create index buffer
 	iBuffer = graphics->CreateIndexBuffer(indices, 36);
@@ -188,6 +210,7 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	// create vertex buffer
 	vBuffer = graphics->CreateVertexBuffer(vertices, 24, sizeof(VertexPCT));
 	vBufferGround = graphics->CreateVertexBuffer(vertices2, 4, sizeof(VertexPCT));
+	vBufferOverlay = graphics->CreateVertexBuffer(vertices3, 4, sizeof(VertexPCT));
 
 	// create texture
 	unsigned int bitmapWidth, bitmapHeight;
@@ -224,6 +247,21 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	pShadowPixelShader = graphics->CreatePixelShader(shaderBytes, sizeInBytes);
 	delete shaderBytes;
 
+	// create glow vertex shader
+	shaderBytes = mini3d::utilites::BinaryFileReader::ReadBytesFromFile(L"shaders/hlsl/glowvs.hlsl", sizeInBytes);
+	pGlowVertexShader = graphics->CreateVertexShader(shaderBytes, sizeInBytes, vertexDeclaration, 5);
+	delete shaderBytes;
+
+	// create shadow pixel shader
+	shaderBytes = mini3d::utilites::BinaryFileReader::ReadBytesFromFile(L"shaders/hlsl/glowhps.hlsl", sizeInBytes);
+	pGlowPixelShader = graphics->CreatePixelShader(shaderBytes, sizeInBytes);
+	delete shaderBytes;
+
+	// create vertical shadow pixel shader
+	shaderBytes = mini3d::utilites::BinaryFileReader::ReadBytesFromFile(L"shaders/hlsl/glowvps.hlsl", sizeInBytes);
+	pGlowVertPixelShader = graphics->CreatePixelShader(shaderBytes, sizeInBytes);
+	delete shaderBytes;
+
 	// ----- VARIABLES FOR RENDER LOOP ----------------------------------------
 	
 	// keeps track of what texture unit the texture is assigned to. This value is sent to the shader program
@@ -233,33 +271,24 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	// create shader program
 	pSceneShaderProgram = graphics->CreateShaderProgram(pSceneVertexShader, pScenePixelShader);
 	pShadowShaderProgram = graphics->CreateShaderProgram(pShadowVertexShader, pShadowPixelShader);
-
+	pGlowShaderProgram = graphics->CreateShaderProgram(pGlowVertexShader, pGlowPixelShader);
+	pGlowVertShaderProgram = graphics->CreateShaderProgram(pGlowVertexShader, pGlowVertPixelShader);
 
 	// ----- CONFIIGURE GRAPHICS PIPELINE -------------------------------------
 
-	// set render prarameters
-	//graphics->SetIndexBuffer(iBufferGround);
-	//graphics->SetVertexBuffer(vBufferGround);
-	graphics->SetShaderProgram(pShadowShaderProgram);
-	graphics->SetRenderTarget(pScreenRenderTarget);
-
 	// Set the Texture
-	graphics->SetTexture(pTexture, 0);
 	graphics->SetTexture(pNormalTexture, 2);
-
-	// Set the ViewProjection matrix
-	UpdateViewProjectionMatrix();
-
-	// set the viewprojection parameter for the shader
-	UpdateLightMatrix();
-
-
 
 	// ----- RENDER LOOP ------------------------------------------------------
 
 	// loop while the window is not closed
 	while(GetMessage(&Msg, NULL, 0, 0) > 0)
 	{
+
+
+
+		// RENDER THE SHADOW MAP
+
 		// clear the render target texture (can not be mounted as both texture and render target)
 		graphics->SetTexture(0, 1);
 
@@ -282,11 +311,11 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 		// draw the scene to the renderTargetTexture
 		graphics->Draw();
 
-		// set the correct rendertarget depeding on fullscreen mode
-		if (fullscreen == true)
-			graphics->SetRenderTarget(pFullScreenRenderTarget);
-		else
-			graphics->SetRenderTarget(pScreenRenderTarget);
+
+
+		// RENDER THE SCENE TO THE GLOW SOURCE RENDER TARGET
+
+		graphics->SetRenderTarget(pGlowSourceRenderTargetTexture);
 
 		// set the scene shader program
 		graphics->SetShaderProgram(pSceneShaderProgram);
@@ -301,18 +330,70 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 		// clear render target with color
 		graphics->Clear(0xFF606580);
 
-		// Set geometry
+		// Draw the geometry
 		graphics->SetIndexBuffer(iBuffer);
 		graphics->SetVertexBuffer(vBuffer);
-
-		// draw the scene to the renderTargetTexture
 		graphics->Draw();
 
-		// Set geometry
 		graphics->SetIndexBuffer(iBufferGround);
 		graphics->SetVertexBuffer(vBufferGround);
+		graphics->Draw();
 
-		// draw the scene to the renderTargetTexture
+
+		// CREATE HORIZONTAL BLUR ON GLOW RENDER TARGET
+
+		graphics->SetShaderProgram(pGlowShaderProgram);
+		graphics->SetTexture(pGlowSourceRenderTargetTexture, 0);
+		graphics->SetRenderTarget(pGlowRenderTargetTexture);
+		
+		// Set geometry
+		graphics->SetIndexBuffer(iBufferGround);
+		graphics->SetVertexBuffer(vBufferOverlay);
+		
+		graphics->Clear(0x00000000);
+		graphics->Draw();
+
+
+
+		// RENDER SCENE TO SCREEN RENDER TARGET
+
+		// set the correct rendertarget depeding on fullscreen mode
+		if (fullscreen == true)
+			graphics->SetRenderTarget(pFullScreenRenderTarget);
+		else
+			graphics->SetRenderTarget(pScreenRenderTarget);
+
+		// set the scene shader program
+		graphics->SetShaderProgram(pSceneShaderProgram);
+
+		// set the texture
+		graphics->SetTexture(pShadowRenderTargetTexture, 1);
+		graphics->SetTexture(pTexture, 0);
+
+		// draw the scene to the SCREEN render target
+		graphics->Clear(0xFF606580);
+
+		// Draw the geometry
+		graphics->SetIndexBuffer(iBuffer);
+		graphics->SetVertexBuffer(vBuffer);
+		graphics->Draw();
+
+		graphics->SetIndexBuffer(iBufferGround);
+		graphics->SetVertexBuffer(vBufferGround);
+		graphics->Draw();
+
+
+
+		// OVERLAY BLOOM ON SCREEN RENDER TARGET
+
+		// Set the glow shader program
+		graphics->SetShaderProgram(pGlowVertShaderProgram);
+		graphics->SetTexture(pGlowRenderTargetTexture, 0);
+
+		graphics->SetIndexBuffer(iBufferGround);
+		graphics->SetVertexBuffer(vBufferOverlay);
+
+		// draw the glow to the screen render target
 		graphics->Draw();
 
 
@@ -349,8 +430,17 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	delete pShadowVertexShader;
 	delete pShadowShaderProgram;
 
+	delete pGlowPixelShader;
+	delete pGlowVertexShader;
+	delete pGlowShaderProgram;
+
+	delete pGlowVertPixelShader;
+	delete pGlowVertShaderProgram;
+
 	delete pScreenRenderTarget;
 	delete pFullScreenRenderTarget;
+	delete pGlowSourceRenderTargetTexture;
+
 	delete graphics;
 
 	delete pTextureUnit;

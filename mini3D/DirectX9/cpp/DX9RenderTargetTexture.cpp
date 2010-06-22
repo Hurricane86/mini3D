@@ -91,7 +91,7 @@ void mini3d::DX9RenderTargetTexture::LoadResource(void)
 	if (pRenderTarget == 0)
 	{
 		// X8R8G8B8
-		if( FAILED( pDevice->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, &pRenderTarget, 0 ) ) ) 
+		if( FAILED( pDevice->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pRenderTarget, 0 ) ) ) 
 		{
 			isDirty = true;
 			return;
