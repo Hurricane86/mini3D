@@ -32,6 +32,12 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include <Windows.h>
 
 // ----- FORWARD DECLARATIONS -------------------------------------------------
+
+mini3d::IVertexShader* LoadVertexShaderFromFile(WCHAR* fileName);
+mini3d::IPixelShader* LoadPixelShaderFromFile(WCHAR* fileName);
+mini3d::IBitmapTexture* LoadTextureFromFile(WCHAR* fileName);
+
+void GaussianBlur(mini3d::ITexture* source, mini3d::IRenderTargetTexture* intermediate, mini3d::IRenderTarget* target, mini3d::IIndexBuffer* indexBuffer, mini3d::IVertexBuffer* vertexBufferx, mini3d::IVertexBuffer* vertexBuffery);
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 void UpdateViewProjectionMatrix();
 void UpdateLightMatrix();
@@ -50,47 +56,48 @@ struct VertexPCT {
 // Vertex array
 VertexPCT vertices[] = {
 	// Front
-	{-1.0f, -1.0f,  1.0f, 1.0f,   1.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f,  0.0f, 0.0f, 1.0f,   0.50f, 0.0f}, // Corner 0
-	{ 1.0f, -1.0f,  1.0f, 1.0f,   1.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f,  0.0f, 0.0f, 1.0f,   0.75f, 0.0f}, // Corner 1
-	{ 1.0f,  1.0f,  1.0f, 1.0f,   1.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f,  0.0f, 0.0f, 1.0f,   0.75f, 0.5f}, // Corner 2
-	{-1.0f,  1.0f,  1.0f, 1.0f,   1.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f,  0.0f, 0.0f, 1.0f,   0.50f, 0.5f}, // Corner 3
+	{-1.0f, -1.0f,  1.0f, 1.0f,   1.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f,  0.0f, 0.0f, 1.0f,   0.0f, 0.0f}, // Corner 0
+	{ 1.0f, -1.0f,  1.0f, 1.0f,   1.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f,  0.0f, 0.0f, 1.0f,   0.5f, 0.0f}, // Corner 1
+	{ 1.0f,  1.0f,  1.0f, 1.0f,   1.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f,  0.0f, 0.0f, 1.0f,   0.5f, 1.0f}, // Corner 2
+	{-1.0f,  1.0f,  1.0f, 1.0f,   1.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f,  0.0f, 0.0f, 1.0f,   0.0f, 1.0f}, // Corner 3
 	
 	// Back
-	{ 1.0f, -1.0f, -1.0f, 1.0f,   -1.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f,  0.0f, 0.0f, -1.0f,   0.50f, 0.5f}, // Corner 4
-	{-1.0f, -1.0f, -1.0f, 1.0f,   -1.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f,  0.0f, 0.0f, -1.0f,   0.75f, 0.5f}, // Corner 5
-	{-1.0f,  1.0f, -1.0f, 1.0f,   -1.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f,  0.0f, 0.0f, -1.0f,   0.75f, 1.0f}, // Corner 6
-	{ 1.0f,  1.0f, -1.0f, 1.0f,   -1.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f,  0.0f, 0.0f, -1.0f,   0.50f, 1.0f}, // Corner 7
+	{ 1.0f, -1.0f, -1.0f, 1.0f,   -1.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f,  0.0f, 0.0f, -1.0f,   0.0f, 0.0f}, // Corner 4
+	{-1.0f, -1.0f, -1.0f, 1.0f,   -1.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f,  0.0f, 0.0f, -1.0f,   0.5f, 0.0f}, // Corner 5
+	{-1.0f,  1.0f, -1.0f, 1.0f,   -1.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f,  0.0f, 0.0f, -1.0f,   0.5f, 1.0f}, // Corner 6
+	{ 1.0f,  1.0f, -1.0f, 1.0f,   -1.0f, 0.0f, 0.0f,  0.0f, -1.0f, 0.0f,  0.0f, 0.0f, -1.0f,   0.0f, 1.0f}, // Corner 7
 
 	// Right
-	{ 1.0f, -1.0f,  1.0f, 1.0f,   0.0f, 0.0f, -1.0f,  0.0f, -1.0f, 0.0f,  1.0f, 0.0f, 0.0f,   0.25f, 0.5f}, // Corner 1
-	{ 1.0f, -1.0f, -1.0f, 1.0f,   0.0f, 0.0f, -1.0f,  0.0f, -1.0f, 0.0f,  1.0f, 0.0f, 0.0f,   0.50f, 0.5f}, // Corner 4
-	{ 1.0f,  1.0f, -1.0f, 1.0f,   0.0f, 0.0f, -1.0f,  0.0f, -1.0f, 0.0f,  1.0f, 0.0f, 0.0f,   0.50f, 1.0f}, // Corner 7
-	{ 1.0f,  1.0f,  1.0f, 1.0f,   0.0f, 0.0f, -1.0f,  0.0f, -1.0f, 0.0f,  1.0f, 0.0f, 0.0f,   0.25f, 1.0f}, // Corner 2
+	{ 1.0f, -1.0f,  1.0f, 1.0f,   0.0f, 0.0f, -1.0f,  0.0f, -1.0f, 0.0f,  1.0f, 0.0f, 0.0f,   0.0f, 0.0f}, // Corner 1
+	{ 1.0f, -1.0f, -1.0f, 1.0f,   0.0f, 0.0f, -1.0f,  0.0f, -1.0f, 0.0f,  1.0f, 0.0f, 0.0f,   0.5f, 0.0f}, // Corner 4
+	{ 1.0f,  1.0f, -1.0f, 1.0f,   0.0f, 0.0f, -1.0f,  0.0f, -1.0f, 0.0f,  1.0f, 0.0f, 0.0f,   0.5f, 1.0f}, // Corner 7
+	{ 1.0f,  1.0f,  1.0f, 1.0f,   0.0f, 0.0f, -1.0f,  0.0f, -1.0f, 0.0f,  1.0f, 0.0f, 0.0f,   0.0f, 1.0f}, // Corner 2
 
 	// Left
-	{-1.0f, -1.0f, -1.0f, 1.0f,   0.0f, 0.0f, 1.0f,  0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f,   0.25f, 0.0f}, // Corner 5
+	{-1.0f, -1.0f, -1.0f, 1.0f,   0.0f, 0.0f, 1.0f,  0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f,   0.0f, 0.0f}, // Corner 5
 	{-1.0f, -1.0f,  1.0f, 1.0f,   0.0f, 0.0f, 1.0f,  0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f,   0.5f, 0.0f}, // Corner 0
-	{-1.0f,  1.0f,  1.0f, 1.0f,   0.0f, 0.0f, 1.0f,  0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f,   0.5f, 0.5f}, // Corner 3
-	{-1.0f,  1.0f, -1.0f, 1.0f,   0.0f, 0.0f, 1.0f,  0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f,   0.25f, 0.5f}, // Corner 6
+	{-1.0f,  1.0f,  1.0f, 1.0f,   0.0f, 0.0f, 1.0f,  0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f,   0.5f, 1.0f}, // Corner 3
+	{-1.0f,  1.0f, -1.0f, 1.0f,   0.0f, 0.0f, 1.0f,  0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f,   0.0f, 1.0f}, // Corner 6
 
 	// Top
 	{-1.0f, -1.0f, -1.0f, 1.0f,   1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f,  0.0f, -1.0f, 0.0f,   0.00f, 0.0f}, // Corner 5
 	{ 1.0f, -1.0f, -1.0f, 1.0f,   1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f,  0.0f, -1.0f, 0.0f,   0.25f, 0.0f}, // Corner 4
 	{ 1.0f, -1.0f,  1.0f, 1.0f,   1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f,  0.0f, -1.0f, 0.0f,   0.25f, 0.5f}, // Corner 1
 	{-1.0f, -1.0f,  1.0f, 1.0f,   1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f,  0.0f, -1.0f, 0.0f,   0.00f, 0.5f}, // Corner 0
-
-	//Bottom
-	{ 1.0f,  1.0f, -1.0f, 1.0f,   -1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f,  0.0f, 1.0f, 0.0f,   0.00f, 0.5f}, // Corner 7
-	{-1.0f,  1.0f, -1.0f, 1.0f,   -1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f,  0.0f, 1.0f, 0.0f,   0.25f, 0.5f}, // Corner 6
-	{-1.0f,  1.0f,  1.0f, 1.0f,   -1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f,  0.0f, 1.0f, 0.0f,   0.25f, 1.0f}, // Corner 3
-	{ 1.0f,  1.0f,  1.0f, 1.0f,   -1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f,  0.0f, 1.0f, 0.0f,   0.00f, 1.0f}  // Corner 2
 };
 
 VertexPCT vertices2[] = {
-	{-5.0f, 1.0f, -5.0f, 1.0f,   1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f,  0.0f, -1.0f, 0.0f,   0.00f, 0.0f}, // Corner 0
-	{ 5.0f, 1.0f, -5.0f, 1.0f,   1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f,  0.0f, -1.0f, 0.0f,   0.25f, 0.0f}, // Corner 1
-	{ 5.0f, 1.0f,  5.0f, 1.0f,   1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f,  0.0f, -1.0f, 0.0f,   0.25f, 0.5f}, // Corner 2
-	{-5.0f, 1.0f,  5.0f, 1.0f,   1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f,  0.0f, -1.0f, 0.0f,   0.00f, 0.5f}  // Corner 3
+	{-5.0f, 1.0f, -5.0f, 1.0f,   1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f,  0.0f, -1.0f, 0.0f,   0.5f, 0.0f}, // Corner 0
+	{ 5.0f, 1.0f, -5.0f, 1.0f,   1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f,  0.0f, -1.0f, 0.0f,   1.0f, 0.0f}, // Corner 1
+	{ 5.0f, 1.0f,  5.0f, 1.0f,   1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f,  0.0f, -1.0f, 0.0f,   1.0f, 1.0f}, // Corner 2
+	{-5.0f, 1.0f,  5.0f, 1.0f,   1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f,  0.0f, -1.0f, 0.0f,   0.5f, 1.0f}  // Corner 3
+};
+
+VertexPCT vertices4[] = {
+	{-5.0f, -1.1f, -5.0f, 1.0f,   1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f,  0.0f, -1.0f, 0.0f,   0.0f, 0.0f}, // Corner 0
+	{ 5.0f, -1.1f, -5.0f, 1.0f,   1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f,  0.0f, -1.0f, 0.0f,   1.0f, 0.0f}, // Corner 1
+	{ 5.0f, -1.1f,  5.0f, 1.0f,   1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f,  0.0f, -1.0f, 0.0f,   1.0f, 1.0f}, // Corner 2
+	{-5.0f, -1.1f,  5.0f, 1.0f,   1.0f, 0.0f, 0.0f,  0.0f, 0.0f, -1.0f,  0.0f, -1.0f, 0.0f,   0.0f, 1.0f}  // Corner 3
 };
 
 
@@ -145,6 +152,8 @@ mini3d::IScreenRenderTarget* pScreenRenderTarget;
 mini3d::IFullscreenRenderTarget* pFullScreenRenderTarget;
 
 mini3d::IRenderTargetTexture* pShadowRenderTargetTexture;
+mini3d::IRenderTargetTexture* pShadowRenderTargetTexture2;
+
 mini3d::IRenderTargetTexture* pGlowRenderTargetTexture;
 mini3d::IRenderTargetTexture* pGlowSourceRenderTargetTexture;
 
@@ -153,6 +162,8 @@ mini3d::IVertexBuffer* vBuffer;
 
 mini3d::IIndexBuffer* iBufferGround;
 mini3d::IVertexBuffer* vBufferGround;
+
+mini3d::IVertexBuffer* vBufferDebugTexture;
 
 mini3d::IVertexBuffer* vBufferOverlay;
 
@@ -172,6 +183,9 @@ mini3d::IPixelShader* pGlowPixelShader;
 mini3d::IPixelShader* pGlowVertPixelShader;
 mini3d::IShaderProgram* pGlowShaderProgram;
 mini3d::IShaderProgram* pGlowVertShaderProgram;
+
+mini3d::IPixelShader* pToScreenPixelShader;
+mini3d::IShaderProgram* pToScreenShaderProgram;
 
 // Tutorial Application
 INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
@@ -198,7 +212,8 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 
 	// Shadow render target texture
 	pShadowRenderTargetTexture = graphics->CreateRenderTargetTexture(512, 512, true);
-	
+	pShadowRenderTargetTexture2 = graphics->CreateRenderTargetTexture(512, 512, true);
+
 	// Glow render target texture, one eight the size of the render target
 	pGlowSourceRenderTargetTexture = graphics->CreateRenderTargetTexture(160, 120, true);
 	pGlowRenderTargetTexture = graphics->CreateRenderTargetTexture(160, 120, false);
@@ -208,59 +223,35 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	iBufferGround = graphics->CreateIndexBuffer(indices2, 6);
 
 	// create vertex buffer
-	vBuffer = graphics->CreateVertexBuffer(vertices, 24, sizeof(VertexPCT));
+	vBuffer = graphics->CreateVertexBuffer(vertices, 20, sizeof(VertexPCT));
 	vBufferGround = graphics->CreateVertexBuffer(vertices2, 4, sizeof(VertexPCT));
 	vBufferOverlay = graphics->CreateVertexBuffer(vertices3, 4, sizeof(VertexPCT));
+	vBufferDebugTexture = graphics->CreateVertexBuffer(vertices4, 4, sizeof(VertexPCT));
 
 	// create texture
-	unsigned int bitmapWidth, bitmapHeight;
-	void* pBitmap = mini3d::utilites::PNGReader::LoadPNGFromFile(L"textures/box.png", bitmapWidth, bitmapHeight);
-	pTexture = graphics->CreateBitmapTexture(pBitmap, bitmapWidth, bitmapHeight); 
-	delete pBitmap;
+	pTexture = LoadTextureFromFile(L"textures/box.png");
+	pNormalTexture = LoadTextureFromFile(L"textures/boxnormal.png");
 
-	// create normal texture
-	pBitmap = mini3d::utilites::PNGReader::LoadPNGFromFile(L"textures/boxnormal.png", bitmapWidth, bitmapHeight);
-	pNormalTexture = graphics->CreateBitmapTexture(pBitmap, bitmapWidth, bitmapHeight); 
-	delete pBitmap;
+	// Load Shaders
+	pSceneVertexShader = LoadVertexShaderFromFile(L"shaders/hlsl/scenevs.hlsl"); // create vertex shader
+	pScenePixelShader = LoadPixelShaderFromFile(L"shaders/hlsl/sceneps.hlsl"); // create pixel shader
 
-
-	unsigned int sizeInBytes;
+	pShadowVertexShader = LoadVertexShaderFromFile(L"shaders/hlsl/shadowvs.hlsl"); // create shadow vertex shader
+	pShadowPixelShader = LoadPixelShaderFromFile(L"shaders/hlsl/shadowps.hlsl"); // create shadow pixel shader
 	
-	// create vertex shader
-	char* shaderBytes;
-	shaderBytes = mini3d::utilites::BinaryFileReader::ReadBytesFromFile(L"shaders/hlsl/scenevs.hlsl", sizeInBytes);
-	pSceneVertexShader = graphics->CreateVertexShader(shaderBytes, sizeInBytes, vertexDeclaration, 5);
-	delete shaderBytes;
+	pGlowVertexShader = LoadVertexShaderFromFile(L"shaders/hlsl/glowvs.hlsl"); // create glow vertex shader
 
-	// create pixel shader
-	shaderBytes = mini3d::utilites::BinaryFileReader::ReadBytesFromFile(L"shaders/hlsl/sceneps.hlsl", sizeInBytes);
-	pScenePixelShader = graphics->CreatePixelShader(shaderBytes, sizeInBytes);
-	delete shaderBytes;
+	pGlowPixelShader = LoadPixelShaderFromFile(L"shaders/hlsl/glowhps.hlsl"); // create glow pixel shader
+	pGlowVertPixelShader = LoadPixelShaderFromFile(L"shaders/hlsl/glowvps.hlsl"); // create vertical glow pixel shader
+	
+	pToScreenPixelShader = LoadPixelShaderFromFile(L"shaders/hlsl/toscreenps.hlsl"); // create to screen pixel shader
 
-	// create shadow vertex shader
-	shaderBytes = mini3d::utilites::BinaryFileReader::ReadBytesFromFile(L"shaders/hlsl/shadowvs.hlsl", sizeInBytes);
-	pShadowVertexShader = graphics->CreateVertexShader(shaderBytes, sizeInBytes, vertexDeclaration, 5);
-	delete shaderBytes;
+	// create shader program
+	pSceneShaderProgram = graphics->CreateShaderProgram(pSceneVertexShader, pScenePixelShader);
+	pShadowShaderProgram = graphics->CreateShaderProgram(pShadowVertexShader, pShadowPixelShader);
+	pGlowShaderProgram = graphics->CreateShaderProgram(pGlowVertexShader, pGlowPixelShader);
+	pGlowVertShaderProgram = graphics->CreateShaderProgram(pGlowVertexShader, pGlowVertPixelShader);
 
-	// create shadow pixel shader
-	shaderBytes = mini3d::utilites::BinaryFileReader::ReadBytesFromFile(L"shaders/hlsl/shadowps.hlsl", sizeInBytes);
-	pShadowPixelShader = graphics->CreatePixelShader(shaderBytes, sizeInBytes);
-	delete shaderBytes;
-
-	// create glow vertex shader
-	shaderBytes = mini3d::utilites::BinaryFileReader::ReadBytesFromFile(L"shaders/hlsl/glowvs.hlsl", sizeInBytes);
-	pGlowVertexShader = graphics->CreateVertexShader(shaderBytes, sizeInBytes, vertexDeclaration, 5);
-	delete shaderBytes;
-
-	// create shadow pixel shader
-	shaderBytes = mini3d::utilites::BinaryFileReader::ReadBytesFromFile(L"shaders/hlsl/glowhps.hlsl", sizeInBytes);
-	pGlowPixelShader = graphics->CreatePixelShader(shaderBytes, sizeInBytes);
-	delete shaderBytes;
-
-	// create vertical shadow pixel shader
-	shaderBytes = mini3d::utilites::BinaryFileReader::ReadBytesFromFile(L"shaders/hlsl/glowvps.hlsl", sizeInBytes);
-	pGlowVertPixelShader = graphics->CreatePixelShader(shaderBytes, sizeInBytes);
-	delete shaderBytes;
 
 	// ----- VARIABLES FOR RENDER LOOP ----------------------------------------
 	
@@ -268,11 +259,7 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	int* pTextureUnit = new int(0);
 	int* pTextureUnit2 = new int(1);
 
-	// create shader program
-	pSceneShaderProgram = graphics->CreateShaderProgram(pSceneVertexShader, pScenePixelShader);
-	pShadowShaderProgram = graphics->CreateShaderProgram(pShadowVertexShader, pShadowPixelShader);
-	pGlowShaderProgram = graphics->CreateShaderProgram(pGlowVertexShader, pGlowPixelShader);
-	pGlowVertShaderProgram = graphics->CreateShaderProgram(pGlowVertexShader, pGlowVertPixelShader);
+	pToScreenShaderProgram = graphics->CreateShaderProgram(pGlowVertexShader, pToScreenPixelShader);
 
 	// ----- CONFIIGURE GRAPHICS PIPELINE -------------------------------------
 
@@ -285,74 +272,31 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	while(GetMessage(&Msg, NULL, 0, 0) > 0)
 	{
 
-
-
-		// RENDER THE SHADOW MAP
-
-		// clear the render target texture (can not be mounted as both texture and render target)
-		graphics->SetTexture(0, 1);
-
-		// set our shadow as the render target texture
-		graphics->SetRenderTarget(pShadowRenderTargetTexture);
-
-		// Set the shadow shader program
-		graphics->SetShaderProgram(pShadowShaderProgram);
-
-		// set the usual texture as texture
-		graphics->SetTexture(pTexture, 0);
-
-		// clear render target with color
-		graphics->Clear(0xFFFFFFFF);
-
-		// Set geometry
-		graphics->SetIndexBuffer(iBuffer);
-		graphics->SetVertexBuffer(vBuffer);
-
-		// draw the scene to the renderTargetTexture
-		graphics->Draw();
-
-
-
-		// RENDER THE SCENE TO THE GLOW SOURCE RENDER TARGET
-
-		graphics->SetRenderTarget(pGlowSourceRenderTargetTexture);
-
-		// set the scene shader program
-		graphics->SetShaderProgram(pSceneShaderProgram);
-
-		// set the shadow texture as texture
-		graphics->SetTexture(pShadowRenderTargetTexture, 1);
-		graphics->SetTexture(pTexture, 0);
-
 		// set the view projection parameter for the shader
 		UpdateViewProjectionMatrix();
 
-		// clear render target with color
-		graphics->Clear(0xFF606580);
+		// set the viewprojection parameter for the shader
+		UpdateLightMatrix();
 
-		// Draw the geometry
+
+		// RENDER THE SHADOW MAP
+		
+		graphics->SetTexture(0, 1);
+		graphics->SetShaderProgram(pShadowShaderProgram); // Set the shadow shader program
+		graphics->SetTexture(pTexture, 0); // set the diffuse color texture as texture
+
+		graphics->SetRenderTarget(pShadowRenderTargetTexture); // set our shadow as the render target texture
+		graphics->Clear(0xFFFFFFFF); // clear render target with color
+
+		// Box geometry
 		graphics->SetIndexBuffer(iBuffer);
 		graphics->SetVertexBuffer(vBuffer);
 		graphics->Draw();
-
+		
+		// Ground plane
 		graphics->SetIndexBuffer(iBufferGround);
 		graphics->SetVertexBuffer(vBufferGround);
 		graphics->Draw();
-
-
-		// CREATE HORIZONTAL BLUR ON GLOW RENDER TARGET
-
-		graphics->SetShaderProgram(pGlowShaderProgram);
-		graphics->SetTexture(pGlowSourceRenderTargetTexture, 0);
-		graphics->SetRenderTarget(pGlowRenderTargetTexture);
-		
-		// Set geometry
-		graphics->SetIndexBuffer(iBufferGround);
-		graphics->SetVertexBuffer(vBufferOverlay);
-		
-		graphics->Clear(0x00000000);
-		graphics->Draw();
-
 
 
 		// RENDER SCENE TO SCREEN RENDER TARGET
@@ -382,21 +326,32 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 		graphics->SetVertexBuffer(vBufferGround);
 		graphics->Draw();
 
+		// set the texture
+		graphics->SetRenderTarget(pGlowSourceRenderTargetTexture);
 
+		
+		// RENDER SCENE TO THE GLOW RENDER TARGET
+		graphics->Clear(0xFF606580);
 
-		// OVERLAY BLOOM ON SCREEN RENDER TARGET
-
-		// Set the glow shader program
-		graphics->SetShaderProgram(pGlowVertShaderProgram);
-		graphics->SetTexture(pGlowRenderTargetTexture, 0);
-
-		graphics->SetIndexBuffer(iBufferGround);
-		graphics->SetVertexBuffer(vBufferOverlay);
-
-		// draw the glow to the screen render target
+		// Draw the geometry
+		graphics->SetIndexBuffer(iBuffer);
+		graphics->SetVertexBuffer(vBuffer);
 		graphics->Draw();
 
+		graphics->SetIndexBuffer(iBufferGround);
+		graphics->SetVertexBuffer(vBufferGround);
+		graphics->Draw();
 
+		// BLUR THE GLOW TEXTURE
+		//GaussianBlur(pGlowSourceRenderTargetTexture, pGlowRenderTargetTexture, pGlowSourceRenderTargetTexture, iBufferGround, vBufferOverlay, vBufferOverlay);
+
+		// RENDER GLOW TO RENDER TARGET
+		graphics->SetShaderProgram(pToScreenShaderProgram);
+		graphics->SetTexture(pGlowSourceRenderTargetTexture, 0);
+		graphics->SetIndexBuffer(iBufferGround);
+		graphics->SetVertexBuffer(vBufferOverlay);
+		graphics->Draw();
+		
 		// do a flip
 		if (fullscreen == true)
 			pFullScreenRenderTarget->Display();
@@ -409,11 +364,8 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 
 		lightAnimationProgress += 0.01f;
 
-		// set the viewprojection parameter for the shader
-		UpdateLightMatrix();
-
-	}
-
+	};
+	
 
 	// ----- DELETE RESOURCES ----------------------------------------------------
 
@@ -439,7 +391,12 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 
 	delete pScreenRenderTarget;
 	delete pFullScreenRenderTarget;
+
+	delete pShadowRenderTargetTexture;
+	delete pShadowRenderTargetTexture2;
+	
 	delete pGlowSourceRenderTargetTexture;
+	delete pGlowRenderTargetTexture;
 
 	delete graphics;
 
@@ -447,6 +404,63 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 
 	return Msg.wParam;
 }
+
+mini3d::IVertexShader* LoadVertexShaderFromFile(WCHAR* fileName)
+{
+	// create vertex shader
+	unsigned int sizeInBytes;
+	
+	char* shaderBytes;
+	shaderBytes = mini3d::utilites::BinaryFileReader::ReadBytesFromFile(fileName, sizeInBytes);
+	mini3d::IVertexShader* pVertexShader = graphics->CreateVertexShader(shaderBytes, sizeInBytes, vertexDeclaration, 5);
+
+	delete shaderBytes;
+	return pVertexShader;
+}
+
+mini3d::IPixelShader* LoadPixelShaderFromFile(WCHAR* fileName)
+{
+	// create Pixel shader
+	unsigned int sizeInBytes;
+
+	char* shaderBytes;
+	shaderBytes = mini3d::utilites::BinaryFileReader::ReadBytesFromFile(fileName, sizeInBytes);
+
+	mini3d::IPixelShader* pPixelShader = graphics->CreatePixelShader(shaderBytes, sizeInBytes);
+
+	delete shaderBytes;
+	return pPixelShader;
+}
+
+mini3d::IBitmapTexture* LoadTextureFromFile(WCHAR* fileName)
+{
+	// Load texture
+	unsigned int bitmapWidth, bitmapHeight;
+	void* pBitmap = mini3d::utilites::PNGReader::LoadPNGFromFile(fileName, bitmapWidth, bitmapHeight);
+	mini3d::IBitmapTexture* pTexture = graphics->CreateBitmapTexture(pBitmap, bitmapWidth, bitmapHeight); 
+
+	delete pBitmap;
+	return pTexture;
+}
+
+void GaussianBlur(mini3d::ITexture* source, mini3d::IRenderTargetTexture* intermediate, mini3d::IRenderTarget* target, mini3d::IIndexBuffer* indexBuffer, mini3d::IVertexBuffer* vertexBufferx, mini3d::IVertexBuffer* vertexBuffery)
+{
+	// draw the first pass (x direction)
+	graphics->SetShaderProgram(pGlowShaderProgram);
+	graphics->SetIndexBuffer(indexBuffer);
+	graphics->SetVertexBuffer(vertexBufferx);
+	graphics->SetTexture(source, 0);
+	graphics->SetRenderTarget(intermediate);
+	graphics->Draw();
+
+	// draw the second pass (y direction)
+	graphics->SetShaderProgram(pGlowVertShaderProgram);
+	graphics->SetVertexBuffer(vertexBuffery);
+	graphics->SetRenderTarget(target);
+	graphics->SetTexture(intermediate, 0);
+	graphics->Draw();
+};
+
 
 // sets the view, projection matrix as a shader parameter
 void UpdateViewProjectionMatrix()
@@ -461,7 +475,7 @@ void UpdateViewProjectionMatrix()
 
 	// update camera
 	mini3d::utilites::math3d::setuplookat(&viewMatrix._00, (float*)&eye, (float*)&target, (float*)&up);
-	mini3d::utilites::math3d::BuildPerspProjMat(&projectionMatrix._00, (float)(3.1415f / 4.0f), (float)width/(float)height, 1.0f, 80.0f);
+	mini3d::utilites::math3d::BuildPerspProjMat(&projectionMatrix._00, (float)(3.1415f / 4.0f), (float)width/(float)height, 0.1f, 80.0f);
 	mini3d::utilites::Matrix4 viewprojectionMatrix = viewMatrix * projectionMatrix;
 
 	// set a shader parameter
@@ -476,13 +490,13 @@ void UpdateLightMatrix()
 	mini3d::utilites::Matrix4 lightViewMatrix;
 	mini3d::utilites::Matrix4 lightProjection;
 
-	mini3d::utilites::Vector3 lightPos(10.0f * cos(lightAnimationProgress), -1.0f + 0 * sin(lightAnimationProgress * 2.1f), 10.0f * sin(lightAnimationProgress)); // cos(lightAnimationProgress) * sin(lightAnimationProgress)
+	mini3d::utilites::Vector3 lightPos(10.0f * cos(lightAnimationProgress), -8.0f + 0 * sin(lightAnimationProgress * 2.1f), 10.0f * sin(lightAnimationProgress));
 	mini3d::utilites::Vector3 lightTarget(0,0,0);
 	mini3d::utilites::Vector3 up(0,-1,0);
 
 	// update camera
 	mini3d::utilites::math3d::setuplookat(&lightViewMatrix._00, (float*)&lightPos, (float*)&lightTarget, (float*)&up);
-	mini3d::utilites::math3d::BuildPerspProjMat(&lightProjection._00, (float)(3.1415f / 8.0f), 1, 1.0f, 40.0f);
+	mini3d::utilites::math3d::BuildPerspProjMat(&lightProjection._00, (float)(3.1415f / 8.0f), 1, .1f, 40.0f);
 	mini3d::utilites::Matrix4 lightViewProjectionMatrix = lightViewMatrix * lightProjection;
 
 

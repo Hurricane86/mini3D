@@ -1,6 +1,6 @@
 float4x4 g_LightViewProjectionMatrix : register(c4); //our world view projection matrix
 
-// SHADOW PIXEL SHADER
+// SHADOW VERTEX SHADER
 void vertexShaderShadow ( in float4 iPos		: POSITION,
 						  in float3 iTangent	: NORMAL, 
 						  in float3 iBiTangent	: NORMAL, 
@@ -17,9 +17,10 @@ void vertexShaderShadow ( in float4 iPos		: POSITION,
 }
 
 //SHADOW PIXEL SHADER
-void pixelShaderShadow( in float2 tex0			: TEXCOORD0,
+void pixelShaderShadow( in float4 tex0			: TEXCOORD0,
+						in float4 tex1			: TEXCOORD1,
 						out float4 oColor		: COLOR)
 {
     // calculate the normalized depth (between 0.0 and 1.0) and store this as the pixel value in the render target (shadow map)
-    oColor = tex0.x / tex0.y;
+	oColor = tex0.x / tex0.y;
 }
