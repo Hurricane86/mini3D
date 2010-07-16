@@ -27,15 +27,13 @@ OTHER DEALINGS IN THE SOFTWARE.
 #ifndef AURORA_IFULLSCREENRENDERTARGET_H
 #define AURORA_IFULLSCREENRENDERTARGET_H
 
-#include "internal/IRenderTarget.h"
+#include "internal/IScreenRenderTarget.h"
 
 namespace mini3d
 {
-class IFullscreenRenderTarget : public virtual IRenderTarget
+class IFullscreenRenderTarget : public virtual IScreenRenderTarget
 {
 public:
-
-	enum Quality{QUALITY_MINIMUM, QUALITY_LOW, QUALITY_MEDIUM, QUALITY_HIGH, QUALITY_MAXIMUM};
 
 	virtual ~IFullscreenRenderTarget() {};
 

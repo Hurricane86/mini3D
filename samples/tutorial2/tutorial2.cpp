@@ -105,7 +105,7 @@ MSG Msg;
 mini3d::IGraphicsService* graphics;
 
 // Graphics Resources
-mini3d::IScreenRenderTarget* pScreenRenderTarget;
+mini3d::IWindowRenderTarget* pScreenRenderTarget;
 mini3d::IFullscreenRenderTarget* pFullScreenRenderTarget;
 
 mini3d::IRenderTargetTexture* pWindowRenderTargetTexture;
@@ -145,8 +145,8 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	// ----- CREATE GRAPHICS RESOURCES ----------------------------------------
 
 	// create a render target (mini3d does not have a default render target)
-	pScreenRenderTarget = graphics->CreateScreenRenderTarget(640, 480,(int)hWindow, true, mini3d::IScreenRenderTarget::QUALITY_MINIMUM);
-	pFullScreenRenderTarget = graphics->CreateFullscreenRenderTarget(1680, 1050,(int)hWindow, true, mini3d::IFullscreenRenderTarget::QUALITY_MINIMUM);
+	pScreenRenderTarget = graphics->CreateWindowRenderTarget(640, 480,(int)hWindow, true, mini3d::IScreenRenderTarget::QUALITY_MINIMUM);
+	pFullScreenRenderTarget = graphics->CreateFullscreenRenderTarget(1680, 1050,(int)hWindow, true, mini3d::IScreenRenderTarget::QUALITY_MINIMUM);
 
 	pWindowRenderTargetTexture = graphics->CreateRenderTargetTexture(640, 480, true);
 
@@ -214,7 +214,11 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 		graphics->Draw();
 
 		// do a flip
-		pScreenRenderTarget->Display();
+		// set the correct rendertarget depeding on fullscreen mode
+		if (fullscreen == true)
+			pFullScreenRenderTarget->Display();
+		else
+			pScreenRenderTarget->Display();
 
 		// window message stuff
 		TranslateMessage(&Msg);

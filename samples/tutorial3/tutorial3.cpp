@@ -149,6 +149,7 @@ mini3d::IGraphicsService* graphics;
 
 // Graphics Resources
 mini3d::IScreenRenderTarget* pScreenRenderTarget;
+mini3d::IWindowRenderTarget* pWindowRenderTarget;
 mini3d::IFullscreenRenderTarget* pFullScreenRenderTarget;
 
 mini3d::IRenderTargetTexture* pShadowRenderTargetTexture;
@@ -207,8 +208,8 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	// ----- CREATE GRAPHICS RESOURCES ----------------------------------------
 
 	// create a render target (mini3d does not have a default render target)
-	pScreenRenderTarget = graphics->CreateScreenRenderTarget(640, 480,(int)hWindow, true, mini3d::IScreenRenderTarget::QUALITY_MINIMUM);
-	pFullScreenRenderTarget = graphics->CreateFullscreenRenderTarget(1680, 1050,(int)hWindow, true, mini3d::IFullscreenRenderTarget::QUALITY_MINIMUM);
+	pWindowRenderTarget = graphics->CreateWindowRenderTarget(640, 480,(int)hWindow, true, mini3d::IScreenRenderTarget::QUALITY_MINIMUM);
+	pFullScreenRenderTarget = graphics->CreateFullscreenRenderTarget(1680, 1050,(int)hWindow, true, mini3d::IScreenRenderTarget::QUALITY_MINIMUM);
 
 	// Shadow render target texture
 	pShadowRenderTargetTexture = graphics->CreateRenderTargetTexture(512, 512, true);
@@ -261,11 +262,13 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 
 	pToScreenShaderProgram = graphics->CreateShaderProgram(pGlowVertexShader, pToScreenPixelShader);
 
+	pScreenRenderTarget = pWindowRenderTarget;
+
 	// ----- CONFIIGURE GRAPHICS PIPELINE -------------------------------------
 
 	// Set the Texture
 	graphics->SetTexture(pNormalTexture, 2);
-
+	
 	// ----- RENDER LOOP ------------------------------------------------------
 
 	// loop while the window is not closed
@@ -302,10 +305,7 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 		// RENDER SCENE TO SCREEN RENDER TARGET
 
 		// set the correct rendertarget depeding on fullscreen mode
-		if (fullscreen == true)
-			graphics->SetRenderTarget(pFullScreenRenderTarget);
-		else
-			graphics->SetRenderTarget(pScreenRenderTarget);
+		graphics->SetRenderTarget(pScreenRenderTarget);
 
 		// set the scene shader program
 		graphics->SetShaderProgram(pSceneShaderProgram);
@@ -353,10 +353,7 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 		graphics->Draw();
 		
 		// do a flip
-		if (fullscreen == true)
-			pFullScreenRenderTarget->Display();
-		else
-			pScreenRenderTarget->Display();
+		pScreenRenderTarget->Display();
 
 		// window message stuff
 		TranslateMessage(&Msg);
@@ -389,7 +386,7 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	delete pGlowVertPixelShader;
 	delete pGlowVertShaderProgram;
 
-	delete pScreenRenderTarget;
+	delete pWindowRenderTarget;
 	delete pFullScreenRenderTarget;
 
 	delete pShadowRenderTargetTexture;
@@ -533,6 +530,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			{
 				fullscreen = !fullscreen;
 			}
+
+			if (fullscreen == true)
+				pScreenRenderTarget = pFullScreenRenderTarget;
+			else
+				pScreenRenderTarget = pWindowRenderTarget;
 		break;
 		case WM_MOUSEMOVE:
 			if ((wParam & MK_LBUTTON) == MK_LBUTTON)

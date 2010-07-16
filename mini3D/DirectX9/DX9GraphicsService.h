@@ -46,7 +46,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "DX9IndexBuffer.h"
 #include "DX9RenderTargetTexture.h"
 #include "DX9DepthStencil.h"
-#include "DX9ScreenRenderTarget.h"
+#include "DX9WindowRenderTarget.h"
 #include "DX9FullscreenRenderTarget.h"
 
 // TODO: keep track of states for renderstates (cull mode, zbuffer) and initialize them to proper values in constructor
@@ -94,7 +94,7 @@ friend class DX9ShaderProgram;
 friend class DX9VertexBuffer;
 friend class DX9IndexBuffer;
 friend class DX9DepthStencil;
-friend class DX9ScreenRenderTarget;
+friend class DX9WindowRenderTarget;
 friend class DX9FullscreenRenderTarget;
 
 private:
@@ -183,7 +183,7 @@ public:
 	virtual int GetVertexShaderVersion() const;
 
 	// Create Resources
-	virtual IScreenRenderTarget* CreateScreenRenderTarget(const unsigned int& width, const unsigned int& height, const int& hWindow, const bool& depthTestEnabled, const IScreenRenderTarget::Quality& quality);
+	virtual IWindowRenderTarget* CreateWindowRenderTarget(const unsigned int& width, const unsigned int& height, const int& hWindow, const bool& depthTestEnabled, const IWindowRenderTarget::Quality& quality);
 	virtual IFullscreenRenderTarget* CreateFullscreenRenderTarget(const unsigned int& width, const unsigned int& height, const int& hWindow, const bool& depthTestEnabled, const IFullscreenRenderTarget::Quality& quality);
 	virtual IRenderTargetTexture* CreateRenderTargetTexture(const unsigned int& width, const unsigned int& height, const bool& depthTestEnabled);
 	virtual IBitmapTexture* CreateBitmapTexture(const void* pBitmap, const unsigned int& width, const unsigned int& height, const IBitmapTexture::BitDepth bitDepth = IBitmapTexture::BIT_32, const ITexture::WrapStyle wrapStyle = ITexture::WRAP_TILE);
@@ -235,8 +235,8 @@ private:
 	// These functions are accessed by the DX9Resources
 	IDirect3DDevice9* GetDevice();
 	D3DPRESENT_PARAMETERS GetPresentationParameters();
-	void CheckMultisampleFormat(IScreenRenderTarget::Quality& quality, bool fullscreen);
-	D3DMULTISAMPLE_TYPE FromMultisampleFormat(IScreenRenderTarget::Quality quality);
+	void CheckMultisampleFormat(IWindowRenderTarget::Quality& quality, bool fullscreen);
+	D3DMULTISAMPLE_TYPE FromMultisampleFormat(IWindowRenderTarget::Quality quality);
 
 	// INTERNAL HELPER FUNCTIONS ----------------------------------------------
 

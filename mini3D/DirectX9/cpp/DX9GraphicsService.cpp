@@ -104,12 +104,12 @@ void mini3d::DX9GraphicsService::CreateDevice()
 	D3DPRESENT_PARAMETERS d3dpp;
 	ZeroMemory(&d3dpp, sizeof(d3dpp));
 
-	IScreenRenderTarget::Quality quality;
+	IWindowRenderTarget::Quality quality;
 	if (isFullscreen == true)
 	{
 		// safe because only DX9FullscreenRenderTargets are assigned to pFullscreenRenderTarget
 		DX9FullscreenRenderTarget* pDX9FullscreenRenderTarget = dynamic_cast<DX9FullscreenRenderTarget*>(pFullscreenRenderTarget);
-		quality = (IScreenRenderTarget::Quality)pDX9FullscreenRenderTarget->GetQuality();
+		quality = (IWindowRenderTarget::Quality)pDX9FullscreenRenderTarget->GetQuality();
 		d3dpp.BackBufferWidth = pFullscreenRenderTarget->GetWidth();
 		d3dpp.BackBufferHeight = pFullscreenRenderTarget->GetHeight();
 		d3dpp.Windowed = false;
@@ -117,7 +117,7 @@ void mini3d::DX9GraphicsService::CreateDevice()
 	}
 	else
 	{
-		quality = IScreenRenderTarget::QUALITY_MINIMUM;
+		quality = IWindowRenderTarget::QUALITY_MINIMUM;
 		d3dpp.BackBufferWidth = 1; // Default backbuffer should be 1x1 and is never used
 		d3dpp.BackBufferHeight = 1; // Default backbuffer should be 1x1 and is never used
 		d3dpp.Windowed = true;
@@ -320,12 +320,12 @@ void mini3d::DX9GraphicsService::ResetDevice()
 	D3DPRESENT_PARAMETERS d3dpp;
 	ZeroMemory(&d3dpp, sizeof(d3dpp));
 
-	IScreenRenderTarget::Quality quality;
+	IWindowRenderTarget::Quality quality;
 	if (isFullscreen == true)
 	{
 		// safe because only DX9FullscreenRenderTargets are assigned to pFullscreenRenderTarget
 		DX9FullscreenRenderTarget* pDX9FullscreenRenderTarget = dynamic_cast<DX9FullscreenRenderTarget*>(pFullscreenRenderTarget);
-		quality = (IScreenRenderTarget::Quality)pDX9FullscreenRenderTarget->GetQuality();
+		quality = (IWindowRenderTarget::Quality)pDX9FullscreenRenderTarget->GetQuality();
 		d3dpp.BackBufferWidth = pFullscreenRenderTarget->GetWidth();
 		d3dpp.BackBufferHeight = pFullscreenRenderTarget->GetHeight();
 		d3dpp.Windowed = false;
@@ -333,7 +333,7 @@ void mini3d::DX9GraphicsService::ResetDevice()
 	}
 	else
 	{
-		quality = IScreenRenderTarget::QUALITY_MINIMUM;
+		quality = IWindowRenderTarget::QUALITY_MINIMUM;
 		d3dpp.BackBufferWidth = 1; // Default backbuffer should be 1x1 and is never used
 		d3dpp.BackBufferHeight = 1; // Default backbuffer should be 1x1 and is never used
 		d3dpp.Windowed = true;
@@ -984,9 +984,9 @@ void mini3d::DX9GraphicsService::Clear(const int& color)
 
 
 // Create Resources
-mini3d::IScreenRenderTarget* mini3d::DX9GraphicsService::CreateScreenRenderTarget(const unsigned int& width, const unsigned int& height, const int& hWindow, const bool& depthTestEnabled, const IScreenRenderTarget::Quality& quality)
+mini3d::IWindowRenderTarget* mini3d::DX9GraphicsService::CreateWindowRenderTarget(const unsigned int& width, const unsigned int& height, const int& hWindow, const bool& depthTestEnabled, const IWindowRenderTarget::Quality& quality)
 {
-	return new DX9ScreenRenderTarget(this, width, height, hWindow, depthTestEnabled, quality);
+	return new DX9WindowRenderTarget(this, width, height, hWindow, depthTestEnabled, quality);
 }
 mini3d::IFullscreenRenderTarget* mini3d::DX9GraphicsService::CreateFullscreenRenderTarget(const unsigned int& width, const unsigned int& height, const int& hWindow, const bool& depthTestEnabled, const IFullscreenRenderTarget::Quality& quality)
 {
@@ -1075,7 +1075,7 @@ D3DFORMAT mini3d::DX9GraphicsService::GetCorrectDepthStencilFormat(void)
 	return D3DFMT_D16;
 }
 
-void mini3d::DX9GraphicsService::CheckMultisampleFormat(IScreenRenderTarget::Quality& quality, bool fullscreen)
+void mini3d::DX9GraphicsService::CheckMultisampleFormat(IWindowRenderTarget::Quality& quality, bool fullscreen)
 {
 
 	D3DDISPLAYMODE displayMode;
@@ -1091,27 +1091,27 @@ void mini3d::DX9GraphicsService::CheckMultisampleFormat(IScreenRenderTarget::Qua
 														FromMultisampleFormat(quality),
 														&pQualityLevels)))
 	{
-		quality = (IScreenRenderTarget::Quality)((int)quality - 1);
+		quality = (IWindowRenderTarget::Quality)((int)quality - 1);
 	}
 }
 
-D3DMULTISAMPLE_TYPE mini3d::DX9GraphicsService::FromMultisampleFormat(IScreenRenderTarget::Quality quality)
+D3DMULTISAMPLE_TYPE mini3d::DX9GraphicsService::FromMultisampleFormat(IWindowRenderTarget::Quality quality)
 {
 	switch(quality)
 	{
-	case IScreenRenderTarget::QUALITY_MINIMUM:
+	case IWindowRenderTarget::QUALITY_MINIMUM:
 			return D3DMULTISAMPLE_NONE;
 			break;
-		case IScreenRenderTarget::QUALITY_LOW:
+		case IWindowRenderTarget::QUALITY_LOW:
 			return D3DMULTISAMPLE_2_SAMPLES;
 			break;
-		case IScreenRenderTarget::QUALITY_MEDIUM:
+		case IWindowRenderTarget::QUALITY_MEDIUM:
 			return D3DMULTISAMPLE_4_SAMPLES;
 			break;
-		case IScreenRenderTarget::QUALITY_HIGH:
+		case IWindowRenderTarget::QUALITY_HIGH:
 			return D3DMULTISAMPLE_8_SAMPLES;
 			break;
-		case IScreenRenderTarget::QUALITY_MAXIMUM:
+		case IWindowRenderTarget::QUALITY_MAXIMUM:
 			return D3DMULTISAMPLE_16_SAMPLES;
 			break;
 	}
