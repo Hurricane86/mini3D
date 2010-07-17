@@ -33,7 +33,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 std::map<int, mini3d::DX9WindowRenderTarget*> mini3d::DX9WindowRenderTarget::windowMap;
 
 mini3d::DX9WindowRenderTarget::DX9WindowRenderTarget(DX9GraphicsService* pGraphicsService, const unsigned int& width, const unsigned int& height, const int& windowHandle, const bool& depthTestEnabled, const Quality& quality) : 
-	pGraphicsService(pGraphicsService), pScreenRenderTarget(0), pDepthStencil(0), quality(quality), depthTestEnabled(depthTestEnabled)
+	pGraphicsService(pGraphicsService), pScreenRenderTarget(0), pDepthStencil(0), quality(quality), depthTestEnabled(depthTestEnabled), pOrigProc(0)
 {
 	SetWindowRenderTarget(width, height, windowHandle, depthTestEnabled, quality);
 	pGraphicsService->AddResource(this);
@@ -50,9 +50,6 @@ mini3d::DX9WindowRenderTarget::~DX9WindowRenderTarget(void)
 
 void mini3d::DX9WindowRenderTarget::SetWindowRenderTarget(const unsigned int& width, const unsigned int& height, const int& windowHandle, const bool& depthTestEnabled, const Quality& quality)
 {
-	if (pOrigProc != 0)
-	{
-	}
 
 	if (windowHandle != hWindow)
 	{
@@ -207,8 +204,16 @@ LRESULT CALLBACK mini3d::DX9WindowRenderTarget::HookWndProc(HWND hwnd, UINT msg,
 
 	switch(msg)
 	{
+	// Window has been resized
 	case WM_SIZE:
-		screenRenderTarget->SetSize(LOWORD(lParam), HIWORD(lParam));
+		
+		// make sure we dont set the size to 0 (happens when we minimize the window)
+		int width = LOWORD(lParam) | 1;
+		int height = HIWORD(lParam) | 1;
+
+		// update the render target size
+		screenRenderTarget->SetSize(width, height);
+		
 		break;
 	}
 

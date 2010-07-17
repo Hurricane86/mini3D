@@ -202,7 +202,7 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 
 	// ----- CREATE GRAPHICS SERVICE ------------------------------------------
 	
-	graphics = new mini3d::DX9GraphicsService(false);
+	graphics = new mini3d::DX9GraphicsService();
 	
 
 	// ----- CREATE GRAPHICS RESOURCES ----------------------------------------

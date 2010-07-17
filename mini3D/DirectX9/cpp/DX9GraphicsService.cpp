@@ -25,12 +25,13 @@ OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include "../DX9GraphicsService.h"
-
+#include "../DX9PresentationParameters.h"
+#include "../DX9GraphicsSettings.h"
 
 // Constructor Destructor -----------------------------------------------------
 
-mini3d::DX9GraphicsService::DX9GraphicsService(bool isFullscreen) :
-pD3D(0), pDevice(0), pCurrentDepthStencil(0), isDrawingScene(false), deviceLost(true), lostDeviceCurrentITextures(0), currentITextures(0), pFullscreenRenderTarget(0), isFullscreen(false), pCurrentRenderTarget(0) 
+mini3d::DX9GraphicsService::DX9GraphicsService() :
+pD3D(0), pDevice(0), pCurrentDepthStencil(0), isDrawingScene(false), deviceLost(true), lostDeviceCurrentITextures(0), currentITextures(0), isFullscreen(false), pCurrentRenderTarget(0), pDefaultSwapChain(0) 
 {
 	CreateInternalWindow();
 	CreateDevice();
@@ -64,7 +65,7 @@ IDirect3DDevice9* mini3d::DX9GraphicsService::GetDevice()
 }
 D3DPRESENT_PARAMETERS mini3d::DX9GraphicsService::GetPresentationParameters()
 {
-	return presentationParameters;
+	return DX9PresentationParameters::GetPresentationParametersFromGraphicsSettings(pD3D, pDefaultSwapChain);
 }
 
 
@@ -83,61 +84,19 @@ void mini3d::DX9GraphicsService::CreateDevice()
 
 	pD3D->GetDeviceCaps(0, D3DDEVTYPE_HAL, &deviceCaps);
 
+	if (lostDeviceCurrentITextures != 0)
+		delete[] lostDeviceCurrentITextures;
+
+	lostDeviceCurrentITextures = new ITexture*[deviceCaps.MaxSimultaneousTextures];
+
 	if (currentITextures != 0)
 		delete[] currentITextures;
 
 	currentITextures = new ITexture*[deviceCaps.MaxSimultaneousTextures];
 	memset(currentITextures, 0, deviceCaps.MaxSimultaneousTextures * sizeof(ITexture*));
-
-	if (currentITextures != 0)
-		delete[] currentITextures;
 	
-	lostDeviceCurrentITextures = new ITexture*[deviceCaps.MaxSimultaneousTextures];
-
-
-	
-	// get the display mode
-	D3DDISPLAYMODE d3ddm;
-	pD3D->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &d3ddm);
-
-	// set the presentation parameters
-	D3DPRESENT_PARAMETERS d3dpp;
-	ZeroMemory(&d3dpp, sizeof(d3dpp));
-
-	IWindowRenderTarget::Quality quality;
-	if (isFullscreen == true)
-	{
-		// safe because only DX9FullscreenRenderTargets are assigned to pFullscreenRenderTarget
-		DX9FullscreenRenderTarget* pDX9FullscreenRenderTarget = dynamic_cast<DX9FullscreenRenderTarget*>(pFullscreenRenderTarget);
-		quality = (IWindowRenderTarget::Quality)pDX9FullscreenRenderTarget->GetQuality();
-		d3dpp.BackBufferWidth = pFullscreenRenderTarget->GetWidth();
-		d3dpp.BackBufferHeight = pFullscreenRenderTarget->GetHeight();
-		d3dpp.Windowed = false;
-		d3dpp.EnableAutoDepthStencil = pDX9FullscreenRenderTarget->GetDepthTestEnabled();
-	}
-	else
-	{
-		quality = IWindowRenderTarget::QUALITY_MINIMUM;
-		d3dpp.BackBufferWidth = 1; // Default backbuffer should be 1x1 and is never used
-		d3dpp.BackBufferHeight = 1; // Default backbuffer should be 1x1 and is never used
-		d3dpp.Windowed = true;
-		d3dpp.EnableAutoDepthStencil = false; // we manage swap chains manually
-	}
-
-	// TODO: need to set back buffer format fist
-
-	CheckMultisampleFormat(quality, false);
-
-	d3dpp.BackBufferCount = 1;	// TODO: More than one backbuffer?? What is it good for?
-	d3dpp.BackBufferFormat = GetCorrectBackBufferFormat(); 
-	d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
-	d3dpp.AutoDepthStencilFormat = GetCorrectDepthStencilFormat(); 
-	d3dpp.FullScreen_RefreshRateInHz = D3DPRESENT_RATE_DEFAULT;
-	d3dpp.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
-	d3dpp.MultiSampleType = FromMultisampleFormat(quality);
-	d3dpp.MultiSampleQuality = 0;
-
-
+	// if we are not in fullscreen mode then pDefaultSwapChain == 0
+	D3DPRESENT_PARAMETERS d3dpp = DX9PresentationParameters::GetPresentationParametersFromGraphicsSettings(pD3D, pDefaultSwapChain);
 	presentationParameters = d3dpp;
 
 	if (FAILED(pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, (HWND)hWindow, D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dpp, &pDevice)))
@@ -152,6 +111,9 @@ void mini3d::DX9GraphicsService::CreateDevice()
 		}
 	}
 
+	// pDefaultSwapChain is 0 if we are not in fullscreen mode
+	pCurrentRenderTarget = pDefaultSwapChain;
+	
 	// Device created correctly, set device lost to false
 	deviceLost = false;
 
@@ -251,11 +213,13 @@ void mini3d::DX9GraphicsService::SaveGraphicsState()
 	pLostDeviceIndexBuffer = pCurrentIndexBuffer; 
 	pCurrentIndexBuffer = 0;
 
-	pLostDevicePixelShader = pCurrentPixelShader; 
+//	pLostDevicePixelShader = pCurrentPixelShader; 
 	pCurrentPixelShader = 0;
 
-	pLostDeviceVertexShader = pCurrentVertexShader; 
+//	pLostDeviceVertexShader = pCurrentVertexShader; 
 	pCurrentVertexShader = 0;
+
+	pLostDeviceShaderProgram = pCurrentShaderProgram;
 
 	for (int i = 0; i < GetMaxTextures(); i++)
 	{
@@ -270,8 +234,9 @@ void mini3d::DX9GraphicsService::RestoreGraphicsState()
 //	SetDepthStencil(pLostDeviceDepthStencil);
 	SetVertexBuffer(pLostDeviceVertexBuffer);
 	SetIndexBuffer(pLostDeviceIndexBuffer);
-	SetPixelShader(pLostDevicePixelShader);
-	SetVertexShader(pLostDeviceVertexShader);
+//	SetPixelShader(pLostDevicePixelShader);
+//	SetVertexShader(pLostDeviceVertexShader);
+	SetShaderProgram(pLostDeviceShaderProgram);
 	for (int i = 0; i < GetMaxTextures(); i++)
 		SetTexture(lostDeviceCurrentITextures[i], i);
 
@@ -312,48 +277,7 @@ void mini3d::DX9GraphicsService::ResetDevice()
 {
 	ReleaseDevice();
 
-		// get the display mode
-	D3DDISPLAYMODE d3ddm;
-	pD3D->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &d3ddm);
-
-	// set the presentation parameters
-	D3DPRESENT_PARAMETERS d3dpp;
-	ZeroMemory(&d3dpp, sizeof(d3dpp));
-
-	IWindowRenderTarget::Quality quality;
-	if (isFullscreen == true)
-	{
-		// safe because only DX9FullscreenRenderTargets are assigned to pFullscreenRenderTarget
-		DX9FullscreenRenderTarget* pDX9FullscreenRenderTarget = dynamic_cast<DX9FullscreenRenderTarget*>(pFullscreenRenderTarget);
-		quality = (IWindowRenderTarget::Quality)pDX9FullscreenRenderTarget->GetQuality();
-		d3dpp.BackBufferWidth = pFullscreenRenderTarget->GetWidth();
-		d3dpp.BackBufferHeight = pFullscreenRenderTarget->GetHeight();
-		d3dpp.Windowed = false;
-		d3dpp.EnableAutoDepthStencil = pDX9FullscreenRenderTarget->GetDepthTestEnabled();
-	}
-	else
-	{
-		quality = IWindowRenderTarget::QUALITY_MINIMUM;
-		d3dpp.BackBufferWidth = 1; // Default backbuffer should be 1x1 and is never used
-		d3dpp.BackBufferHeight = 1; // Default backbuffer should be 1x1 and is never used
-		d3dpp.Windowed = true;
-		d3dpp.EnableAutoDepthStencil = false; // we manage swap chains manually
-	}
-
-	// TODO: need to set back buffer format fist
-
-	CheckMultisampleFormat(quality, false);
-
-	d3dpp.BackBufferCount = 1;	// TODO: More than one backbuffer?? What is it good for?
-	d3dpp.BackBufferFormat = GetCorrectBackBufferFormat(); 
-	d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
-	d3dpp.AutoDepthStencilFormat = GetCorrectDepthStencilFormat(); 
-	d3dpp.FullScreen_RefreshRateInHz = D3DPRESENT_RATE_DEFAULT;
-	d3dpp.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
-	d3dpp.MultiSampleType = FromMultisampleFormat(quality);
-	d3dpp.MultiSampleQuality = 0;
-
-
+	D3DPRESENT_PARAMETERS d3dpp = DX9PresentationParameters::GetPresentationParametersFromGraphicsSettings(pD3D, pDefaultSwapChain);
 	presentationParameters = d3dpp;
 
 	RestoreDevice();
@@ -406,7 +330,8 @@ void mini3d::DX9GraphicsService::ReleaseDevice()
 
 void mini3d::DX9GraphicsService::RestoreDevice()
 {
-	int newDeviceState = pDevice->Reset(&presentationParameters);
+	D3DPRESENT_PARAMETERS pp = DX9PresentationParameters::GetPresentationParametersFromGraphicsSettings(pD3D, pDefaultSwapChain);
+	int newDeviceState = pDevice->Reset(&pp);
 		
 	// if it was not successful, just return and try agian later
 	if (newDeviceState != D3D_OK)
@@ -731,7 +656,9 @@ void mini3d::DX9GraphicsService::SetTexture(ITexture* pTexture, const unsigned i
 
 	// if texture already assigned, then there is no need to re-assign it
 	if (pTexture == currentITextures[index])
+	{
 		return;
+	}
 
 	if (pTexture == 0)
 	{
@@ -782,50 +709,101 @@ mini3d::IRenderTarget* mini3d::DX9GraphicsService::GetRenderTarget(void) const
 }
 void mini3d::DX9GraphicsService::SetRenderTarget(IRenderTarget* pRenderTarget)
 {
+	// This method is tricky and complex because if the user sets a fullscreen render target
+	// we need to reset the device to get a new default fullscreen swapchain (and the opposite when we switch back...)
+	
+	// Dont set the rendertarget if it is already set
 	if (pRenderTarget == pCurrentRenderTarget)
 		return;
+	
 
-	if (pRenderTarget == 0  || pRenderTarget == pFullscreenRenderTarget)
+	// ---------- SETTING DEFAULT RENDER TARGET -------------------------------
+
+	// pDefaultSwapChain == 0 if device was not created in fullscreen
+	// Setting the render target to 0 or the pDefaultSwapChain will restore the default render target
+	if (pRenderTarget == pDefaultSwapChain)
 	{
 		pDevice->SetRenderTarget(0, pDefaultRenderTarget);
 		pDevice->SetDepthStencilSurface(pDefaultDepthStencilSurface);
+		
+		pCurrentRenderTarget = pRenderTarget;
+		return;
 	}
-	else
+
+
+	// ---------- SETTING FULLSCREEN RENDER TARGET ----------------------------
+
+	// Todo: This is a dynamic cast used as a typecheck, code police says this should be solved with virtual function calls instead
+	DX9FullscreenRenderTarget* pDX9FullscreenRenderTarget = dynamic_cast<DX9FullscreenRenderTarget*>(pRenderTarget);
+
+	// if we are setting a fullscreen render target (other than the default, see above)
+	if (pDX9FullscreenRenderTarget != 0)
 	{
-		// this cast is "unfailable" (not exception caught). Whoever inherits from IRenderTarget must also inherit from IDX9RenderTarget
-		IDX9RenderTarget* pDX9RenderTarget = dynamic_cast<IDX9RenderTarget*>(pRenderTarget);
-		DX9FullscreenRenderTarget* pDX9FullscreenRenderTarget = dynamic_cast<DX9FullscreenRenderTarget*>(pRenderTarget);
+		// Set the current rendertarget to the new fullscreen render target so it gets set when we restore the device
+		pCurrentRenderTarget = pDX9FullscreenRenderTarget;
 
-		// if the rendertarget is incompatible with the current device screen mode...
-		if ((isFullscreen == false && pDX9RenderTarget->GetWindowedCompatible() == false) || (isFullscreen == true && pDX9RenderTarget->GetFullscreenCompatible() == false))
-		{
-			// recreate the device to fit this screen mode
-			pCurrentRenderTarget = pRenderTarget;
-			isFullscreen = pDX9RenderTarget->GetFullscreenCompatible();
-			pFullscreenRenderTarget = isFullscreen ? pRenderTarget : 0;
-			hWindow = isFullscreen ? (HWND)pDX9FullscreenRenderTarget->GetWindowHandle() : hInternalWindow;
+		//pDX9FullcreenRenderTarget is not the pDefaultSwapChain because that was checked above. so release the device
+		ReleaseDevice();
+		
+		//We now need to recreate the device with pDX9FullscreenRenderTarget as the pDefualtIRenderTarget.
+		pDefaultSwapChain = pDX9FullscreenRenderTarget;
 
-			// we need to set this to the current render target so it is recreated after the device recreation.
-			pCurrentRenderTarget = pRenderTarget;
+		// Restore the device pDX9FullscreenRenderTarget as the default swapchain
+		RestoreDevice();
 
-			ResetDevice();
-			return;
-		}
-
-	
-		IDirect3DSurface9* pRenderTargetBuffer = (IDirect3DSurface9*)pDX9RenderTarget->GetRenderTargetBuffer();
-		pDevice->SetRenderTarget(0, pRenderTargetBuffer);
-	
-		if (pRenderTarget->GetDepthTestEnabled() == true)
-			SetDepthStencil(pDX9RenderTarget->GetDepthStencil());
-		else if (pCurrentDepthStencil != 0)
-		{
-			SetDepthStencil(0);
-		}
+		// done
+		return;
 	}
 
+
+	// ---------- SETTING WINDOW RENDER TARGET --------------------------------
+
+	// Todo: This is a dynamic cast used as a typecheck, code police says this should be solved with virtual function calls instead
+	DX9WindowRenderTarget* pDX9WindowRenderTarget = dynamic_cast<DX9WindowRenderTarget*>(pRenderTarget);
+
+	// if we are setting a rendertarget that is a window render target and the default swapchain is set to a fullscreenrendertarget
+	if (pDX9WindowRenderTarget != 0 && pDefaultSwapChain != 0)
+	{
+
+		// Set the current rendertarget to the new window render target so it gets set when we resotre the device
+		pCurrentRenderTarget = pDX9WindowRenderTarget;
+
+		// Release the device
+		ReleaseDevice();
+
+		//We now need to recreate the device with pDX9FullscreenRenderTarget as the pDefualtIRenderTarget
+		pDefaultSwapChain = 0;
+
+		// restore the device with an empty internal default swapchain and this window render target as the current render target
+		RestoreDevice();
+
+		// done
+		return;
+	}
+
+
+	// ---------- ALL OTHER CASES ---------------------------------------------
+
+	// this cast is "unfailable" (will never return NULL), whoever inherits from IRenderTarget must also inherit from IDX9RenderTarget
+	IDX9RenderTarget* pDX9RenderTarget = dynamic_cast<IDX9RenderTarget*>(pRenderTarget);
+
+	// Get the render target buffer from the render target
+	IDirect3DSurface9* pRenderTargetBuffer = (IDirect3DSurface9*)pDX9RenderTarget->GetRenderTargetBuffer();
+	
+	// set the render target
+	pDevice->SetRenderTarget(0, pRenderTargetBuffer);
 	pCurrentRenderTarget = pRenderTarget;
 
+	// Set the depth stencil if we have one
+	if (pRenderTarget->GetDepthTestEnabled() == true)
+	{
+		IDepthStencil* pDepthStencil = pDX9RenderTarget->GetDepthStencil();
+		SetDepthStencil(pDepthStencil);
+	}
+	else if (pCurrentDepthStencil != 0)
+	{
+		SetDepthStencil(0);
+	}
 }
 
 // DepthStencil
@@ -959,13 +937,21 @@ void mini3d::DX9GraphicsService::Draw(void)
 		return;
 
 	BeginScene();
-	pDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, pCurrentVertexBuffer->GetVertexCount(), 0, pCurrentIndexBuffer->GetIndexCount() / 3);
+	
+	if (deviceLost == false)
+	{
+		pDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, pCurrentVertexBuffer->GetVertexCount(), 0, pCurrentIndexBuffer->GetIndexCount() / 3);
+	}
 }
 void mini3d::DX9GraphicsService::DrawIndices(const unsigned int& startIndex, const unsigned int& numIndices)
 {
 	BeginScene();
 	DX9VertexBuffer* pDX9VertexBuffer = (DX9VertexBuffer*)pCurrentVertexBuffer;
-	pDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, pCurrentVertexBuffer->GetVertexCount(), startIndex, numIndices);
+	
+	if (deviceLost == false)
+	{
+		pDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, pCurrentVertexBuffer->GetVertexCount(), startIndex, numIndices);
+	}
 }
 
 // Clear
@@ -1075,7 +1061,7 @@ D3DFORMAT mini3d::DX9GraphicsService::GetCorrectDepthStencilFormat(void)
 	return D3DFMT_D16;
 }
 
-void mini3d::DX9GraphicsService::CheckMultisampleFormat(IWindowRenderTarget::Quality& quality, bool fullscreen)
+void mini3d::DX9GraphicsService::CheckMultisampleFormat(IScreenRenderTarget::Quality& quality, bool fullscreen)
 {
 
 	D3DDISPLAYMODE displayMode;
@@ -1095,7 +1081,7 @@ void mini3d::DX9GraphicsService::CheckMultisampleFormat(IWindowRenderTarget::Qua
 	}
 }
 
-D3DMULTISAMPLE_TYPE mini3d::DX9GraphicsService::FromMultisampleFormat(IWindowRenderTarget::Quality quality)
+D3DMULTISAMPLE_TYPE mini3d::DX9GraphicsService::FromMultisampleFormat(IScreenRenderTarget::Quality quality)
 {
 	switch(quality)
 	{

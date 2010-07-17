@@ -127,6 +127,7 @@ private:
 	IIndexBuffer* pLostDeviceIndexBuffer;
 	IPixelShader* pLostDevicePixelShader;
 	IVertexShader* pLostDeviceVertexShader;
+	IShaderProgram* pLostDeviceShaderProgram;
 	ITexture** lostDeviceCurrentITextures;
 
 	// other state tracking
@@ -141,12 +142,12 @@ private:
 	IDirect3DDevice9* pDevice;
 	bool deviceLost;
 	bool isFullscreen;
-	IRenderTarget* pFullscreenRenderTarget;
 	bool defaultDepthStencil;
 
 	//IDirect3DSurface9* pCurrentDepthStencilBuffer;
 	IDirect3DSurface9* pDefaultRenderTarget;
 	IDirect3DSurface9* pDefaultDepthStencilSurface;
+	IScreenRenderTarget* pDefaultSwapChain;
 	D3DPRESENT_PARAMETERS presentationParameters;
 
 public:
@@ -154,7 +155,7 @@ public:
 
 	// CONSTRUCTOR ------------------------------------------------------------
 
-	DX9GraphicsService(bool isFullscreen);
+	DX9GraphicsService();
 	~DX9GraphicsService(void);
 
 
@@ -163,17 +164,7 @@ public:
 	// Properties
 	virtual bool GetIsFullScreen()
 	{ 
-		return isFullscreen; 
-	};
-	virtual void SetIsFullScreen(bool value)
-	{
-		if (isFullscreen == value)
-			return;
-
-		isFullscreen = value;
-		
-		// Recreate The device
-		RecreateDevice();
+		return pDefaultSwapChain != 0; 
 	};
 
 	// Get Graphics Card Capabilities

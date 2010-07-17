@@ -119,6 +119,7 @@ mini3d::IGraphicsService* graphics;
 
 // Graphics Resources
 mini3d::IScreenRenderTarget* pScreenRenderTarget;
+mini3d::IWindowRenderTarget* pWindowRenderTarget;
 mini3d::IFullscreenRenderTarget* pFullScreenRenderTarget;
 
 mini3d::IIndexBuffer* iBuffer;
@@ -145,14 +146,14 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 
 	// ----- CREATE GRAPHICS SERVICE ------------------------------------------
 	
-	graphics = new mini3d::DX9GraphicsService(false);
+	graphics = new mini3d::DX9GraphicsService();
 	
 
 	// ----- CREATE GRAPHICS RESOURCES ----------------------------------------
 
 	// create a render target (mini3d does not have a default render target)
-	pScreenRenderTarget = graphics->CreateScreenRenderTarget(640, 480,(int)hWindow, true, mini3d::IScreenRenderTarget::QUALITY_MINIMUM);
-	pFullScreenRenderTarget = graphics->CreateFullscreenRenderTarget(1680, 1050,(int)hWindow, true, mini3d::IFullscreenRenderTarget::QUALITY_MINIMUM);
+	pWindowRenderTarget = graphics->CreateWindowRenderTarget(640, 480,(int)hWindow, true, mini3d::IScreenRenderTarget::QUALITY_MINIMUM);
+	pFullScreenRenderTarget = graphics->CreateFullscreenRenderTarget(1680, 1050,(int)hWindow, true, mini3d::IScreenRenderTarget::QUALITY_MINIMUM);
 
 	// create index buffer
 	iBuffer = graphics->CreateIndexBuffer(indices, 36);
@@ -181,9 +182,6 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 
 	// ----- VARIABLES FOR RENDER LOOP ----------------------------------------
 	
-	// keeps track of what texture unit the texture is assigned to. This value is sent to the shader program
-	int* pTextureUnit = new int(0);
-
 	// create shader program
 	pShaderProgram = graphics->CreateShaderProgram(pVertexShader, pPixelShader);
 
@@ -194,8 +192,9 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	graphics->SetIndexBuffer(iBuffer);
 	graphics->SetVertexBuffer(vBuffer);
 	graphics->SetShaderProgram(pShaderProgram);
+
+	pScreenRenderTarget = pWindowRenderTarget;
 	graphics->SetRenderTarget(pScreenRenderTarget);
-	graphics->SetShaderParameterInt(1, pTextureUnit, 1);	
 
 	// Set the Texture
 	graphics->SetTexture(pTexture, 0);
@@ -209,6 +208,19 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	// loop while the window is not closed
 	while(GetMessage(&Msg, NULL, 0, 0) > 0)
 	{
+	// set render prarameters
+	graphics->SetIndexBuffer(iBuffer);
+	graphics->SetVertexBuffer(vBuffer);
+	graphics->SetShaderProgram(pShaderProgram);
+
+	graphics->SetRenderTarget(pScreenRenderTarget);
+
+	// Set the Texture
+	graphics->SetTexture(pTexture, 0);
+
+	// Set the ViewProjection matrix
+	UpdateViewProjectionMatrix();
+
 		// clear render target with color
 		graphics->Clear(0xFF888888);
 
@@ -235,8 +247,6 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	delete pScreenRenderTarget;
 	delete pFullScreenRenderTarget;
 	delete graphics;
-
-	delete pTextureUnit;
 
 	return Msg.wParam;
 }
@@ -282,13 +292,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			if ((wParam & VK_F12) == VK_F12)
 			{
 				fullscreen = !fullscreen;
-				
-				// set the correct rendertarget depeding on fullscreen mode
-				if (fullscreen == true)
-					graphics->SetRenderTarget(pFullScreenRenderTarget);
-				else
-					graphics->SetRenderTarget(pScreenRenderTarget);
 
+				// Set the screenrendertarget to the correct one
+				if (fullscreen == true)
+					pScreenRenderTarget = pFullScreenRenderTarget;
+				else
+					pScreenRenderTarget = pWindowRenderTarget;
+
+				// set the correct rendertarget depeding on fullscreen mode
+				graphics->SetRenderTarget(pScreenRenderTarget);
 			}
 		break;
 		case WM_MOUSEMOVE:
@@ -302,7 +314,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 				if (rotY > 3.1415f / 2.0f)
 					rotY = 3.1415f / 2.0f;
-				else if (rotY < -3.1416f / 2.0f)
+				else if (rotY < -3.1415f / 2.0f)
 					rotY = -3.1415f / 2.0f;
 								
 				mouseX = x;
