@@ -29,7 +29,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 #include "../IVertexShader.h"
 #include "DX9GraphicsService.h"
-#include <vector>
 
 namespace mini3d
 {

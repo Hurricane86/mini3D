@@ -29,7 +29,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 mini3d::DX9FullscreenRenderTarget::DX9FullscreenRenderTarget(DX9GraphicsService* pGraphicsService, const unsigned int& width, const unsigned int& height, const int& windowHandle, const bool& depthTestEnabled, const Quality& quality) 
 	: pGraphicsService(pGraphicsService), width(width), height(height), quality(quality), depthTestEnabled(depthTestEnabled), hWindow(windowHandle)
 { 
-	SetFullScreenRenderTarget(width, height, windowHandle, depthTestEnabled, quality);
+	SetFullscreenRenderTarget(width, height, windowHandle, depthTestEnabled, quality);
 };
 
 mini3d::DX9FullscreenRenderTarget::~DX9FullscreenRenderTarget(void)
@@ -37,7 +37,7 @@ mini3d::DX9FullscreenRenderTarget::~DX9FullscreenRenderTarget(void)
 	// No need to restore anything here because if the fullscreenrendertarget is mounted it is the default render target already.
 };
 
-void mini3d::DX9FullscreenRenderTarget::SetFullScreenRenderTarget(const unsigned int& width, const unsigned int& height, const int& windowHandle, const bool& depthTestEnabled, const Quality& quality)
+void mini3d::DX9FullscreenRenderTarget::SetFullscreenRenderTarget(const unsigned int& width, const unsigned int& height, const int& windowHandle, const bool& depthTestEnabled, const Quality& quality)
 { 
 	this->width = width;
 	this->height = height;

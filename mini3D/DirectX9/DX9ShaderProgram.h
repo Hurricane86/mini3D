@@ -40,6 +40,9 @@ class DX9ShaderProgram : public IShaderProgram, public IDX9Resource
 {
 
 public:
+
+	// ::::: Constructor & Destructor :::::::::::::::::::::::::::::::::::::::::
+
 	DX9ShaderProgram(DX9GraphicsService* pGraphicsService, IVertexShader* pVertexShader, IPixelShader* pPixelShader);
 	~DX9ShaderProgram();
 

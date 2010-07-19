@@ -37,17 +37,17 @@ class IOGL20Texture: public virtual ITexture
 {
 friend class OGL20GraphicsService;
 
-private:
-	virtual GLuint GetTextureBuffer(void) = 0;
-
 public:
 
-	virtual ~IOGL20Texture(void) {};
+	virtual ~IOGL20Texture() {};
 
-	virtual unsigned int GetWidth(void) = 0;
-	virtual unsigned int GetHeight(void) = 0;
+	virtual unsigned int GetWidth() const = 0;
+	virtual unsigned int GetHeight() const = 0;
 
-	virtual WrapStyle GetWrapStyle(void) = 0;
+	virtual WrapStyle GetWrapStyle() const = 0;
+
+	virtual GLuint GetTextureBuffer() const = 0;
+
 };
 }
 

@@ -28,11 +28,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include <GL/glext.h>
 #include <GL/wglext.h>
 
-mini3d::OGL20RenderTargetTexture::OGL20RenderTargetTexture(OGL20GraphicsService* pGraphicsService, unsigned int width, unsigned int height, bool depthTestEnabled) : 
+mini3d::OGL20RenderTargetTexture::OGL20RenderTargetTexture(OGL20GraphicsService* pGraphicsService, const unsigned int& width, const unsigned int& height, const bool& depthTestEnabled) : 
 	pGraphicsService(pGraphicsService), pDepthStencil(0)
 {
 	SetRenderTarget(width, height, depthTestEnabled);
-	LoadResource();	
 	pGraphicsService->AddResource(this);
 }
 
@@ -42,37 +41,16 @@ mini3d::OGL20RenderTargetTexture::~OGL20RenderTargetTexture(void)
 	pGraphicsService->RemoveResource(this);
 }
 
-void mini3d::OGL20RenderTargetTexture::SetRenderTarget(unsigned int width, unsigned int height, bool depthTestEnabled)
+void mini3d::OGL20RenderTargetTexture::SetRenderTarget(const unsigned int& width, const unsigned int& height, const bool& depthTestEnabled)
 {
 	this->width = width;
 	this->height = height;
 	this->depthTestEnabled = depthTestEnabled;
+	
 	this->isDirty = true;
+	LoadResource();
 }
-unsigned int mini3d::OGL20RenderTargetTexture::GetWidth(void)
-{
-	return width;
-}
-unsigned int mini3d::OGL20RenderTargetTexture::GetHeight(void)
-{
-	return height;
-}
-bool mini3d::OGL20RenderTargetTexture::GetDepthTestEnabled(void)
-{
-	return depthTestEnabled;
-}
-mini3d::ITexture::WrapStyle mini3d::OGL20RenderTargetTexture::GetWrapStyle(void)
-{
-	return CLAMP;
-}
-GLuint mini3d::OGL20RenderTargetTexture::GetRenderTargetBuffer(void)
-{
-	return pRenderTarget;
-}
-GLuint mini3d::OGL20RenderTargetTexture::GetTextureBuffer(void)
-{
-	return pTexture;
-}
+
 void mini3d::OGL20RenderTargetTexture::LoadResource(void)
 {
 
@@ -160,9 +138,4 @@ void mini3d::OGL20RenderTargetTexture::UnloadResource(void)
 	}
 
 	isDirty = true;
-}
-
-bool mini3d::OGL20RenderTargetTexture::GetIsDirty(void)
-{
-	return isDirty;
 }

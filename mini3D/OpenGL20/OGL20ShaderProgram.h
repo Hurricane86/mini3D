@@ -37,9 +37,35 @@ OTHER DEALINGS IN THE SOFTWARE.
 namespace mini3d
 {
 class OGL20GraphicsService;
-class OGL20ShaderProgram : IShaderProgram, IOGL20Resource
+class OGL20ShaderProgram : public IShaderProgram, public IOGL20Resource
 {
-	friend class OGL20GraphicsService;
+
+public:
+
+	// ::::: Constructor & Destructor :::::::::::::::::::::::::::::::::::::::::
+
+	OGL20ShaderProgram(OGL20GraphicsService* graphicsService, IVertexShader* pVertexShader, IPixelShader* pPixelShader);
+	~OGL20ShaderProgram();
+
+
+	// ::::: IShaderProgram :::::::::::::::::::::::::::::::::::::::::::::::::::
+
+	virtual IPixelShader* GetPixelShader() const { return pPixelShader; };
+	virtual IVertexShader* GetVertexShader() const { return pVertexShader; };
+
+
+	// ::::: IDX9Resource :::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+	void LoadResource();
+	void UnloadResource();
+	bool GetIsDirty() const { return isDirty; };
+
+
+	// ::::: Public Member Varaibles :::::::::::::::::::::::::::::::::::::::::
+
+	inline GLuint GetProgram() { return hProgram; }
+	void printLog(GLuint obj);
+
 
 private:
 	// Indices
@@ -48,23 +74,12 @@ private:
 
 	GLuint hProgram;
 
-	bool isDirty_;
+	bool isDirty;
 
 	// GraphicsDevice link
-	OGL20GraphicsService* pGraphicsService_;
+	OGL20GraphicsService* pGraphicsService;
 
-public:
-	OGL20ShaderProgram(OGL20GraphicsService* graphicsService, IVertexShader* pVertexShader, IPixelShader* pPixelShader);
-	~OGL20ShaderProgram(void);
 
-private:
-	inline GLuint GetProgram(void) { return hProgram; }
-	void printLog(GLuint obj);
-
-	// IOGL20Resource
-	void LoadResource(void);
-	void UnloadResource(void);
-	bool GetIsDirty(void) { return isDirty_; };
 };
 }
 

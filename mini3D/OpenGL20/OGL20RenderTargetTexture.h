@@ -41,7 +41,53 @@ class OGL20RenderTargetTexture : public IRenderTargetTexture, public IOGL20Textu
 {
 friend class OGL20GraphicsService;
 
+
+public:
+
+	// ::::: Constructor & Destructor :::::::::::::::::::::::::::::::::::::::::
+
+	OGL20RenderTargetTexture(OGL20GraphicsService* graphicsService, const unsigned int& width, const unsigned int& height, const bool& depthTestEnabled);
+	~OGL20RenderTargetTexture(void);
+
+
+	// ::::: IRenderTargetTexture :::::::::::::::::::::::::::::::::::::::::::::
+
+	void SetRenderTarget(const unsigned int& width, const unsigned int& height, const bool& depthTestEnabled);
+
+	virtual unsigned int GetWidth() const { return width; };
+	virtual unsigned int GetHeight() const { return height; }
+	virtual void SetSize(const int& width, const int& height) { SetRenderTarget(width, height, depthTestEnabled); };
+
+	virtual WrapStyle GetWrapStyle() const { return WRAP_CLAMP; };
+
+	virtual bool GetDepthTestEnabled() const { return depthTestEnabled; };
+
+
+	// ::::: IOGL20Resource :::::::::::::::::::::::::::::::::::::::::::::::::::
+
+	virtual void LoadResource();
+	virtual void UnloadResource();
+	virtual bool GetIsDirty() const { return isDirty; };
+
+
+	// ::::: IOGL20RenderTarget :::::::::::::::::::::::::::::::::::::::::::::::
+
+	virtual GLuint GetRenderTargetBuffer() const { return pRenderTarget; };
+	virtual GLuint GetDepthStencil() const { return pDepthStencil; };
+	virtual bool GetFullscreenCompatible() const { return true; };
+	virtual bool GetWindowedCompatible() const { return true; };
+
+	
+	// ::::: IOGL20Texture ::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+	virtual GLuint GetTextureBuffer() const { return pTexture; };
+
+
 private:
+
+	// GraphicsDevice link
+	OGL20GraphicsService* pGraphicsService;
+
 	// Bitmap
 	unsigned int width;
 	unsigned int height;
@@ -54,29 +100,7 @@ private:
 	GLuint pTexture;
 	GLuint pRenderTarget;
 	GLuint pDepthStencil;
-	
-	// GraphicsDevice link
-	OGL20GraphicsService* pGraphicsService;
 
-private:
-	virtual GLuint GetRenderTargetBuffer(void);
-	virtual GLuint GetTextureBuffer(void);
-	virtual int GetType() { return 1; }
-
-public:
-	OGL20RenderTargetTexture(OGL20GraphicsService* graphicsService, unsigned int width, unsigned int height, bool depthTestEnabled);
-	~OGL20RenderTargetTexture(void);
-
-	void SetRenderTarget(unsigned int width, unsigned int height, bool depthTestEnabled);
-	virtual unsigned int GetWidth(void);
-	virtual unsigned int GetHeight(void);
-	virtual bool GetDepthTestEnabled(void);
-	virtual WrapStyle GetWrapStyle(void);
-
-	// IOGL20Resource
-	virtual void LoadResource(void);
-	virtual void UnloadResource(void);
-	virtual bool GetIsDirty(void);
 
 };
 }

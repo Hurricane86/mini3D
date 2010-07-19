@@ -44,7 +44,7 @@ public:
 	~DX9PixelShader(void);
 
 
-	// ::::: IIndexBuffer :::::::::::::::::::::::::::::::::::::::::::::::::::::
+	// ::::: IPixelShader :::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 	virtual void* GetPixelShader(unsigned int& sizeInBytes) { sizeInBytes = this->sizeInBytes; return pShaderBytes; };
 

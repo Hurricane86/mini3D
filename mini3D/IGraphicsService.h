@@ -90,7 +90,7 @@ public:
 	virtual void SetShaderParameterMatrix(const unsigned int& index, const float* pData, const unsigned int& rows, const unsigned int& columns) = 0;
 
 	// Drawing
-	virtual void Clear(const int& color) = 0;
+	virtual void Clear(const float& r, const float& g, const float& b, const float& a) = 0;
 	virtual void Draw() = 0;
 	virtual void DrawIndices(const unsigned int& startIndex, const unsigned int& numIndices) = 0;
 

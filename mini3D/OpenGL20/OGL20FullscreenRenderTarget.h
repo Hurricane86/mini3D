@@ -24,34 +24,92 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef AURORA_IOGL20FULLSCREENRENDERTARGET_H
-#define AURORA_IOGL20FULLSCREENRENDERTARGET_H
+#ifndef AURORA_OGL20FULLSCREENRENDERTARGET_H
+#define AURORA_OGL20FULLSCREENRENDERTARGET_H
 
-#include "../IFullScreenRenderTarget.h"
+#include "../IFullscreenRenderTarget.h"
 #include "internal/IOGL20Resource.h"
 #include "internal/IOGL20RenderTarget.h"
+#include "OGL20GraphicsService.h"
+#include <Windows.h>
+#include <GL/gl.h>
 
+namespace mini3d
+{
 class OGL20FullscreenRenderTarget : public IFullscreenRenderTarget, public IOGL20RenderTarget, public IOGL20Resource
 {
-private:
-	int width;
-	int height;
-	int hWindow;
-	HDC hDeviceContext;
-	bool depthTestEnabled;
-	Quality quality;
+
 
 public:
-	enum Quality{QUALITY_MINIMUM, QUALITY_LOW, QUALITY_MEDIUM, QUALITY_HIGH, QUALITY_MAXIMUM};
 
-	virtual ~OGL20FullscreenRenderTarget(void);
+	// ::::: Constructor & Destructor :::::::::::::::::::::::::::::::::::::::::
 
-	virtual void SetScreenRenderTarget(unsigned int width, unsigned int height, int hWindow, bool depthTestEnabled, Quality quality){};
-	virtual unsigned int GetWidth(void){ return width;};
-	virtual unsigned int GetHeight(void){ return height;};
-	virtual bool GetDepthTestEnabled(void){ return depthTestEnabled; };
+	OGL20FullscreenRenderTarget(OGL20GraphicsService* pGraphicsService, const unsigned int& width, const unsigned int& height, const int& windowHandle, const bool& depthTestEnabled, const Quality& quality);
+	virtual ~OGL20FullscreenRenderTarget();
 
-	virtual void Display(void) {};
+
+	// ::::: IFullscreenRenderTarget ::::::::::::::::::::::::::::::::::::::::::
+
+
+	virtual void SetFullscreenRenderTarget(const unsigned int& width,const  unsigned int& height,const  int& windowHandle,const  bool& depthTestEnabled,const  Quality& quality);
+
+	virtual unsigned int GetWidth() const { return width; };
+	virtual unsigned int GetHeight() const { return height; };
+	virtual void SetSize(const int& width, const int& height);
+
+	virtual bool GetDepthTestEnabled() const { return depthTestEnabled; };
+	virtual Quality GetQuality() const { return quality; };
+	virtual int GetWindowHandle() const { return hWindow; };
+
+	virtual void Display();
+
+
+	// ::::: IOGL20Resource ::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+	virtual void LoadResource();
+	virtual void UnloadResource();
+	virtual bool GetIsDirty() const { return isDirty; };
+
+
+	// ::::: Public Methods ::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+	virtual HDC GetDeviceContext() const { return hDeviceContext; };
+
+
+private:
+
+	// ::::: Private Member Varaibles ::::::::::::::::::::::::::::::::::::::::::::
+	OGL20GraphicsService* pGraphicsService;
+
+	// Render target device context
+	HDC hDeviceContext;
+	GLuint pDepthStencil;
+	GLuint pScreenRenderTarget;
+
+	// Rendertarget dimensions	
+	unsigned int width;
+	unsigned int height;
+
+	// window handle to render target window
+	int hWindow;
+
+	// use depth stencil
+	bool depthTestEnabled;
+
+	// quality level
+	Quality quality;
+
+
+	// TODO: Fix this with power of 2 comparison agains width, height...
+	unsigned int bufferWidth;
+	unsigned int bufferHeight;
+	
+	int hBufferWindow;
+	int bufferDepthTestEnabled;
+
+	bool isDirty;
+
 };
+}
 
 #endif

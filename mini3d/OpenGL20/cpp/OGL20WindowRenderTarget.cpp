@@ -24,61 +24,50 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "../OGL20ScreenRenderTarget.h"
+#include "../OGL20WindowRenderTarget.h"
 #include <GL/glu.h>
 #include <GL/glext.h>
 #include <GL/wglext.h>
 
-mini3d::OGL20ScreenRenderTarget::OGL20ScreenRenderTarget(OGL20GraphicsService* pGraphicsService, unsigned int width, unsigned int height, int hWindow, bool depthTestEnabled, Quality quality) : 
+mini3d::OGL20WindowRenderTarget::OGL20WindowRenderTarget(OGL20GraphicsService* pGraphicsService, const unsigned int& width, const unsigned int& height, const int& windowHandle, const bool& depthTestEnabled, const Quality& quality) : 
 	pGraphicsService(pGraphicsService), pScreenRenderTarget(0), pDepthStencil(0), quality(quality)
 {
-	SetScreenRenderTarget(width, height, hWindow, depthTestEnabled, quality);
-	LoadResource();
+	SetWindowRenderTarget(width, height, windowHandle, depthTestEnabled, quality);
 	pGraphicsService->AddResource(this);
 }
 
-mini3d::OGL20ScreenRenderTarget::~OGL20ScreenRenderTarget(void)
+mini3d::OGL20WindowRenderTarget::~OGL20WindowRenderTarget(void)
 {
 	UnloadResource();
 	pGraphicsService->RemoveResource(this);
 }
 
-void mini3d::OGL20ScreenRenderTarget::SetScreenRenderTarget(unsigned int width, unsigned int height, int hWindow, bool depthTestEnabled, Quality quality)
+void mini3d::OGL20WindowRenderTarget::SetWindowRenderTarget(const unsigned int& width, const unsigned int& height, const int& windowHandle, const bool& depthTestEnabled, const Quality& quality)
 {
-	this->hWindow = hWindow;
+	// set the variables from the call
+	this->hWindow = windowHandle;
 	this->width = width;
 	this->height = height;
 	this->depthTestEnabled = depthTestEnabled;
+	
+	// load the buffer
 	this->isDirty = true;
+	LoadResource();
 }
-unsigned int mini3d::OGL20ScreenRenderTarget::GetWidth(void)
-{
-	return width;
-}
-unsigned int mini3d::OGL20ScreenRenderTarget::GetHeight(void)
-{
-	return height;
-}
-bool mini3d::OGL20ScreenRenderTarget::GetDepthTestEnabled(void)
-{
-	return depthTestEnabled;
-}
-void mini3d::OGL20ScreenRenderTarget::Display(void)
+
+void mini3d::OGL20WindowRenderTarget::Display(void)
 {
 	if (hDeviceContext == 0)
 		return;
 
-	/// Make sure we do an endScene before we present (DirectX9 specific).
-	if (pGraphicsService->isDrawingScene == true)
-		pGraphicsService->EndScene();
+	///// Make sure we do an endScene before we present (DirectX9 specific).
+	//if (pGraphicsService->isDrawingScene == true)
+	//	pGraphicsService->EndScene();
 
 	SwapBuffers(hDeviceContext);
 }
-HDC  mini3d::OGL20ScreenRenderTarget::GetRenderTargetBuffer(void)
-{
-	return hDeviceContext;
-}
-void mini3d::OGL20ScreenRenderTarget::LoadResource(void)
+
+void mini3d::OGL20WindowRenderTarget::LoadResource(void)
 {
 
 	// get the device context (DC)
@@ -103,22 +92,17 @@ void mini3d::OGL20ScreenRenderTarget::LoadResource(void)
 		int i = 0;
 	}
 
-
 	bufferWidth = width;
 	bufferHeight = height;
 	hBufferWindow = hWindow;
-	isDirty = false;
 
-	if (pGraphicsService->hRenderContext == 0)
+	if (pGraphicsService->GetRenderContext() == 0)
 	{
-		pGraphicsService->hRenderContext=wglCreateContext(hDeviceContext);
+		pGraphicsService->SetRenderContext(wglCreateContext(hDeviceContext));
 	}
 
 
-	if (!wglMakeCurrent(hDeviceContext, pGraphicsService->hRenderContext))
-	{
-		int i = 0;
-	}
+	wglMakeCurrent(hDeviceContext, pGraphicsService->GetRenderContext());
 
 	glViewport(0, 0, width, height);					// Reset The Current Viewport
 
@@ -154,9 +138,10 @@ void mini3d::OGL20ScreenRenderTarget::LoadResource(void)
 
 	SwapBuffers(hDeviceContext);
 
+	isDirty = false;
 }
 
-void mini3d::OGL20ScreenRenderTarget::UnloadResource(void)
+void mini3d::OGL20WindowRenderTarget::UnloadResource(void)
 {
 	if (pScreenRenderTarget != 0)
 	{
@@ -171,7 +156,7 @@ void mini3d::OGL20ScreenRenderTarget::UnloadResource(void)
 	isDirty = true;
 }
 
-bool mini3d::OGL20ScreenRenderTarget::GetIsDirty(void)
+void mini3d::OGL20WindowRenderTarget::SetSize(const int& width, const int& height)
 {
-	return isDirty;
+	SetWindowRenderTarget(width, height, hWindow, depthTestEnabled, quality);
 }

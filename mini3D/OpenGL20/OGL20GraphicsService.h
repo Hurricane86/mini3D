@@ -51,24 +51,14 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "OGL20VertexBuffer.h"
 #include "OGL20IndexBuffer.h"
 #include "OGL20RenderTargetTexture.h"
-#include "OGL20ScreenRenderTarget.h"
-
+#include "OGL20WindowRenderTarget.h"
+#include "OGL20FullscreenRenderTarget.h"
 
 namespace mini3d
 {
 
 class OGL20GraphicsService : public IGraphicsService
 {
-	// friends
-friend class OGL20BitmapTexture;
-friend class OGL20RenderTargetTexture;
-friend class OGL20PixelShader;
-friend class OGL20VertexShader;
-friend class OGL20ShaderProgram;
-friend class OGL20VertexBuffer;
-friend class OGL20IndexBuffer;
-friend class OGL20DepthStencil;
-friend class OGL20ScreenRenderTarget;
 
 private:
 	
@@ -114,73 +104,75 @@ public:
 
 	// CONSTRUCTOR ------------------------------------------------------------
 
-	OGL20GraphicsService(bool isFullscreen);
-	~OGL20GraphicsService(void);
+	OGL20GraphicsService();
+	~OGL20GraphicsService();
 
 
 	// IGRAPHICS SERVICE INTERFACE --------------------------------------------
 
 	// Properties
-	virtual bool GetIsFullScreen()
-	{ 
-		return isFullscreen; 
-	};
-	virtual void SetIsFullScreen(bool value)
-	{
-		isFullscreen = value;
-	};
+	virtual bool GetIsFullScreen() { return isFullscreen; };
+	virtual void SetIsFullScreen(bool value) { isFullscreen = value; };
+	
+	virtual HGLRC GetRenderContext() const { return hRenderContext; };
+	virtual void SetRenderContext(HGLRC hRenderContext) { this->hRenderContext = hRenderContext; };	
 
 	// Get Graphics Card Capabilities
-	virtual int GetMaxTextures(void);
-	virtual int GetMaxTextureSize(void);
-	virtual int GetPixelShaderVersion(void);
-	virtual int GetVertexShaderVersion(void);
+	virtual int GetMaxTextures() const;
+	virtual int GetMaxTextureSize() const;
+	virtual int GetPixelShaderVersion() const;
+	virtual int GetVertexShaderVersion() const;
 
 	// Create Resources
-	virtual IScreenRenderTarget* CreateScreenRenderTarget(unsigned int width, unsigned int height, int hWindow, bool depthTestEnabled, IScreenRenderTarget::Quality quality);
-	virtual IRenderTargetTexture* CreateRenderTargetTexture(unsigned int width, unsigned int height, bool depthTestEnabled);
-	virtual IBitmapTexture* CreateBitmapTexture(void* pBitmap, unsigned int width, unsigned int height, IBitmapTexture::BitDepth bitDepth = IBitmapTexture::BIT32, ITexture::WrapStyle wrapStyle = ITexture::TILE);
-	virtual IVertexBuffer* CreateVertexBuffer(void* pVertices, unsigned int count, const IVertexBuffer::VertexDeclarationVector& vertexDeclaration);
-	virtual IIndexBuffer* CreateIndexBuffer(int* pIndices,  unsigned int count, const IIndexBuffer::CullMode cullMode = IIndexBuffer::CULL_COUNTERCLOCKWIZE);
-	virtual IPixelShader* CreatePixelShader(const IPixelShader::ShaderBytes& shaderBytes);
-	virtual IVertexShader* CreateVertexShader(const IVertexShader::ShaderBytes& shaderBytes, const IVertexShader::VertexDeclarationVector& vertexDeclaration);
+	virtual IWindowRenderTarget* CreateWindowRenderTarget(const unsigned int& width, const unsigned int& height, const int& hWindow, const bool& depthTestEnabled, const IWindowRenderTarget::Quality& quality);
+	virtual IFullscreenRenderTarget* CreateFullscreenRenderTarget(const unsigned int& width, const unsigned int& height, const int& hWindow, const bool& depthTestEnabled, const IFullscreenRenderTarget::Quality& quality);
+	virtual IRenderTargetTexture* CreateRenderTargetTexture(const unsigned int& width, const unsigned int& height, const bool& depthTestEnabled);
+	virtual IBitmapTexture* CreateBitmapTexture(const void* pBitmap, const unsigned int& width, const unsigned int& height, const IBitmapTexture::BitDepth bitDepth = IBitmapTexture::BIT_32, const ITexture::WrapStyle wrapStyle = ITexture::WRAP_TILE);
+	virtual IVertexBuffer* CreateVertexBuffer(const void* pVertices,const  unsigned int& count, const unsigned int& vertexSizeInBytes);
+	virtual IIndexBuffer* CreateIndexBuffer(const void* pIndices, const unsigned int& count, const IIndexBuffer::DataType& dataType = IIndexBuffer::INT_16, const IIndexBuffer::CullMode& cullMode = IIndexBuffer::CULL_COUNTERCLOCKWIZE);
+	virtual IPixelShader* CreatePixelShader(const void* shaderBytes, const unsigned int& sizeInBytes);
+	virtual IVertexShader* CreateVertexShader(const void* shaderBytes, const unsigned int& sizeInBytes, const IVertexShader::VertexDataType vertexDeclaration[], const unsigned int& vertexDataCount);
 	virtual IShaderProgram* CreateShaderProgram(IVertexShader* pVertexShader, IPixelShader* pPixelShader);
 
 	// Pipeline States
-	//virtual IPixelShader* GetPixelShader(void);
+	//virtual IPixelShader* GetPixelShader() const;
 	//virtual void SetPixelShader(IPixelShader* pPixelShader);
-	//
-	//virtual IVertexShader* GetVertexShader(void);
+	
+	//virtual IVertexShader* GetVertexShader() const;
 	//virtual void SetVertexShader(IVertexShader* pVertexShader);
 
-	virtual IShaderProgram* GetShaderProgram(void);
-	virtual void SetShaderProgram(IShaderProgram* pShaderProgram);
-
-	virtual ITexture* GetTexture(unsigned int index);
-	virtual void SetTexture(ITexture* pTexture, unsigned int index);
+	virtual IShaderProgram* GetShaderProgram() const;
+	virtual void SetShaderProgram(IShaderProgram* ShaderProgram);
 	
-	virtual IRenderTarget* GetRenderTarget(void);
+	virtual ITexture* GetTexture(const unsigned int& index) const;
+	virtual void SetTexture(ITexture* pTexture, const unsigned int& index);
+	
+	virtual IRenderTarget* GetRenderTarget() const;
 	virtual void SetRenderTarget(IRenderTarget* pRenderTarget);
 	
-	virtual IDepthStencil* GetDepthStencil(void);
+	virtual IDepthStencil* GetDepthStencil() const;
 	virtual void SetDepthStencil(IDepthStencil* pDepthStencil);
 
 	// Shader Parameters
-	virtual void SetShaderParameterMatrix(unsigned int index, const float* pData, unsigned int rows, unsigned int columns);
-	virtual void SetShaderParameterFloat(unsigned int index, const float* pData, unsigned int count);
-	virtual void SetShaderParameterInt(unsigned int index, const int* pData, unsigned int count);
-	virtual void SetShaderParameterBool(unsigned int index, const bool* pData, unsigned int count);
+	virtual void SetShaderParameterFloat(const unsigned int& index, const float* pData, const unsigned int& count);
+	virtual void SetShaderParameterInt(const unsigned int& index, const int* pData, const unsigned int& count);
+	virtual void SetShaderParameterMatrix(const unsigned int& index, const float* pData, const unsigned int& rows, const unsigned int& columns);
 	
-	virtual IIndexBuffer* GetIndexBuffer(void);
+	virtual IIndexBuffer* GetIndexBuffer() const;
 	virtual void SetIndexBuffer(IIndexBuffer* indexBuffer);
 	
-	virtual IVertexBuffer* GetVertexBuffer(void);
+	virtual IVertexBuffer* GetVertexBuffer() const;
 	virtual void SetVertexBuffer(IVertexBuffer* vertexBuffer);
 
 	// Drawing
-	virtual void Clear(int color);
-	virtual void Draw(void);
-	virtual void DrawIndices(unsigned int startIndex, unsigned int numIndices);
+	virtual void Clear(const float& r, const float& g, const float& b, const float& a);
+	virtual void Draw();
+	virtual void DrawIndices(const unsigned int& startIndex, const unsigned int& numIndices);
+
+	
+	// Resource Management
+	void AddResource(IOGL20Resource* resource);
+	void RemoveResource(IOGL20Resource* resource);
 
 private:
 	
@@ -189,17 +181,13 @@ private:
 	void printLog(GLuint obj);
 
 	// Device creation
-	void CreateDevice(void);
-	void CreateInternalWindow(void);
-
-	// Resource Management
-	void AddResource(IOGL20Resource* resource);
-	void RemoveResource(IOGL20Resource* resource);
+	void CreateDevice();
+	void CreateInternalWindow();
 
 	// Drawing Graphics
-	virtual void BeginScene(void);
-	virtual void EndScene(void);
-	virtual void SetRenderStates(void);
+	virtual void BeginScene();
+	virtual void EndScene();
+	virtual void SetRenderStates();
 	
 };
 }

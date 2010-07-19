@@ -24,92 +24,82 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef AURORA_IDX9WINDOWRENDERTARGET_H
-#define AURORA_IDX9WINDOWRENDERTARGET_H
+#ifndef AURORA_IOGL20WINDOWRENDERTARGET_H
+#define AURORA_IOGL20WINDOWRENDERTARGET_H
 
 #include "../IWindowRenderTarget.h"
-#include "DX9GraphicsService.h"
-#include "internal/IDX9Resource.h"
-#include <map>
+#include "OGL20GraphicsService.h"
+#include "internal/IOGL20Resource.h"
+#include "internal/IOGL20RenderTarget.h"
+#include <Windows.h>
+#include <GL/gl.h>
 
 namespace mini3d
 {
-class DX9DepthStencil;
-class DX9WindowRenderTarget : public IWindowRenderTarget, public IDX9RenderTarget, public IDX9Resource
+class OGL20DepthStencil;
+class OGL20WindowRenderTarget : public IWindowRenderTarget, public IOGL20RenderTarget, public IOGL20Resource
 {
-// TODO: Public and private
-
 
 public:
 
 	// ::::: Constructor & Destructor :::::::::::::::::::::::::::::::::::::::::
 
-	DX9WindowRenderTarget(DX9GraphicsService* pGraphicsService, const unsigned int& width, const unsigned int& height, const int& windowHandle, const bool& depthTestEnabled, const Quality& quality);
-	virtual ~DX9WindowRenderTarget(void);
+	OGL20WindowRenderTarget(OGL20GraphicsService* pGraphicsService, const unsigned int& width, const unsigned int& height, const int& windowHandle, const bool& depthTestEnabled, const Quality& quality);
+	virtual ~OGL20WindowRenderTarget(void);
 
 
 	// ::::: IWindowRenderTarget ::::::::::::::::::::::::::::::::::::::::::::::
 
 	virtual void SetWindowRenderTarget(const unsigned int& width, const unsigned int& height, const int& windowHandle, const bool& depthTestEnabled, const Quality& quality);
-
+	
 	virtual unsigned int GetWidth() const { return width; };
 	virtual unsigned int GetHeight() const { return height; };
 	virtual void SetSize(const int& width, const int& height);
 	
 	virtual bool GetDepthTestEnabled() const { return depthTestEnabled; };
-	virtual Quality GetQuality() const { return quality; }
+	virtual Quality GetQuality() const { return quality; };
 	virtual int GetWindowHandle() const { return hWindow; };
 
 	virtual void Display();
 
-	
-	// ::::: IDX9Resource :::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+	// ::::: IOGL20Resource :::::::::::::::::::::::::::::::::::::::::::::::::::
 
 	void LoadResource();
 	void UnloadResource();
 	bool GetIsDirty() const { return isDirty; }
 
-
-	// ::::: IDX9RenderTarget :::::::::::::::::::::::::::::::::::::::::::::::::
-
-	virtual bool GetFullscreenCompatible(void) const { return false; };
-	virtual bool GetWindowedCompatible(void) const { return true; };
 	
-	IDirect3DSurface9*  GetRenderTargetBuffer(void) const { return pRenderTargetSurface; }
-	virtual IDepthStencil* GetDepthStencil(void) const { return pDepthStencil; }
+	// ::::: IOGL20RenderTarget :::::::::::::::::::::::::::::::::::::::::::::::
 
-
-private:
-
-	// ::::: Private Methods :::::::::::::::::::::::::::::::::::::::::::::::::::
-
-	static LRESULT CALLBACK HookWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
+	HDC  GetRenderTargetBuffer(void) const { return hDeviceContext; }
+	GLuint GetDepthStencil(void) const { return pDepthStencil; }
 
 private:
 
 	// ::::: Private Member Varaibles :::::::::::::::::::::::::::::::::::::::::
 
-	DX9GraphicsService* pGraphicsService;
-	IDirect3DSwapChain9* pScreenRenderTarget;
-	IDepthStencil* pDepthStencil;
+	OGL20GraphicsService* pGraphicsService;
 
-	IDirect3DSurface9* pRenderTargetSurface;
+	HDC hDeviceContext;
+	GLuint pDepthStencil;
 
-	int width;
-	int height;
+	unsigned int width;
+	unsigned int height;
 	int hWindow;
+
 	bool depthTestEnabled;
 	Quality quality;
-	WNDPROC pOrigProc;
 
-	static std::map<int, DX9WindowRenderTarget*> windowMap;
-
-	int bufferWidth;
-	int bufferHeight;
+	// TODO: Fix this with power of 2 comparison agains width, height...
+	unsigned int bufferWidth;
+	unsigned int bufferHeight;
+	
 	int hBufferWindow;
 	int bufferDepthTestEnabled;
-	
+
+	GLuint pScreenRenderTarget;
+
 	bool isDirty;
 
 };

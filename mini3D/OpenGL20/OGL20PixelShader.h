@@ -29,7 +29,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 #include "../IPixelShader.h"
 #include "internal/IOGL20Resource.h"
-#include <vector>
 #include <Windows.h>
 #include <GL/gl.h>
 
@@ -41,31 +40,52 @@ class OGL20PixelShader : IPixelShader, IOGL20Resource
 	friend class OGL20GraphicsService;
 	friend class OGL20ShaderProgram;
 
-private:
-	// Indices
-	ShaderBytes shaderBytes_;
-
-	// Buffer
-	GLuint pShaderBuffer_;
-	bool isDirty_;
-
-	// GraphicsDevice link
-	OGL20GraphicsService* pGraphicsService_;
-
 public:
-	OGL20PixelShader(OGL20GraphicsService* graphicsService, const ShaderBytes& shaderBytes);
+	
+	// ::::: Constructor & Destructor :::::::::::::::::::::::::::::::::::::::::
+	
+	OGL20PixelShader(OGL20GraphicsService* graphicsService, const void* pShaderBytes, const unsigned int& sizeInBytes);
 	~OGL20PixelShader(void);
 
-	ShaderBytes GetPixelShader() { return shaderBytes_; };
 
-private:
-	inline GLuint GetPixelShaderBuffer(void) { return pShaderBuffer_; }
-	void printLog(GLuint obj);
+	// ::::: IPixelShader :::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-	// IOGL20Resource
+	void* GetPixelShader(unsigned int& sizeInBytes) { sizeInBytes = this->sizeInBytes; return pShaderBytes; };
+
+
+	// ::::: IDX9Resource :::::::::::::::::::::::::::::::::::::::::::::::::::::
+
 	void LoadResource(void);
 	void UnloadResource(void);
-	bool GetIsDirty(void) { return isDirty_; };
+	bool GetIsDirty(void) const { return isDirty; };
+
+
+	// ::::: Public Methods :::::::::::::::::::::::::::::::::::::::::::::::::::
+
+	inline GLuint GetPixelShaderBuffer(void) { return pShaderBuffer; }
+	void printLog(GLuint obj);
+
+
+private:
+
+	
+	// ::::: Private Member Varaibles :::::::::::::::::::::::::::::::::::::::::
+
+	// GraphicsDevice link
+	OGL20GraphicsService* pGraphicsService;
+
+	// Indices
+	void* pShaderBytes;
+
+	// Number of bytes in shaderBytes array
+	unsigned int sizeInBytes;
+
+	// Buffer
+	GLuint pShaderBuffer;
+
+	// Keps track of the state of the resource
+	bool isDirty;
+
 };
 }
 

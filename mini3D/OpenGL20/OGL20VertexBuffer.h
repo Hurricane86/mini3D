@@ -39,42 +39,62 @@ class OGL20VertexBuffer :	public IVertexBuffer, public IOGL20Resource
 {
 friend class OGL20GraphicsService;
 
+public:
+
+	// ::::: Constructor & Destructor :::::::::::::::::::::::::::::::::::::::::
+
+	OGL20VertexBuffer(OGL20GraphicsService* pGraphicsService, const void* pVertices, const unsigned int& count, const unsigned int& vertexSizeInBytes);
+	~OGL20VertexBuffer(void);
+
+
+	// ::::: IVertexBuffer ::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+	virtual void* GetVertices(unsigned int& sizeInBytes) const;
+	virtual void SetVertices(const void* pVertices, const unsigned int& count, const unsigned int& vertexSizeInBytes);
+
+	virtual void* Lock(unsigned int& sizeInBytes) const;
+	virtual void Unlock(const bool& dataIsChanged);
+
+	virtual unsigned int GetVertexCount() const { return sizeInBytes / vertexSizeInBytes; };
+	virtual unsigned int GetVertexSizeInBytes() const { return vertexSizeInBytes; };
+
+
+	// ::::: IDX9Resource :::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+	virtual void LoadResource();
+	virtual void UnloadResource();
+	virtual bool GetIsDirty() const { return isDirty; };
+
+	
+	// ::::: Public Methods :::::::::::::::::::::::::::::::::::::::::::::::::::
+
+	GLuint GetVertexBuffer() const { return pVertexBuffer; };
+
+
 private:
+
+	// ::::: Private Methods :::::::::::::::::::::::::::::::::::::::::::::::::::
+
+	void UnloadVertices(void);
+
+
+private:
+
+	// ::::: Private Member Variables :::::::::::::::::::::::::::::::::::::::::
+
+	// GraphicsDevice link
+	OGL20GraphicsService* pGraphicsService;
+
 	// vertices
 	void* pVertices;
 	unsigned int sizeInBytes;
 	unsigned int vertexSizeInBytes;
-	VertexDeclarationVector vertexDeclaration;
 	
 	// Buffer
 	GLuint pVertexBuffer;
 	int bufferSizeInBytes;
 	bool isDirty;
 
-	// GraphicsDevice link
-	OGL20GraphicsService* pGraphicsService;
-
-private:
-	void UnloadVertices(void);
-	GLuint GetVertexBuffer();
-	unsigned int GetVertexSizeInBytes(void);
-	void SetVertexDeclaration(const VertexDeclarationVector& vertexDeclaration);
-
-public:
-	OGL20VertexBuffer(void);
-	OGL20VertexBuffer(OGL20GraphicsService* pGraphicsService, void* pVertices, unsigned int count, const VertexDeclarationVector& vertexDeclaration);
-	~OGL20VertexBuffer(void);
-
-	virtual void SetVertices(void* vertices, unsigned int count,const VertexDeclarationVector& vertexDeclaration);
-	virtual void* GetVertices(unsigned int& count, VertexDeclarationVector& vertexDeclaration);
-	
-	unsigned int GetVertexCount(void);
-	virtual VertexDeclarationVector GetVertexDeclaration();
-
-	// IResource
-	virtual void LoadResource(void);
-	virtual void UnloadResource(void);
-	virtual bool GetIsDirty(void);
 };
 }
 

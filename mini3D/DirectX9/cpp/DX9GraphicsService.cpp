@@ -955,7 +955,7 @@ void mini3d::DX9GraphicsService::DrawIndices(const unsigned int& startIndex, con
 }
 
 // Clear
-void mini3d::DX9GraphicsService::Clear(const int& color)
+void mini3d::DX9GraphicsService::Clear(const float& r, const float& g, const float& b, const float& a)
 {
 
 	DWORD flags = D3DCLEAR_TARGET;
@@ -965,7 +965,11 @@ void mini3d::DX9GraphicsService::Clear(const int& color)
 	{
 		flags |= D3DCLEAR_ZBUFFER;
 	}
-	pDevice->Clear(0, 0, flags, (DWORD)color, 1.0f, 0);
+
+	// Pack the color into bits.
+	DWORD color = ((int)a * 255) & ((int)r * 255) << 8 & ((int)g * 255) << 16 & ((int)b * 255)<<24;
+
+	pDevice->Clear(0, 0, flags, color, 1.0f, 0);
 }
 
 

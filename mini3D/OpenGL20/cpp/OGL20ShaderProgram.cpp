@@ -31,7 +31,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include <sstream>
 
 mini3d::OGL20ShaderProgram::OGL20ShaderProgram(OGL20GraphicsService* pGraphicsService, IVertexShader* pVertexShader, IPixelShader* pPixelShader) :
-	pGraphicsService_(pGraphicsService), pVertexShader(pVertexShader), pPixelShader(pPixelShader), hProgram(0)
+	pGraphicsService(pGraphicsService), pVertexShader(pVertexShader), pPixelShader(pPixelShader), hProgram(0)
 {
 	LoadResource();
 	pGraphicsService->AddResource(this);
@@ -40,7 +40,7 @@ mini3d::OGL20ShaderProgram::OGL20ShaderProgram(OGL20GraphicsService* pGraphicsSe
 mini3d::OGL20ShaderProgram::~OGL20ShaderProgram(void)
 {
 	UnloadResource();
-	pGraphicsService_->RemoveResource(this);
+	pGraphicsService->RemoveResource(this);
 }
 
 void mini3d::OGL20ShaderProgram::LoadResource(void)
@@ -131,7 +131,7 @@ void mini3d::OGL20ShaderProgram::LoadResource(void)
 	delete[] name;
 	// END Attrib information
 
-	isDirty_ = false;
+	isDirty = false;
 }
 
 void mini3d::OGL20ShaderProgram::UnloadResource(void)
@@ -142,14 +142,14 @@ void mini3d::OGL20ShaderProgram::UnloadResource(void)
 		PFNGLDELETEPROGRAMPROC glDeleteProgram = (PFNGLDELETEPROGRAMPROC)wglGetProcAddress("glDeleteProgram");
 
 		// if this is the currently loaded pixel shader, release it
-		if (pGraphicsService_->GetShaderProgram() == this)
-			pGraphicsService_->SetShaderProgram(0);
+		if (pGraphicsService->GetShaderProgram() == this)
+			pGraphicsService->SetShaderProgram(0);
 
 		glDeleteProgram(hProgram);
 		hProgram  = 0;
 	}
 
-	isDirty_ = true;
+	isDirty = true;
 }
 
 void mini3d::OGL20ShaderProgram::printLog(GLuint obj)

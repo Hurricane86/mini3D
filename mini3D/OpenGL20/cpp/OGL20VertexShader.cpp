@@ -32,80 +32,100 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include <sstream>
 
 
-mini3d::OGL20VertexShader::OGL20VertexShader(OGL20GraphicsService* pGraphicsService, const ShaderBytes& shaderBytes, const VertexDeclarationVector& vertexDeclaration) :
-	pGraphicsService_(pGraphicsService), shaderBytes_(shaderBytes), pShaderBuffer_(0), vertexDeclaration_(vertexDeclaration)
+mini3d::OGL20VertexShader::OGL20VertexShader(OGL20GraphicsService* pGraphicsService, const void* pShaderBytes, const unsigned int& sizeInBytes, const IVertexShader::VertexDataType vertexDeclaration[], const unsigned int& vertexDataCount) :
+	pGraphicsService(pGraphicsService), pShaderBuffer(0), vertexAttributes(0)
 {
+	// Vertex shader data
+	this->sizeInBytes = sizeInBytes;
+
+	this->pShaderBytes = malloc(sizeInBytes);
+	memcpy(this->pShaderBytes, pShaderBytes, sizeInBytes);
+
+	// VertexDeclaration
+	this->vertexDataCount = vertexDataCount;
+
+	this->vertexDeclaration = new VertexDataType[vertexDataCount];
+	memcpy(this->vertexDeclaration, vertexDeclaration, vertexDataCount * sizeof(VertexDataType));
+
 	LoadResource();
 	pGraphicsService->AddResource(this);
+}
+
+mini3d::IVertexShader::VertexDataType* mini3d::OGL20VertexShader::GetVertexDeclaration(unsigned int& vertexDataCount) const
+{ 
+	vertexDataCount = this->vertexDataCount;
+	unsigned int sizeInBytes = this->vertexDataCount * sizeof(VertexDataType);
+
+	VertexDataType* pVertexDeclarationCopy = new IVertexShader::VertexDataType[sizeInBytes]; 
+	memcpy(pVertexDeclarationCopy, vertexDeclaration, sizeInBytes);
+	
+	return pVertexDeclarationCopy;
 }
 
 mini3d::OGL20VertexShader::~OGL20VertexShader(void)
 {
 	UnloadResource();
-	pGraphicsService_->RemoveResource(this);
+	pGraphicsService->RemoveResource(this);
+
+	free(pShaderBytes);
+	delete[] vertexDeclaration;
 }
 
 void mini3d::OGL20VertexShader::LoadResource(void)
 {
-
 	PFNGLCREATESHADERPROC glCreateShader = (PFNGLCREATESHADERPROC)wglGetProcAddress("glCreateShader");
 	PFNGLSHADERSOURCEPROC glShaderSource = (PFNGLSHADERSOURCEPROC)wglGetProcAddress("glShaderSource");
 	PFNGLCOMPILESHADERPROC glCompileShader = (PFNGLCOMPILESHADERPROC)wglGetProcAddress("glCompileShader");
 
 	// If the buffer exists tear it down.
-	if (pShaderBuffer_ != 0)
+	if (pShaderBuffer != 0)
 	{
 		UnloadResource();
 	}
 
-	pShaderBuffer_ = glCreateShader(GL_VERTEX_SHADER);
+	pShaderBuffer = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(pShaderBuffer, 1, (const GLchar**)&pShaderBytes, (const GLint*)&sizeInBytes);
+	glCompileShader(pShaderBuffer);
 
-	std::vector<char> shaderBytes(shaderBytes_);
-	shaderBytes.push_back(0); // add a null termination character
-	const GLchar* pShaderBytes = &(shaderBytes[0]);
-
-	glShaderSource(pShaderBuffer_, 1, &pShaderBytes, NULL);
-	glCompileShader(pShaderBuffer_);
-
-	printLog(pShaderBuffer_);
-	isDirty_ = false;
+	printLog(pShaderBuffer);
+	isDirty = false;
 
 	// update the vertex Attributes
 	CreateOGL20VertexAttributes();
 
+	// TODO: What about this one and the one below?
 	// load the vertex declaration into the pool
-//	pGraphicsService_->PoolVertexDeclaration(vertexDeclaration_);
+	//pGraphicsService->PoolVertexDeclaration(vertexDeclaration);
 }
 
 void mini3d::OGL20VertexShader::UnloadResource(void)
 {
-	if (pShaderBuffer_ != 0)
+	if (pShaderBuffer != 0)
 	{
-
 		PFNGLDELETESHADERPROC glDeleteShader = (PFNGLDELETESHADERPROC)wglGetProcAddress("glDeleteShader");
 
 		// if this is the currently loaded pixel shader, release it
 		//if (pGraphicsService_->GetVertexShader() == this)
 		//	pGraphicsService_->SetVertexShader(0);
 
-		glDeleteShader(pShaderBuffer_);
-		pShaderBuffer_ = 0;
+		glDeleteShader(pShaderBuffer);
+		pShaderBuffer = 0;
 	}
 
-	isDirty_ = true;
+	isDirty = true;
 
+	// TODO: What about this one and the one above?
 	// remove the vertex declaration from the pool
-//	pGraphicsService_->ReleaseVertexDeclaration(vertexDeclaration_);
+	// pGraphicsService_->ReleaseVertexDeclaration(vertexDeclaration_);
 
 }
 
 void mini3d::OGL20VertexShader::CreateOGL20VertexAttributes()
 {
-	// It is not already pooled, we need to create a new one
-	int count = vertexDeclaration_.size();
+	if (vertexAttributes != 0)
+		delete[] vertexAttributes;
 
-	vertexAttributes.clear();
-	vertexAttributes.resize(count);
+	vertexAttributes = new OGL20VertexAttribute[vertexDataCount];
 
 	// cumulative offset for the vertexelements
 	int offset = 0;
@@ -115,15 +135,14 @@ void mini3d::OGL20VertexShader::CreateOGL20VertexAttributes()
 	int colorUsageIndex = 0;
 
 
-	for (int i = 0; i < count; i++)
+	for (unsigned int i = 0; i < vertexDataCount; i++)
 	{
-
 		// these are the same for all
 		vertexAttributes[i].index = i;
 		vertexAttributes[i].pointer = (GLvoid*)offset;
 		
 		// set the specific parameters
-		switch (vertexDeclaration_[i])
+		switch (vertexDeclaration[i])
 		{
 				
 		case IVertexShader::POSITION_FLOAT4:
@@ -147,9 +166,8 @@ void mini3d::OGL20VertexShader::CreateOGL20VertexAttributes()
 		}
 	}
 
-	for (int i = 0; i < count; i++)
+	for (unsigned int i = 0; i < vertexDataCount; i++)
 		vertexAttributes[i].stride = offset;
-
 }
 
 

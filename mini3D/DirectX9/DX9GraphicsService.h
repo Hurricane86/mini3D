@@ -208,14 +208,14 @@ public:
 	virtual void SetShaderParameterInt(const unsigned int& index, const int* pData, const unsigned int& count);
 	virtual void SetShaderParameterMatrix(const unsigned int& index, const float* pData, const unsigned int& rows, const unsigned int& columns);
 	
-	virtual IIndexBuffer* GetIndexBuffer(void) const;
+	virtual IIndexBuffer* GetIndexBuffer() const;
 	virtual void SetIndexBuffer(IIndexBuffer* indexBuffer);
 	
-	virtual IVertexBuffer* GetVertexBuffer(void) const;
+	virtual IVertexBuffer* GetVertexBuffer() const;
 	virtual void SetVertexBuffer(IVertexBuffer* vertexBuffer);
 
 	// Drawing
-	virtual void Clear(const int& color);
+	virtual void Clear(const float& r, const float& g, const float& b, const float& a);
 	virtual void Draw();
 	virtual void DrawIndices(const unsigned int& startIndex, const unsigned int& numIndices);
 

@@ -41,53 +41,82 @@ class OGL20BitmapTexture : public IBitmapTexture, public IOGL20Texture, public I
 friend class OGL20GraphicsService;
 
 public:
-	// IBitmapTexture
-	virtual void* GetBitmap(unsigned int& width, unsigned int& height, IBitmapTexture::BitDepth& bitDepth, ITexture::WrapStyle& wrapStyle);
-	virtual void SetBitmap(void* pBitmap, unsigned int width, unsigned int height, IBitmapTexture::BitDepth bitDepth = IBitmapTexture::BIT_32, ITexture::WrapStyle wrapStyle = ITexture::WRAP_TILE);
+
+	// ::::: Constructor & Destructor :::::::::::::::::::::::::::::::::::::::::
+
+	OGL20BitmapTexture(OGL20GraphicsService* graphicsService, const void* pBitmap, const unsigned int& width, const unsigned int& height, const IBitmapTexture::BitDepth bitDepth = IBitmapTexture::BIT_32, const ITexture::WrapStyle wrapStyle = ITexture::WRAP_TILE);
+	~OGL20BitmapTexture();
+
+	// ::::: IBitmapTexture :::::::::::::::::::::::::::::::::::::::::::::::::::
 	
-	virtual unsigned int GetWidth(void);
-	virtual unsigned int GetHeight(void);
-	virtual WrapStyle GetWrapStyle(void);
-	virtual BitDepth GetBitDepth(void);
+	virtual void* GetBitmap(unsigned int& sizeInBytes) const;
+	virtual void SetBitmap(const void* pBitmap, const unsigned int& width, const unsigned int& height, const IBitmapTexture::BitDepth bitDepth = IBitmapTexture::BIT_32, const ITexture::WrapStyle wrapStyle = ITexture::WRAP_TILE);
 
-	//Constructor
-	OGL20BitmapTexture(OGL20GraphicsService* graphicsService, void* pBitmap, unsigned int width, unsigned int height, IBitmapTexture::BitDepth bitDepth = IBitmapTexture::BIT_32, ITexture::WrapStyle wrapStyle = ITexture::WRAP_TILE);
+	virtual void* Lock(unsigned int& sizeInBytes) const;
+	virtual void Unlock(const bool& dataIsChanged);
 
-	// Destructor
-	~OGL20BitmapTexture(void);
+	inline unsigned int GetWidth() const { return width; };
+	inline unsigned int GetHeight() const { return height; };
 
+	inline WrapStyle GetWrapStyle() const { return wrapStyle; };
+	virtual void SetWrapStyle(const WrapStyle& wrapStyle) { this->wrapStyle = wrapStyle; };
+
+	inline BitDepth GetBitDepth() const { return bitDepth; };
+
+
+	// ::::: IOGL20Resource :::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+	virtual void LoadResource();
+	virtual void UnloadResource();
+	virtual bool GetIsDirty() const { return isDirty; };
+
+	
+	// ::::: Public Methods :::::::::::::::::::::::::::::::::::::::::::::::::::
+
+	virtual GLuint GetTextureBuffer() const { return pTexture; };
 
 
 private:
-	// Accessed by Graphics Service	
-	virtual GLuint GetTextureBuffer(void);
-	
-	// unload the bitmap data
-	void UnloadBitmap(void);
 
-	// IOGL20Resource
-	virtual void LoadResource(void);
-	virtual void UnloadResource(void);
-	virtual bool GetIsDirty(void);
+	// ::::: Private Methods ::::::::::::::::::::::::::::::::::::::::::::::::::
+	
+	void UnloadBitmap();
+
 
 private:
-	// Bitmap
+
+	// ::::: Private Member Varaibles :::::::::::::::::::::::::::::::::::::::::
+
+	// GraphicsDevice link
+	OGL20GraphicsService* pGraphicsService;
+
+
+	// Pointer to the bitmap data
 	void* pBitmap;
-	int width;
-	int height;
+
+	// Size of the bitmap
+	unsigned int width;
+	unsigned int height;
+	
+	// Size of the bitmap buffer in bytes
+	unsigned int sizeInBytes;
+
+	// wrapstyle
 	ITexture::WrapStyle wrapStyle;
+
+	//Bitdepth
 	IBitmapTexture::BitDepth bitDepth;
 	
 	// Buffer
 	GLuint pTexture;
 	
 	// TODO: Fix this with power of 2 comparison agains width, height...
-	int bufferWidth;
-	int bufferHeight;
+	unsigned int bufferWidth;
+	unsigned int bufferHeight;
+	
+	// Keeps track of the state of the resource
 	bool isDirty;
 
-	// GraphicsDevice link
-	OGL20GraphicsService* pGraphicsService;
 
 };
 }

@@ -37,7 +37,7 @@ public:
 
 	virtual ~IFullscreenRenderTarget() {};
 
-	virtual void SetFullScreenRenderTarget(const unsigned int& width,const  unsigned int& height,const  int& windowHandle,const  bool& depthTestEnabled,const  Quality& quality) = 0;
+	virtual void SetFullscreenRenderTarget(const unsigned int& width,const  unsigned int& height,const  int& windowHandle,const  bool& depthTestEnabled,const  Quality& quality) = 0;
 	
 	virtual unsigned int GetWidth() const = 0;
 	virtual unsigned int GetHeight() const = 0;

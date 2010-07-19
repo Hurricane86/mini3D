@@ -33,11 +33,11 @@ class IOGL20Resource
 {
 public:
 
-	virtual ~IOGL20Resource(void) {};
+	virtual ~IOGL20Resource() {};
 
-	virtual void LoadResource(void) = 0;
-	virtual void UnloadResource(void) = 0;
-	virtual bool GetIsDirty(void) = 0;
+	virtual void LoadResource() = 0;
+	virtual void UnloadResource() = 0;
+	virtual bool GetIsDirty() const = 0;
 };
 }
 

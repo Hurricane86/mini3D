@@ -68,11 +68,11 @@ void mini3d::DX9IndexBuffer::SetIndices(const void* pIndices, const unsigned int
 	LoadResource();	
 }
 
-void mini3d::DX9IndexBuffer::UnloadIndices(void)
+void mini3d::DX9IndexBuffer::UnloadIndices()
 {
 	if (pIndices != 0)
 	{
-		operator delete(pIndices);
+		free(pIndices);
 
 		pIndices = 0;
 		sizeInBytes = 0;

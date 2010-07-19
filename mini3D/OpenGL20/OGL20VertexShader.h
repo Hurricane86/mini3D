@@ -29,60 +29,78 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 #include "../IVertexShader.h"
 #include "OGL20GraphicsService.h"
-#include <vector>
 #include <Windows.h>
 #include <GL/gl.h>
 
 namespace mini3d
 {
 
-	struct OGL20VertexAttribute
-	{
-		GLuint index;
-		GLint size;
-		GLenum type;
-		GLboolean normalized;
-		GLsizei stride;
-		GLvoid* pointer;
-	};
+struct OGL20VertexAttribute
+{
+	GLuint index;
+	GLint size;
+	GLenum type;
+	GLboolean normalized;
+	GLsizei stride;
+	GLvoid* pointer;
+};
 
 class OGL20VertexShader : IVertexShader, IOGL20Resource
 {
 	friend class OGL20GraphicsService;
-	friend class OGL20ShaderProgram;
-
-private:
-	// Indices
-	ShaderBytes shaderBytes_;
-	VertexDeclarationVector vertexDeclaration_;
-
-	typedef std::vector<OGL20VertexAttribute> VertexAttributeVector;
-	VertexAttributeVector vertexAttributes;
-	
-	// Buffer
-	GLuint pShaderBuffer_;
-	bool isDirty_;
-
-	// GraphicsDevice link
-	OGL20GraphicsService* pGraphicsService_;
 
 public:
-	OGL20VertexShader(OGL20GraphicsService* pGraphicsService, const ShaderBytes& shaderBytes, const VertexDeclarationVector& vertexDeclaration);
+	// ::::: Constructor & Destructor :::::::::::::::::::::::::::::::::::::::::
+
+
+public:
+	OGL20VertexShader(OGL20GraphicsService* pGraphicsService, const void* shaderBytes, const unsigned int& sizeInBytes, const VertexDataType vertexDeclaration[], const unsigned int& vertexDataCount);
 	~OGL20VertexShader(void);
 
-	virtual ShaderBytes GetVertexShader(void) { return shaderBytes_; };
-	virtual VertexDeclarationVector GetVertexDeclaration(void) { return vertexDeclaration_; };
-	VertexAttributeVector GetVertexAttributes(void) { return vertexAttributes; };
+	virtual void* GetVertexShader(unsigned int& sizeInBytes) const { sizeInBytes = this->sizeInBytes; return pShaderBytes; }
+	virtual VertexDataType* GetVertexDeclaration(unsigned int& vertexDataCount) const;
+	
+	
+	// ::::: IOGL20Resource :::::::::::::::::::::::::::::::::::::::::::::::::::
+
+	virtual void LoadResource();
+	virtual void UnloadResource();
+	virtual bool GetIsDirty() const { return isDirty; };
+
+	
+	// ::::: Public Methods :::::::::::::::::::::::::::::::::::::::::::::::::::
+
+	virtual GLuint GetVertexShaderBuffer(void) { return pShaderBuffer; };
+	virtual OGL20VertexAttribute* GetVertexAttributes(unsigned int& vertexAttributeCount) { vertexAttributeCount = vertexDataCount; return vertexAttributes; };
 
 private:
+
+	// ::::: Private Methods ::::::::::::::::::::::::::::::::::::::::::::::::::
+
 	void CreateOGL20VertexAttributes();
-	virtual GLuint GetVertexShaderBuffer(void) { return pShaderBuffer_; };
-	
 	void printLog(GLuint obj);
-	// IOGL20Resource
-	virtual void LoadResource(void);
-	virtual void UnloadResource(void);
-	virtual bool GetIsDirty(void) { return isDirty_; };
+
+
+private:
+
+	// ::::: Private Member Varaibles :::::::::::::::::::::::::::::::::::::::::
+
+	// Indices
+	void* pShaderBytes;
+	unsigned int sizeInBytes;
+
+	VertexDataType* vertexDeclaration;
+	unsigned int vertexDataCount;
+
+	OGL20VertexAttribute* vertexAttributes;
+	
+	// Buffer
+	GLuint pShaderBuffer;
+	bool isDirty;
+
+	// GraphicsDevice link
+	OGL20GraphicsService* pGraphicsService;
+
 };
 }
 

@@ -43,7 +43,7 @@ public:
 	// ::::: Constructor & Destructor :::::::::::::::::::::::::::::::::::::::::
 	
 	DX9IndexBuffer(DX9GraphicsService* graphicsService, const void* pIndices, const unsigned int& count, const DataType& dataType = INT_16, const CullMode& cullMode = CULL_COUNTERCLOCKWIZE);
-	~DX9IndexBuffer(void);
+	~DX9IndexBuffer();
 
 
 	// ::::: IIndexBuffer :::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -69,7 +69,7 @@ public:
 	
 	// ::::: Public Methods :::::::::::::::::::::::::::::::::::::::::::::::::::
 
-	virtual IDirect3DIndexBuffer9* GetIndexBuffer(void) { return pIndexBuffer; };
+	virtual IDirect3DIndexBuffer9* GetIndexBuffer() { return pIndexBuffer; };
 
 
 private:

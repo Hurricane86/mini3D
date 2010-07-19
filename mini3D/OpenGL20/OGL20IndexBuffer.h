@@ -35,41 +35,77 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 namespace mini3d
 {
-class OGL20IndexBuffer : IIndexBuffer, IOGL20Resource
+class OGL20IndexBuffer : public IIndexBuffer, public IOGL20Resource
 {
 
-	friend class OGL20GraphicsService;
+
+public:
+
+	// ::::: Constructor & Destructor :::::::::::::::::::::::::::::::::::::::::
+
+	OGL20IndexBuffer(OGL20GraphicsService* graphicsService, const void* pIndices, const unsigned int& count, const DataType& dataType = INT_16, const CullMode& cullMode = CULL_COUNTERCLOCKWIZE);
+	~OGL20IndexBuffer();
+
+
+	// ::::: IIndexBuffer :::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+	virtual void* GetIndices(unsigned int& sizeInBytes) const;
+	virtual void SetIndices(const void* pIndices, const unsigned int& count, const DataType& dataType = INT_16, const CullMode& cullMode = CULL_COUNTERCLOCKWIZE);
+	
+	virtual void* Lock(unsigned int& sizeInBytes) const;
+	virtual void Unlock(const bool& dataIsChanged);
+
+	virtual unsigned int GetIndexCount() const { return indexCount; };
+	
+	virtual CullMode GetCullMode() const { return cullMode; };
+	virtual void SetCullMode(const CullMode& cullMode) { this->cullMode = cullMode; };
+
+
+	// ::::: IOGL20Resource :::::::::::::::::::::::::::::::::::::::::::::::::::
+
+	virtual void LoadResource();
+	virtual void UnloadResource();
+	virtual bool GetIsDirty() const { return isDirty; };
+
+
+	// ::::: Public Methods :::::::::::::::::::::::::::::::::::::::::::::::::::
+
+	virtual GLuint GetIndexBuffer() { return pIndexBuffer; };
+	
 
 private:
-	// Indices
-	void* pIndices;
-	int sizeInBytes;
 	
-	// Buffer
-	GLuint pIndexBuffer;
-	int bufferSizeInBytes;
-	bool isDirty;
+	// ::::: Private Methods ::::::::::::::::::::::::::::::::::::::::::::::::::
 
+	void UnloadIndices();
+
+private:
+	
 	// GraphicsDevice link
 	OGL20GraphicsService* pGraphicsService;
 
-private:
-	virtual GLuint GetIndexBuffer(void);
-	void UnloadIndices(void);
+	// Buffer
+	GLuint pIndexBuffer;
+	int bufferSizeInBytes;
 
-public:
-	OGL20IndexBuffer(OGL20GraphicsService* graphicsService, void* pIndices, unsigned int count);
-	~OGL20IndexBuffer(void);
-
-	virtual void SetIndices(void* pIndices, unsigned int count);
-	virtual void* GetIndices(unsigned int& count);
-	virtual unsigned int GetIndexCount(void);
+	// Indices
+	void* pIndices;
 	
+	// size of index buffer in bytes
+	int sizeInBytes;
 
-	// IOGL20Resource
-	virtual void LoadResource(void);
-	virtual void UnloadResource(void);
-	virtual bool GetIsDirty(void);
+	// Number of indices in index list
+	unsigned int indexCount;
+
+	// Cullmode for this index buffer
+	CullMode cullMode;
+
+	// Data type of the indices
+	DataType dataType;
+
+	// Keps track of the state of the resource
+	bool isDirty;
+
 };
 }
 

@@ -44,7 +44,7 @@ public:
 	// ::::: Constructor & Destructor :::::::::::::::::::::::::::::::::::::::::
 
 	DX9BitmapTexture(DX9GraphicsService* graphicsService, const void* pBitmap, const unsigned int& width, const unsigned int& height, const IBitmapTexture::BitDepth bitDepth = IBitmapTexture::BIT_32, const ITexture::WrapStyle wrapStyle = ITexture::WRAP_TILE);
-	~DX9BitmapTexture(void);
+	~DX9BitmapTexture();
 
 
 	// ::::: IBitmapTexture :::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -66,20 +66,20 @@ public:
 
 	// ::::: IDX9Resource :::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-	virtual void LoadResource(void);
-	virtual void UnloadResource(void);
-	virtual bool GetIsDirty(void) const { return isDirty; };
+	virtual void LoadResource();
+	virtual void UnloadResource();
+	virtual bool GetIsDirty() const { return isDirty; };
 
 
 	// ::::: Public Methods :::::::::::::::::::::::::::::::::::::::::::::::::::
-	virtual IDirect3DTexture9* GetTextureBuffer(void) const { return pTexture; };
+	virtual IDirect3DTexture9* GetTextureBuffer() const { return pTexture; };
 
 
 private:
 
 	// ::::: Private Methods ::::::::::::::::::::::::::::::::::::::::::::::::::
 
-	void UnloadBitmap(void);
+	void UnloadBitmap();
 
 
 private:

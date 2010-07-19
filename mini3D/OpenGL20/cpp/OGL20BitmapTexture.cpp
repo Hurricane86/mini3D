@@ -29,11 +29,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include <GL/wglext.h>
 
 
-mini3d::OGL20BitmapTexture::OGL20BitmapTexture(OGL20GraphicsService* pGraphicsService, void* pBitmap, unsigned int width, unsigned int height, IBitmapTexture::BitDepth bitDepth, ITexture::WrapStyle wrapStyle) :
+mini3d::OGL20BitmapTexture::OGL20BitmapTexture(OGL20GraphicsService* pGraphicsService, const void* pBitmap, const unsigned int& width, const unsigned int& height, const IBitmapTexture::BitDepth bitDepth, const ITexture::WrapStyle wrapStyle) :
 	pGraphicsService(pGraphicsService), bufferWidth(0), bufferHeight(0), pBitmap(0), pTexture(0)
 {
 	SetBitmap(pBitmap, width, height);
-	LoadResource();
 	pGraphicsService->AddResource(this);
 }
 
@@ -43,37 +42,23 @@ mini3d::OGL20BitmapTexture::~OGL20BitmapTexture(void)
 	UnloadBitmap();
 	pGraphicsService->RemoveResource(this);
 }
-GLuint mini3d::OGL20BitmapTexture::GetTextureBuffer(void)
+
+void* mini3d::OGL20BitmapTexture::GetBitmap(unsigned int& sizeInBytes) const
 {
-	return pTexture;
-}
-void* mini3d::OGL20BitmapTexture::GetBitmap(unsigned int& width, unsigned int& height, IBitmapTexture::BitDepth& bitDepth, ITexture::WrapStyle& wrapStyle)
-{
-	void* pReturnBitmap = pBitmap;
-	width = this->width;
-	height = this->height;
-	wrapStyle = this->wrapStyle;
-	bitDepth = this->bitDepth;
+	sizeInBytes = this->sizeInBytes;
+
+	void* pBitmapCopy = malloc(sizeInBytes);
+	memcpy(pBitmapCopy, pBitmap, sizeInBytes);
 	
-
-	// reset the bitmap information because we are "removing" the bitmap from the texture when we get it!
-	this->width = 0;
-	this->height = 0;
-	this->pBitmap = 0;
-
-	wrapStyle = IBitmapTexture::TILE;
-	bitDepth = IBitmapTexture::BIT32;
-
-	this->isDirty = true;
-
-	return pReturnBitmap;
+	return pBitmapCopy;
 }
-void mini3d::OGL20BitmapTexture::SetBitmap(void* pBitmap, unsigned int width, unsigned int height, IBitmapTexture::BitDepth bitDepth, ITexture::WrapStyle wrapStyle)
+void mini3d::OGL20BitmapTexture::SetBitmap(const void* pBitmap, const unsigned int& width, const unsigned int& height, const IBitmapTexture::BitDepth bitDepth, const ITexture::WrapStyle wrapStyle)
 {
 	UnloadBitmap();
 	
-	int sizeInBytes = width * height * 4;  // TODO: Depends on graphics settings
-	this->pBitmap = pBitmap;
+	sizeInBytes = width * height * 4;  // TODO: Depends on graphics settings
+	this->pBitmap = malloc(sizeInBytes);
+	memcpy(this->pBitmap, pBitmap, sizeInBytes);
 
 	this->width = width;
 	this->height = height;
@@ -82,38 +67,39 @@ void mini3d::OGL20BitmapTexture::SetBitmap(void* pBitmap, unsigned int width, un
 	this->bitDepth = bitDepth;
 
 	isDirty = true;
+	LoadResource();
+
 }
 void mini3d::OGL20BitmapTexture::UnloadBitmap(void)
 {
 	if (pBitmap != 0)
-		operator delete(pBitmap);
+	{
+		free(pBitmap);
 
-	pBitmap = 0;
-	width = 0;
-	height = 0;
-	wrapStyle = IBitmapTexture::TILE;
-	bitDepth = IBitmapTexture::BIT32;
+		pBitmap = 0;
+		width = 0;
+		height = 0;
+		sizeInBytes = 0;
+		wrapStyle = IBitmapTexture::WRAP_TILE;
+		bitDepth = IBitmapTexture::BIT_32;
+	}
 }
-unsigned int mini3d::OGL20BitmapTexture::GetWidth(void)
+
+void* mini3d::OGL20BitmapTexture::Lock(unsigned int& sizeInBytes) const
 {
-	return width;
+	sizeInBytes = this->sizeInBytes;
+	return pBitmap;
 }
-unsigned int mini3d::OGL20BitmapTexture::GetHeight(void)
+void mini3d::OGL20BitmapTexture::Unlock(const bool& dataIsChanged)
 {
-	return height;
-}
-mini3d::ITexture::WrapStyle mini3d::OGL20BitmapTexture::GetWrapStyle(void)
-{
-	return wrapStyle;
-}
-mini3d::IBitmapTexture::BitDepth mini3d::OGL20BitmapTexture::GetBitDepth(void)
-{
-	return bitDepth;
+	if (dataIsChanged)
+	{
+		isDirty = true;
+		LoadResource();
+	}
 }
 void mini3d::OGL20BitmapTexture::LoadResource(void)
 {
-	int sizeInBytes = width * height * 4;
-
     if (pBitmap == 0 || sizeInBytes == 0)
     {
 		UnloadResource();
@@ -130,13 +116,13 @@ void mini3d::OGL20BitmapTexture::LoadResource(void)
 
 	switch (bitDepth)
 	{
-	case IBitmapTexture::BIT16:
+	case IBitmapTexture::BIT_16:
 		fmt = GL_RGBA4;
 		break;
-	case IBitmapTexture::BIT32:
+	case IBitmapTexture::BIT_32:
 		fmt = GL_RGBA8;
 		break;
-	case IBitmapTexture::BIT64:
+	case IBitmapTexture::BIT_64:
 		fmt = GL_RGBA16;
 		break;
 	default:
@@ -161,7 +147,8 @@ void mini3d::OGL20BitmapTexture::LoadResource(void)
 	}
 
 	// write bitmap data to texture
-	//glTexSubImage2D(pTexture, 0, 0, 0, width, height, fmt, GL_UNSIGNED_BYTE, pBitmap);
+	//TODO: This instead of doing it above so we can recreate the texture...
+	//glTexSubImage2D(pTexture, 0, 0, 0, width, height, fmt, GL_UNSIGNED_INT_8_8_8_8, pBitmap);
 
 	// Clear the current bound texture
 	glBindTexture(GL_TEXTURE_2D, 0);
@@ -186,7 +173,4 @@ void mini3d::OGL20BitmapTexture::UnloadResource(void)
 
 	isDirty = true;
 }
-bool mini3d::OGL20BitmapTexture::GetIsDirty(void)
-{
-	return isDirty;
-}
+

@@ -65,6 +65,16 @@ public:
 			memcpy((char*)pBitmapData + (row * width * 4), (char*)(bitmapData.Scan0) + (row * bitmapData.Stride), width * 4);
 		}
 		
+		unsigned int size = width * height;
+
+		unsigned int* pPixels = (unsigned int*)pBitmapData;
+
+		//Flip the channel order to RGBA
+		for (unsigned int i = 0; i < size; i++)
+		{
+			pPixels[i] = pPixels[i]<<8 | pPixels[i]>>24;
+		}
+
 		b->UnlockBits(&bitmapData);
 		delete b;
 

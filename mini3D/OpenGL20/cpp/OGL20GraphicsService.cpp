@@ -31,7 +31,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 // Constructor Destructor -----------------------------------------------------
 
-mini3d::OGL20GraphicsService::OGL20GraphicsService(bool isFullscreen) :
+mini3d::OGL20GraphicsService::OGL20GraphicsService() :
 	isFullscreen(isFullscreen),
 	pCurrentDepthStencil(0), isDrawingScene(false), deviceLost(true), lostDeviceCurrentITextures(0), currentITextures(0), pCurrentShaderProgram(0)
 {
@@ -42,7 +42,6 @@ mini3d::OGL20GraphicsService::~OGL20GraphicsService(void)
 {
     wglMakeCurrent( NULL, NULL );
 }
-
 
 
 // Private helper methods -----------------------------------------------------
@@ -150,25 +149,25 @@ void mini3d::OGL20GraphicsService::SetRenderStates()
 
 // Graphics Pipeline States ---------------------------------------------------
 
-int mini3d::OGL20GraphicsService::GetMaxTextures()
+int mini3d::OGL20GraphicsService::GetMaxTextures() const
 {
 	GLint units;
 	glGetIntegerv(GL_MAX_TEXTURE_UNITS, &units);
 
 	return units;
 }
-int mini3d::OGL20GraphicsService::GetMaxTextureSize()
+int mini3d::OGL20GraphicsService::GetMaxTextureSize() const
 {
 	GLint units;
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &units);
 
 	return units;
 }
-int mini3d::OGL20GraphicsService::GetPixelShaderVersion()
+int mini3d::OGL20GraphicsService::GetPixelShaderVersion() const
 {
 	return 0;
 }
-int mini3d::OGL20GraphicsService::GetVertexShaderVersion()
+int mini3d::OGL20GraphicsService::GetVertexShaderVersion() const
 {
 	return 0;
 }
@@ -210,7 +209,7 @@ void mini3d::OGL20GraphicsService::printLog(GLuint obj)
 	delete [] infoLog;
 }
 
-mini3d::IShaderProgram* mini3d::OGL20GraphicsService::GetShaderProgram(void)
+mini3d::IShaderProgram* mini3d::OGL20GraphicsService::GetShaderProgram(void) const
 {
 	return pCurrentShaderProgram;
 }
@@ -230,21 +229,21 @@ void mini3d::OGL20GraphicsService::SetShaderProgram(IShaderProgram* pShaderProgr
 	{
 		OGL20ShaderProgram* pOLG20ShaderProgram = (OGL20ShaderProgram*)pShaderProgram;
 		glUseProgram(pOLG20ShaderProgram->GetProgram());
-	}
-
-	PFNGLENABLEVERTEXATTRIBARRAYPROC glEnableVertexAttribArray = (PFNGLENABLEVERTEXATTRIBARRAYPROC)wglGetProcAddress("glEnableVertexAttribArray");
-	PFNGLVERTEXATTRIBPOINTERPROC glVertexAttribPointer = (PFNGLVERTEXATTRIBPOINTERPROC)wglGetProcAddress("glVertexAttribPointer");
 	
-	// Set the vertexattributes
+		PFNGLENABLEVERTEXATTRIBARRAYPROC glEnableVertexAttribArray = (PFNGLENABLEVERTEXATTRIBARRAYPROC)wglGetProcAddress("glEnableVertexAttribArray");
+		PFNGLVERTEXATTRIBPOINTERPROC glVertexAttribPointer = (PFNGLVERTEXATTRIBPOINTERPROC)wglGetProcAddress("glVertexAttribPointer");
 
-	// todo: clean up
-	OGL20ShaderProgram* pOLG20ShaderProgram = (OGL20ShaderProgram*)pShaderProgram;
-	OGL20VertexShader::VertexAttributeVector vA = ((OGL20VertexShader*)(pOLG20ShaderProgram->pVertexShader))->GetVertexAttributes();
+		// TODO: VertexAttributePool?
 
-	for(int i = 0; i < vA.size(); i++)
-	{
-		glVertexAttribPointer(vA[i].index, vA[i].size, vA[i].type, vA[i].normalized, vA[i].stride, vA[i].pointer);
-		glEnableVertexAttribArray(vA[i].index);
+		// Set the vertexattributes
+		unsigned int vertexAttributeCount;
+		OGL20VertexAttribute* vA = ((OGL20VertexShader*)(pOLG20ShaderProgram->GetVertexShader()))->GetVertexAttributes(vertexAttributeCount);
+
+		for(unsigned int i = 0; i < vertexAttributeCount; i++)
+		{
+			glVertexAttribPointer(vA[i].index, vA[i].size, vA[i].type, vA[i].normalized, vA[i].stride, vA[i].pointer);
+			glEnableVertexAttribArray(vA[i].index);
+		}
 	}
 
 	pCurrentShaderProgram = pShaderProgram;
@@ -314,7 +313,7 @@ void mini3d::OGL20GraphicsService::SetShaderProgram(IShaderProgram* pShaderProgr
 //}
 
 // Texture
-mini3d::ITexture* mini3d::OGL20GraphicsService::GetTexture(unsigned int index)
+mini3d::ITexture* mini3d::OGL20GraphicsService::GetTexture(const unsigned int& index) const
 {
 	if (index > GetMaxTextures())
 	{
@@ -325,7 +324,7 @@ mini3d::ITexture* mini3d::OGL20GraphicsService::GetTexture(unsigned int index)
 //	return currentITextures[index];
 	return 0;
 }
-void mini3d::OGL20GraphicsService::SetTexture(ITexture* pTexture, unsigned int index)
+void mini3d::OGL20GraphicsService::SetTexture(ITexture* pTexture, const unsigned int& index)
 {	
 
 	if (index >  GetMaxTextures())
@@ -353,13 +352,13 @@ void mini3d::OGL20GraphicsService::SetTexture(ITexture* pTexture, unsigned int i
 
 		switch(pTexture->GetWrapStyle())
 		{
-		case ITexture::TILE:
+		case ITexture::WRAP_TILE:
 
 			break;
-		case ITexture::MIRROR:
+		case ITexture::WRAP_MIRROR:
 
 			break;
-		case ITexture::CLAMP:
+		case ITexture::WRAP_CLAMP:
 
 			break;
 		}
@@ -380,7 +379,7 @@ void mini3d::OGL20GraphicsService::SetTexture(ITexture* pTexture, unsigned int i
 }
 
 // Render Target
-mini3d::IRenderTarget* mini3d::OGL20GraphicsService::GetRenderTarget(void)
+mini3d::IRenderTarget* mini3d::OGL20GraphicsService::GetRenderTarget(void) const
 {
 	return pCurrentRenderTarget;
 }
@@ -392,14 +391,11 @@ void mini3d::OGL20GraphicsService::SetRenderTarget(IRenderTarget* pRenderTarget)
 
 	PFNGLBINDFRAMEBUFFERPROC glBindFramebuffer = (PFNGLBINDFRAMEBUFFERPROC)wglGetProcAddress("glBindFramebuffer");
 
-	// this cast is "unfailable" (not exception caught). Whoever inherits from IRenderTarget must also inherit from IOGL20RenderTarget
-	IOGL20RenderTarget* pOGL20RenderTarget = dynamic_cast<IOGL20RenderTarget*>(pRenderTarget);
+	// Todo: this cast is a type check and should be soved with polymophism
+	OGL20RenderTargetTexture* pOGL20RenderTargetTexture = dynamic_cast<OGL20RenderTargetTexture*>(pRenderTarget);
 
-	if (pOGL20RenderTarget->GetType() == 1) // if rendertargettexture
+	if (pOGL20RenderTargetTexture != 0)
 	{
-		// this cast in "unfailable" becase we tested it in the if-statement we are in
-		OGL20RenderTargetTexture* pOGL20RenderTargetTexture = dynamic_cast<OGL20RenderTargetTexture*>(pRenderTarget);
-
 		if (pRenderTarget == 0)
 		{
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -408,11 +404,16 @@ void mini3d::OGL20GraphicsService::SetRenderTarget(IRenderTarget* pRenderTarget)
 		{
 			glBindFramebuffer(GL_FRAMEBUFFER, pOGL20RenderTargetTexture->GetRenderTargetBuffer());
 		}
+		
+		pCurrentRenderTarget = pRenderTarget;
+		return;
 	}
-	else // screenrendertarget
+
+	// Todo: this cast is a type check and should be soved with polymophism
+	OGL20WindowRenderTarget* pOGL20WindowRenderTarget = dynamic_cast<OGL20WindowRenderTarget*>(pRenderTarget);
+
+	if (pOGL20WindowRenderTarget != 0)
 	{
-		// this cast in "unfailable" becase we tested it in the if-statement we are in
-		OGL20ScreenRenderTarget* pOGL20ScreenRenderTarget = dynamic_cast<OGL20ScreenRenderTarget*>(pRenderTarget);
 
 		if (pRenderTarget == 0)
 		{
@@ -421,16 +422,19 @@ void mini3d::OGL20GraphicsService::SetRenderTarget(IRenderTarget* pRenderTarget)
 		else
 		{
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
-			wglMakeCurrent(pOGL20ScreenRenderTarget->GetRenderTargetBuffer(), hRenderContext);
+			wglMakeCurrent(pOGL20WindowRenderTarget->GetRenderTargetBuffer(), hRenderContext);
 		}
+	
+		pCurrentRenderTarget = pRenderTarget;
+		return;
 	}
 
-	pCurrentRenderTarget = pRenderTarget;
-
+	
+	//TODO: Default case
 }
 
 // DepthStencil
-mini3d::IDepthStencil* mini3d::OGL20GraphicsService::GetDepthStencil(void)
+mini3d::IDepthStencil* mini3d::OGL20GraphicsService::GetDepthStencil() const
 {
 	return pCurrentDepthStencil;
 }
@@ -443,7 +447,7 @@ void mini3d::OGL20GraphicsService::SetDepthStencil(IDepthStencil* pDepthStencil)
 }
 
 // Index Buffer
-mini3d::IIndexBuffer* mini3d::OGL20GraphicsService::GetIndexBuffer(void)
+mini3d::IIndexBuffer* mini3d::OGL20GraphicsService::GetIndexBuffer() const
 {	
 	return pCurrentIndexBuffer;
 }
@@ -468,7 +472,7 @@ void mini3d::OGL20GraphicsService::SetIndexBuffer(IIndexBuffer* pIndexBuffer)
 }
 
 // Vertex Buffer
-mini3d::IVertexBuffer* mini3d::OGL20GraphicsService::GetVertexBuffer(void)
+mini3d::IVertexBuffer* mini3d::OGL20GraphicsService::GetVertexBuffer() const
 {
 	return pCurrentVertexBuffer;
 }
@@ -493,14 +497,14 @@ void mini3d::OGL20GraphicsService::SetVertexBuffer(IVertexBuffer* pVertexBuffer)
 }
 
 // Shader Parameters
-void mini3d::OGL20GraphicsService::SetShaderParameterMatrix(unsigned int index, const float* pData, unsigned int rows, unsigned int columns)
+void mini3d::OGL20GraphicsService::SetShaderParameterMatrix(const unsigned int& index, const float* pData, const unsigned int& rows, const unsigned int& columns)
 {
 	PFNGLUNIFORMMATRIX4FVPROC glUniformMatrix4fv = (PFNGLUNIFORMMATRIX4FVPROC)wglGetProcAddress("glUniformMatrix4fv");
 
 	if (rows == 4 && columns == 4)
 		glUniformMatrix4fv(index, 1, GL_FALSE, pData);
 }
-void mini3d::OGL20GraphicsService::SetShaderParameterFloat(unsigned int index, const float* pData, unsigned int count)
+void mini3d::OGL20GraphicsService::SetShaderParameterFloat(const unsigned int& index, const float* pData, const unsigned int& count)
 {
 	PFNGLUNIFORM1FPROC glUniform1f = (PFNGLUNIFORM1FPROC)wglGetProcAddress("glUniform1f");
 	PFNGLUNIFORM2FPROC glUniform2f = (PFNGLUNIFORM2FPROC)wglGetProcAddress("glUniform2f");
@@ -516,7 +520,7 @@ void mini3d::OGL20GraphicsService::SetShaderParameterFloat(unsigned int index, c
 	else if (count == 4)
 		glUniform4f(index, *pData, *(pData + 1), *(pData + 2), *(pData + 3));
 }
-void mini3d::OGL20GraphicsService::SetShaderParameterInt(unsigned int index, const int* pData, unsigned int count)
+void mini3d::OGL20GraphicsService::SetShaderParameterInt(const unsigned int& index, const int* pData, const unsigned int& count)
 {
 	
 	PFNGLUNIFORM1IPROC glUniform1i = (PFNGLUNIFORM1IPROC)wglGetProcAddress("glUniform1i");
@@ -533,14 +537,9 @@ void mini3d::OGL20GraphicsService::SetShaderParameterInt(unsigned int index, con
 	else if (count == 4)
 		glUniform4i(index, *pData, *(pData + 1), *(pData + 2), *(pData + 3));
 }
-void mini3d::OGL20GraphicsService::SetShaderParameterBool(unsigned int index, const bool* pData, unsigned int count)
-{
-	// not supported
-}
-
 
 // Drawing
-void mini3d::OGL20GraphicsService::Draw(void)
+void mini3d::OGL20GraphicsService::Draw()
 {
 	BeginScene();
 
@@ -550,7 +549,7 @@ void mini3d::OGL20GraphicsService::Draw(void)
 	glDisableClientState(GL_VERTEX_ARRAY);
 	glDisableClientState(GL_INDEX_ARRAY);
 }
-void mini3d::OGL20GraphicsService::DrawIndices(unsigned int startIndex, unsigned int numIndices)
+void mini3d::OGL20GraphicsService::DrawIndices(const unsigned int& startIndex, const unsigned int& numIndices)
 {
 	PFNGLDRAWRANGEELEMENTSPROC glDrawRangeElements = (PFNGLDRAWRANGEELEMENTSPROC)wglGetProcAddress("glDrawRangeElements");
 
@@ -559,50 +558,51 @@ void mini3d::OGL20GraphicsService::DrawIndices(unsigned int startIndex, unsigned
 }
 
 // Clear
-void mini3d::OGL20GraphicsService::Clear(int color)
+void mini3d::OGL20GraphicsService::Clear(const float& r, const float& g, const float& b, const float& a)
 {
-	glClearColor((char)color / 256.0f, (char)(color>>2) / 256.0f, (char)(color>>4) / 256.0f, (char)(color>>6) / 256.0f);
-	//glClearColor(0.0f,0.0f,0.0f,1.0f);
+	glClearColor(r, g, b, a);
 	glClearDepth(1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 
 // Create Resources
-mini3d::IScreenRenderTarget* mini3d::OGL20GraphicsService::CreateScreenRenderTarget(unsigned int width, unsigned int height, int hWindow, bool depthTestEnabled, IScreenRenderTarget::Quality quality)
+mini3d::IWindowRenderTarget* mini3d::OGL20GraphicsService::CreateWindowRenderTarget(const unsigned int& width, const unsigned int& height, const int& hWindow, const bool& depthTestEnabled, const IWindowRenderTarget::Quality& quality)
 {
-	return new OGL20ScreenRenderTarget(this, width, height, hWindow, depthTestEnabled, quality);
+	return new OGL20WindowRenderTarget(this, width, height, hWindow, depthTestEnabled, quality);
 }
-mini3d::IRenderTargetTexture* mini3d::OGL20GraphicsService::CreateRenderTargetTexture(unsigned int width, unsigned int height, bool depthTestEnabled)
+mini3d::IFullscreenRenderTarget* mini3d::OGL20GraphicsService::CreateFullscreenRenderTarget(const unsigned int& width, const unsigned int& height, const int& hWindow, const bool& depthTestEnabled, const IFullscreenRenderTarget::Quality& quality)
+{
+	return new OGL20FullscreenRenderTarget(this, width, height, hWindow, depthTestEnabled, quality);
+}
+mini3d::IRenderTargetTexture* mini3d::OGL20GraphicsService::CreateRenderTargetTexture(const unsigned int& width, const unsigned int& height, const bool& depthTestEnabled)
 {
 	return new OGL20RenderTargetTexture(this, width, height, depthTestEnabled);
 }
-mini3d::IBitmapTexture* mini3d::OGL20GraphicsService::CreateBitmapTexture(void* pBitmap, unsigned int width, unsigned int height, IBitmapTexture::BitDepth bitDepth, ITexture::WrapStyle wrapStyle)
+mini3d::IBitmapTexture* mini3d::OGL20GraphicsService::CreateBitmapTexture(const void* pBitmap, const unsigned int& width, const unsigned int& height, const IBitmapTexture::BitDepth bitDepth, const ITexture::WrapStyle wrapStyle)
 {
 	return new OGL20BitmapTexture(this, pBitmap, width, height, bitDepth, wrapStyle);
 }
-mini3d::IVertexBuffer* mini3d::OGL20GraphicsService::CreateVertexBuffer(void* vertices, unsigned int count, const IVertexBuffer::VertexDeclarationVector& vertexDeclaration)
+mini3d::IVertexBuffer* mini3d::OGL20GraphicsService::CreateVertexBuffer(const void* pVertices,const  unsigned int& count, const unsigned int& vertexSizeInBytes)
 {
-	return new OGL20VertexBuffer(this, vertices, count, vertexDeclaration);
+	return new OGL20VertexBuffer(this, pVertices, count, vertexSizeInBytes);
 }
-mini3d::IIndexBuffer* mini3d::OGL20GraphicsService::CreateIndexBuffer(int* indices, unsigned int count, const IIndexBuffer::CullMode cullMode)
+mini3d::IIndexBuffer* mini3d::OGL20GraphicsService::CreateIndexBuffer(const void* pIndices, const unsigned int& count, const IIndexBuffer::DataType& dataType, const IIndexBuffer::CullMode& cullMode)
 {
-	return new OGL20IndexBuffer(this, indices, count);
+	return new OGL20IndexBuffer(this, pIndices, count, dataType, cullMode);
 }
-mini3d::IPixelShader* mini3d::OGL20GraphicsService::CreatePixelShader(const IPixelShader::ShaderBytes& shaderBytes)
+mini3d::IPixelShader* mini3d::OGL20GraphicsService::CreatePixelShader(const void* shaderBytes, const unsigned int& sizeInBytes)
 {
-	return new OGL20PixelShader(this, shaderBytes);
+	return new OGL20PixelShader(this, shaderBytes, sizeInBytes);
 }
-mini3d::IVertexShader* mini3d::OGL20GraphicsService::CreateVertexShader(const IVertexShader::ShaderBytes& shaderBytes, const IVertexShader::VertexDeclarationVector& vertexDeclaration)
+mini3d::IVertexShader* mini3d::OGL20GraphicsService::CreateVertexShader(const void* shaderBytes, const unsigned int& sizeInBytes, const IVertexShader::VertexDataType vertexDeclaration[], const unsigned int& vertexDataCount)
 {
-	return new OGL20VertexShader(this, shaderBytes, vertexDeclaration);
+	return new OGL20VertexShader(this, shaderBytes, sizeInBytes, vertexDeclaration, vertexDataCount);
 }
 mini3d::IShaderProgram* mini3d::OGL20GraphicsService::CreateShaderProgram(IVertexShader* pVertexShader, IPixelShader* pPixelShader)
 {
 	return new OGL20ShaderProgram(this, pVertexShader, pPixelShader);
 }
-
-
 
 
 // Resource Management

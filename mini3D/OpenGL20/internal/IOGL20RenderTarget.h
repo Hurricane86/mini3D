@@ -35,15 +35,12 @@ class IOGL20RenderTarget: public virtual IRenderTarget
 {
 friend class OGL20GraphicsService;
 
-private:
-	virtual int GetType() { return 0; }
-
 public:
-	virtual ~IOGL20RenderTarget(void) {};
+	virtual ~IOGL20RenderTarget() {};
 
-	virtual unsigned int GetWidth(void) = 0;
-	virtual unsigned int GetHeight(void) = 0;
-	virtual bool GetDepthTestEnabled(void) = 0;
+	virtual unsigned int GetWidth() const = 0;
+	virtual unsigned int GetHeight() const = 0;
+	virtual bool GetDepthTestEnabled() const = 0;
 };
 }
 

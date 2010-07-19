@@ -29,9 +29,12 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include <GL/glext.h>
 #include <GL/wglext.h>
 
-mini3d::OGL20PixelShader::OGL20PixelShader(OGL20GraphicsService* pGraphicsService, const ShaderBytes& shaderBytes) :
-	pGraphicsService_(pGraphicsService), shaderBytes_(shaderBytes), pShaderBuffer_(0)
+mini3d::OGL20PixelShader::OGL20PixelShader(OGL20GraphicsService* pGraphicsService, const void* pShaderBytes, const unsigned int& sizeInBytes) :
+	pGraphicsService(pGraphicsService), pShaderBuffer(0), sizeInBytes(sizeInBytes)
 {
+	this->pShaderBytes = malloc(sizeInBytes);
+	memcpy(this->pShaderBytes, pShaderBytes, sizeInBytes);
+
 	LoadResource();
 	pGraphicsService->AddResource(this);
 }
@@ -39,7 +42,7 @@ mini3d::OGL20PixelShader::OGL20PixelShader(OGL20GraphicsService* pGraphicsServic
 mini3d::OGL20PixelShader::~OGL20PixelShader(void)
 {
 	UnloadResource();
-	pGraphicsService_->RemoveResource(this);
+	pGraphicsService->RemoveResource(this);
 }
 
 void mini3d::OGL20PixelShader::LoadResource(void)
@@ -50,27 +53,22 @@ void mini3d::OGL20PixelShader::LoadResource(void)
 	PFNGLCOMPILESHADERPROC glCompileShader = (PFNGLCOMPILESHADERPROC)wglGetProcAddress("glCompileShader");
 
 	// If the buffer exists tear it down.
-	if (pShaderBuffer_ != 0)
+	if (pShaderBuffer != 0)
 	{
 		UnloadResource();
 	}
 	
-	pShaderBuffer_ = glCreateShader(GL_FRAGMENT_SHADER);
+	pShaderBuffer = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(pShaderBuffer, 1, (const GLchar**)&pShaderBytes, (GLint*)&sizeInBytes);
+	glCompileShader(pShaderBuffer);
 
-	std::vector<char> shaderBytes(shaderBytes_);
-	shaderBytes.push_back(0); // add a null termination character
-	const GLchar* pShaderBytes = &(shaderBytes[0]);
-
-	glShaderSource(pShaderBuffer_, 1, &pShaderBytes, NULL);
-	glCompileShader(pShaderBuffer_);
-
-	printLog(pShaderBuffer_);
-	isDirty_ = false;
-}
+	printLog(pShaderBuffer);
+	isDirty = false;
+} 
 
 void mini3d::OGL20PixelShader::UnloadResource(void)
 {
-	if (pShaderBuffer_ != 0)
+	if (pShaderBuffer != 0)
 	{
 
 		PFNGLDELETESHADERPROC glDeleteShader = (PFNGLDELETESHADERPROC)wglGetProcAddress("glDeleteShader");
@@ -79,11 +77,11 @@ void mini3d::OGL20PixelShader::UnloadResource(void)
 		//if (pGraphicsService_->GetPixelShader() == this)
 		//	pGraphicsService_->SetPixelShader(0);
 
-		glDeleteShader(pShaderBuffer_);
-		pShaderBuffer_ = 0;
+		glDeleteShader(pShaderBuffer);
+		pShaderBuffer = 0;
 	}
 
-	isDirty_ = true;
+	isDirty = true;
 }
 
 void mini3d::OGL20PixelShader::printLog(GLuint obj)
