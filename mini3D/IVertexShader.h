@@ -41,9 +41,11 @@ public:
 							NORMAL_FLOAT3 = 5, 
 							NORMAL_FLOAT4 = 6, 
 							BINORMAL_FLOAT3 = 7, 
-							TANGENT_FLOAT3 = 8, 
-							BLENDWEIGHT_FLOAT = 9, 
-							BLENDINDICES_FLOAT = 10 
+							BINORMAL_FLOAT4 = 8, 
+							TANGENT_FLOAT3 = 9, 
+							TANGENT_FLOAT4 = 10, 
+							BLENDWEIGHT_FLOAT = 11, 
+							BLENDINDICES_FLOAT = 12 
 						};
 	
 public:

@@ -144,12 +144,23 @@ void mini3d::OGL20VertexShader::CreateOGL20VertexAttributes()
 		// set the specific parameters
 		switch (vertexDeclaration[i])
 		{
-				
+		case IVertexShader::POSITION_FLOAT3:
+			vertexAttributes[i].normalized = GL_FALSE;
+			vertexAttributes[i].size = 3;
+			vertexAttributes[i].type = GL_FLOAT;
+			offset += 12;
+			break;				
 		case IVertexShader::POSITION_FLOAT4:
 			vertexAttributes[i].normalized = GL_FALSE;
 			vertexAttributes[i].size = 4;
 			vertexAttributes[i].type = GL_FLOAT;
 			offset += 16;
+			break;
+		case IVertexShader::COLOR_INT:
+			vertexAttributes[i].normalized = GL_FALSE;
+			vertexAttributes[i].size = 1;
+			vertexAttributes[i].type = GL_INT;
+			offset += 4;
 			break;
 		case IVertexShader::COLOR_FLOAT4:
 			vertexAttributes[i].normalized = GL_FALSE;
@@ -162,6 +173,54 @@ void mini3d::OGL20VertexShader::CreateOGL20VertexAttributes()
 			vertexAttributes[i].size = 2;
 			vertexAttributes[i].type = GL_FLOAT;
 			offset += 8;
+			break;
+		case IVertexShader::NORMAL_FLOAT3:
+			vertexAttributes[i].normalized = GL_FALSE;
+			vertexAttributes[i].size = 3;
+			vertexAttributes[i].type = GL_FLOAT;
+			offset += 12;
+			break;				
+		case IVertexShader::NORMAL_FLOAT4:
+			vertexAttributes[i].normalized = GL_FALSE;
+			vertexAttributes[i].size = 4;
+			vertexAttributes[i].type = GL_FLOAT;
+			offset += 16;
+			break;
+		case IVertexShader::BINORMAL_FLOAT3:
+			vertexAttributes[i].normalized = GL_FALSE;
+			vertexAttributes[i].size = 3;
+			vertexAttributes[i].type = GL_FLOAT;
+			offset += 12;
+			break;
+		case IVertexShader::BINORMAL_FLOAT4:
+			vertexAttributes[i].normalized = GL_FALSE;
+			vertexAttributes[i].size = 4;
+			vertexAttributes[i].type = GL_FLOAT;
+			offset += 16;
+			break;
+		case IVertexShader::TANGENT_FLOAT3:
+			vertexAttributes[i].normalized = GL_FALSE;
+			vertexAttributes[i].size = 3;
+			vertexAttributes[i].type = GL_FLOAT;
+			offset += 12;
+			break;
+		case IVertexShader::TANGENT_FLOAT4:
+			vertexAttributes[i].normalized = GL_FALSE;
+			vertexAttributes[i].size = 4;
+			vertexAttributes[i].type = GL_FLOAT;
+			offset += 16;
+			break;
+		case IVertexShader::BLENDWEIGHT_FLOAT:
+			vertexAttributes[i].normalized = GL_FALSE;
+			vertexAttributes[i].size = 1;
+			vertexAttributes[i].type = GL_FLOAT;
+			offset += 1;
+			break;
+		case IVertexShader::BLENDINDICES_FLOAT:
+			vertexAttributes[i].normalized = GL_FALSE;
+			vertexAttributes[i].size = 1;
+			vertexAttributes[i].type = GL_FLOAT;
+			offset += 1;
 			break;
 		}
 	}
