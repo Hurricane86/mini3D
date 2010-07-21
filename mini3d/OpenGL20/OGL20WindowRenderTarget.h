@@ -75,6 +75,14 @@ public:
 	HDC  GetRenderTargetBuffer(void) const { return hDeviceContext; }
 	GLuint GetDepthStencil(void) const { return pDepthStencil; }
 
+
+private:
+
+	// ::::: Private Methods :::::::::::::::::::::::::::::::::::::::::::::::::::
+
+	static LRESULT CALLBACK HookWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+
 private:
 
 	// ::::: Private Member Varaibles :::::::::::::::::::::::::::::::::::::::::
@@ -90,6 +98,9 @@ private:
 
 	bool depthTestEnabled;
 	Quality quality;
+
+	WNDPROC pOrigProc;
+	static std::map<int, OGL20WindowRenderTarget*> windowMap;
 
 	// TODO: Fix this with power of 2 comparison agains width, height...
 	unsigned int bufferWidth;

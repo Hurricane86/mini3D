@@ -29,6 +29,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include <GL/glext.h>
 #include <GL/wglext.h>
 
+std::map<int, mini3d::OGL20WindowRenderTarget*> mini3d::OGL20WindowRenderTarget::windowMap;
+
 mini3d::OGL20WindowRenderTarget::OGL20WindowRenderTarget(OGL20GraphicsService* pGraphicsService, const unsigned int& width, const unsigned int& height, const int& windowHandle, const bool& depthTestEnabled, const Quality& quality) : 
 	pGraphicsService(pGraphicsService), pScreenRenderTarget(0), pDepthStencil(0), quality(quality)
 {
@@ -44,6 +46,31 @@ mini3d::OGL20WindowRenderTarget::~OGL20WindowRenderTarget(void)
 
 void mini3d::OGL20WindowRenderTarget::SetWindowRenderTarget(const unsigned int& width, const unsigned int& height, const int& windowHandle, const bool& depthTestEnabled, const Quality& quality)
 {
+
+	if (windowHandle != hWindow)
+	{
+		// if this is the first time we set this up, just replace the window process
+		if (pOrigProc == 0)
+		{
+			// overwrite the window process for the window (our override window process will call the original window process saved in pOrigProc)
+			pOrigProc = (WNDPROC)SetWindowLongPtr((HWND)windowHandle, GWL_WNDPROC, (LONG)&HookWndProc);
+			
+			// make a map so the window process can find this class from the window handle
+			windowMap.insert(std::pair<int, OGL20WindowRenderTarget*>(windowHandle, this));
+		}
+		// else we need to restore the old one first and then setup the new one
+		else
+		{
+			// restore old
+			(WNDPROC)SetWindowLongPtr((HWND)hWindow, GWL_WNDPROC, (LONG)&pOrigProc);
+			windowMap.erase(hWindow);
+
+			// set new
+			pOrigProc = (WNDPROC)SetWindowLongPtr((HWND)windowHandle, GWL_WNDPROC, (LONG)&HookWndProc);
+			windowMap.insert(std::pair<int,OGL20WindowRenderTarget*>(windowHandle, this));
+		}
+	}
+
 	// set the variables from the call
 	this->hWindow = windowHandle;
 	this->width = width;
@@ -159,4 +186,27 @@ void mini3d::OGL20WindowRenderTarget::UnloadResource(void)
 void mini3d::OGL20WindowRenderTarget::SetSize(const int& width, const int& height)
 {
 	SetWindowRenderTarget(width, height, hWindow, depthTestEnabled, quality);
+}
+
+
+LRESULT CALLBACK mini3d::OGL20WindowRenderTarget::HookWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	OGL20WindowRenderTarget* windowRenderTarget = windowMap.find((int)hwnd)->second;
+
+	switch(msg)
+	{
+	// Window has been resized
+	case WM_SIZE:
+		
+		// make sure we dont set the size to 0 (happens when we minimize the window)
+		int width = LOWORD(lParam) | 1;
+		int height = HIWORD(lParam) | 1;
+
+		// update the render target size
+		windowRenderTarget->SetSize(width, height);
+		
+		break;
+	}
+
+	return CallWindowProc(windowRenderTarget->pOrigProc, hwnd, msg, wParam, lParam);
 }
