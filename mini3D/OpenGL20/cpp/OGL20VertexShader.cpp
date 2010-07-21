@@ -216,10 +216,10 @@ void mini3d::OGL20VertexShader::CreateOGL20VertexAttributes()
 			vertexAttributes[i].type = GL_FLOAT;
 			offset += 1;
 			break;
-		case IVertexShader::BLENDINDICES_FLOAT:
+		case IVertexShader::BLENDINDICES_INT:
 			vertexAttributes[i].normalized = GL_FALSE;
 			vertexAttributes[i].size = 1;
-			vertexAttributes[i].type = GL_FLOAT;
+			vertexAttributes[i].type = GL_INT;
 			offset += 1;
 			break;
 		}

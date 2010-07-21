@@ -45,7 +45,7 @@ public:
 							TANGENT_FLOAT3 = 9, 
 							TANGENT_FLOAT4 = 10, 
 							BLENDWEIGHT_FLOAT = 11, 
-							BLENDINDICES_FLOAT = 12 
+							BLENDINDICES_INT = 12 
 						};
 	
 public:
