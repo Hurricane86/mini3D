@@ -32,7 +32,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "DX9GraphicsService.h"
 #include "internal/IDX9Resource.h"
 
-// TODO: Power of two conversion for internal bitmaps
 
 namespace mini3d
 {
@@ -80,6 +79,7 @@ private:
 	// ::::: Private Methods ::::::::::::::::::::::::::::::::::::::::::::::::::
 
 	void UnloadBitmap();
+	unsigned int GetBytesPerPixel();
 
 
 private:

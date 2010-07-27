@@ -59,7 +59,7 @@ void mini3d::DX9DepthStencil::LoadResource(void)
 	}
 
 	// If the buffer exists but is not the correct size, tear it down and recreate it
-	if (pDepthStencil != 0 && (bufferWidth != width || bufferHeight != height)) // TODO: power of 2
+	if (pDepthStencil != 0 && (bufferWidth != width || bufferHeight != height))
 	{
 		UnloadResource();
 	}

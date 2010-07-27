@@ -71,8 +71,7 @@ private:
 
 	// ::::: Private Methods :::::::::::::::::::::::::::::::::::::::::::::::::::
 
-	void UnloadVertices(void);
-
+	void UnloadVertices();
 
 private:
 

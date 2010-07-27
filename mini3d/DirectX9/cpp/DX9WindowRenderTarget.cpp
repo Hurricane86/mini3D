@@ -24,10 +24,10 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
-// TODO: Automatically handle window size
 
 #include "../DX9WindowRenderTarget.h"
 #include "../DX9DepthStencil.h"
+#include "../DX9PresentationParameters.h"
 #include <d3d9.h>
 
 std::map<int, mini3d::DX9WindowRenderTarget*> mini3d::DX9WindowRenderTarget::windowMap;
@@ -147,12 +147,12 @@ void mini3d::DX9WindowRenderTarget::LoadResource(void)
 		D3DPRESENT_PARAMETERS pp;
 		memcpy(&pp, &pGraphicsService->GetPresentationParameters(), sizeof(D3DPRESENT_PARAMETERS));
 
-		pGraphicsService->CheckMultisampleFormat(quality, pp.Windowed != 0);
+		DX9PresentationParameters::CheckMultisampleFormat(pGraphicsService->GetDirect3D(), quality, pp.Windowed != 0);
 
 		pp.BackBufferWidth = width;
 		pp.BackBufferHeight = height;
 		pp.hDeviceWindow = (HWND)hWindow;
-		pp.MultiSampleType = pGraphicsService->FromMultisampleFormat(quality);
+		pp.MultiSampleType = DX9PresentationParameters::FromMultisampleFormat(quality);
 				
 		if( FAILED( pDevice->CreateAdditionalSwapChain(&pp, &pScreenRenderTarget))) 
 		{

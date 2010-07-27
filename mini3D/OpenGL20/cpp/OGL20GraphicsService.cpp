@@ -25,9 +25,12 @@ OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include "../OGL20GraphicsService.h"
+#include "../os/windows/OSWindows.h"
+#include "../../error/Error.h"
 #include <GL/glext.h>
 #include <GL/glu.h>
 #include <GL/wglext.h>
+
 
 // Constructor Destructor -----------------------------------------------------
 
@@ -35,12 +38,15 @@ mini3d::OGL20GraphicsService::OGL20GraphicsService() :
 	isFullscreen(isFullscreen),
 	pCurrentDepthStencil(0), isDrawingScene(false), deviceLost(true), lostDeviceCurrentITextures(0), currentITextures(0), pCurrentShaderProgram(0)
 {
+	pOS = new OSWindows();
 	CreateInternalWindow();
 	CreateDevice();
 }
+
 mini3d::OGL20GraphicsService::~OGL20GraphicsService(void)
 {
     wglMakeCurrent( NULL, NULL );
+	delete pOS;
 }
 
 
@@ -53,27 +59,35 @@ void mini3d::OGL20GraphicsService::CreateDevice(void)
 	PIXELFORMATDESCRIPTOR pfd;
 	int iFormat;
 
+	int colorBits = 24;
+	int depthBits = 32;
+
+	if (pOS->GetMonitorBitDepth() == 16)
+	{
+		colorBits = depthBits = 16;
+	}
+
 	// set the pixel format for the DC
     ZeroMemory(&pfd, sizeof(pfd));
     pfd.nSize = sizeof(pfd);
     pfd.nVersion = 1;
     pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
     pfd.iPixelType = PFD_TYPE_RGBA;
-    pfd.cColorBits = 24;
-    pfd.cDepthBits = 16; // TODO: 16 vs 32 depth shizzle, get info from graphicsService
+    pfd.cColorBits = colorBits;
+    pfd.cDepthBits = depthBits;
     pfd.iLayerType = PFD_MAIN_PLANE;
     iFormat = ChoosePixelFormat(hDeviceContext, &pfd);
 
 	if (!SetPixelFormat(hDeviceContext, iFormat, &pfd))
 	{
-		int i = 0;
+		throw Error::MINI3D_ERROR_UNKNOWN;
 	}
 	
 	hRenderContext=wglCreateContext(hDeviceContext);
 	
 	if (!wglMakeCurrent(hDeviceContext, hRenderContext))
 	{
-		int i = 0;
+		throw Error::MINI3D_ERROR_UNKNOWN;
 	}
 
 	// create the shader program
@@ -146,7 +160,6 @@ void mini3d::OGL20GraphicsService::SetRenderStates()
 }
 
 
-
 // Graphics Pipeline States ---------------------------------------------------
 
 int mini3d::OGL20GraphicsService::GetMaxTextures() const
@@ -171,7 +184,6 @@ int mini3d::OGL20GraphicsService::GetVertexShaderVersion() const
 {
 	return 0;
 }
-
 
 
 // Graphics Pipeline States ---------------------------------------------------
@@ -233,8 +245,6 @@ void mini3d::OGL20GraphicsService::SetShaderProgram(IShaderProgram* pShaderProgr
 		PFNGLENABLEVERTEXATTRIBARRAYPROC glEnableVertexAttribArray = (PFNGLENABLEVERTEXATTRIBARRAYPROC)wglGetProcAddress("glEnableVertexAttribArray");
 		PFNGLVERTEXATTRIBPOINTERPROC glVertexAttribPointer = (PFNGLVERTEXATTRIBPOINTERPROC)wglGetProcAddress("glVertexAttribPointer");
 
-		// TODO: VertexAttributePool?
-
 		// Set the vertexattributes
 		unsigned int vertexAttributeCount;
 		OGL20VertexAttribute* vA = ((OGL20VertexShader*)(pOLG20ShaderProgram->GetVertexShader()))->GetVertexAttributes(vertexAttributeCount);
@@ -244,73 +254,13 @@ void mini3d::OGL20GraphicsService::SetShaderProgram(IShaderProgram* pShaderProgr
 			glVertexAttribPointer(vA[i].index, vA[i].size, vA[i].type, vA[i].normalized, vA[i].stride, vA[i].pointer);
 			glEnableVertexAttribArray(vA[i].index);
 		}
+
+
 	}
 
 	pCurrentShaderProgram = pShaderProgram;
 }
 
-// Pixlel Shader
-//mini3d::IPixelShader* mini3d::OGL20GraphicsService::GetPixelShader(void)
-//{
-//	return pCurrentPixelShader;
-//}
-//void mini3d::OGL20GraphicsService::SetPixelShader(IPixelShader* pPixelShader)
-//{
-//	
-//	if (pCurrentPixelShader == pPixelShader)
-//		return;
-//
-//	PFNGLATTACHSHADERPROC glAttachShader = (PFNGLATTACHSHADERPROC)wglGetProcAddress("glAttachShader");
-//	PFNGLLINKPROGRAMPROC glLinkProgram = (PFNGLLINKPROGRAMPROC)wglGetProcAddress("glLinkProgram");
-//
-//	if (pPixelShader == 0)
-//	{
-//		glAttachShader(hProgram, 0);
-//		glLinkProgram(hProgram);
-//		printLog(hProgram);
-//	}
-//	else
-//	{
-//		OGL20PixelShader* pOLG20PixelShader = (OGL20PixelShader*)pPixelShader;
-//		glAttachShader(hProgram, pOLG20PixelShader->GetPixelShaderBuffer());
-//		glLinkProgram(hProgram);
-//		printLog(hProgram);
-//	}
-//
-//	pCurrentPixelShader = pPixelShader;
-//}
-//
-//// Vertex Shader
-//mini3d::IVertexShader* mini3d::OGL20GraphicsService::GetVertexShader(void)
-//{
-//	return pCurrentVertexShader;
-//}
-//void mini3d::OGL20GraphicsService::SetVertexShader(IVertexShader* pVertexShader)
-//{
-//
-//	PFNGLATTACHSHADERPROC glAttachShader = (PFNGLATTACHSHADERPROC)wglGetProcAddress("glAttachShader");
-//	PFNGLLINKPROGRAMPROC glLinkProgram = (PFNGLLINKPROGRAMPROC)wglGetProcAddress("glLinkProgram");
-//
-//	if (pCurrentVertexShader == pVertexShader)
-//		return;
-//
-//	if (pVertexShader == 0)
-//	{
-//		glAttachShader(hProgram, 0);
-//		glLinkProgram(hProgram);
-//		printLog(hProgram);
-//	}
-//	else
-//	{
-//		OGL20VertexShader* pOLG20VertexShader = (OGL20VertexShader*)pVertexShader;
-//		glAttachShader(hProgram, pOLG20VertexShader->GetVertexShaderBuffer());
-//		glLinkProgram(hProgram);
-//		printLog(hProgram);
-//	}
-//	
-//	pCurrentVertexShader = pVertexShader;
-//
-//}
 
 // Texture
 mini3d::ITexture* mini3d::OGL20GraphicsService::GetTexture(const unsigned int& index) const
@@ -329,8 +279,7 @@ void mini3d::OGL20GraphicsService::SetTexture(ITexture* pTexture, const unsigned
 
 	if (index >  GetMaxTextures())
 	{
-		// TODO: Throw error in debug mode;
-		return;
+		throw Error::MINI3D_ERROR_TEXTURE_INDEX_OUTSIDE_VALID_RANGE;
 	}
 
 	PFNGLACTIVETEXTUREPROC glActiveTexture = (PFNGLACTIVETEXTUREPROC)wglGetProcAddress("glActiveTexture");
@@ -391,7 +340,7 @@ void mini3d::OGL20GraphicsService::SetRenderTarget(IRenderTarget* pRenderTarget)
 
 	PFNGLBINDFRAMEBUFFERPROC glBindFramebuffer = (PFNGLBINDFRAMEBUFFERPROC)wglGetProcAddress("glBindFramebuffer");
 
-	// Todo: this cast is a type check and should be soved with polymophism
+	// This is a dynamic cast used as a typecheck, code police says this should be solved with virtual function calls instead
 	OGL20RenderTargetTexture* pOGL20RenderTargetTexture = dynamic_cast<OGL20RenderTargetTexture*>(pRenderTarget);
 
 	if (pOGL20RenderTargetTexture != 0)
@@ -409,7 +358,7 @@ void mini3d::OGL20GraphicsService::SetRenderTarget(IRenderTarget* pRenderTarget)
 		return;
 	}
 
-	// Todo: this cast is a type check and should be soved with polymophism
+	// This is a dynamic cast used as a typecheck, code police says this should be solved with virtual function calls instead
 	OGL20WindowRenderTarget* pOGL20WindowRenderTarget = dynamic_cast<OGL20WindowRenderTarget*>(pRenderTarget);
 
 	if (pOGL20WindowRenderTarget != 0)

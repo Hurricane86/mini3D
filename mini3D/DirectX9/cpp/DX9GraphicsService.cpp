@@ -27,6 +27,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "../DX9GraphicsService.h"
 #include "../DX9PresentationParameters.h"
 #include "../DX9GraphicsSettings.h"
+#include "../../error/error.h"
 
 // Constructor Destructor -----------------------------------------------------
 
@@ -79,7 +80,7 @@ void mini3d::DX9GraphicsService::CreateDevice()
 
 	if (pD3D == 0)
 	{
-		//TODO: Cast some error??
+		throw Error::MINI3D_ERROR_UNKNOWN;
 	}
 
 	pD3D->GetDeviceCaps(0, D3DDEVTYPE_HAL, &deviceCaps);
@@ -105,8 +106,7 @@ void mini3d::DX9GraphicsService::CreateDevice()
 		{
 			if (FAILED(pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, (HWND)hWindow, D3DCREATE_SOFTWARE_VERTEXPROCESSING, &d3dpp, &pDevice)))
 			{				
-				// TODO: ALL FAILED THROW ERROR!!
-				throw;
+				throw Error::MINI3D_ERROR_UNKNOWN;
 			}
 		}
 	}
@@ -503,13 +503,8 @@ void mini3d::DX9GraphicsService::BeginScene(void)
 			return;
 	}
 
-	// Todo: Move this to device reset and update resources immidiatly
-	//UpdateResources();
-
 	SetRenderStates();
-
 	pDevice->BeginScene();
-
 	isDrawingScene = true;
 }
 void mini3d::DX9GraphicsService::EndScene(void)
@@ -639,8 +634,7 @@ mini3d::ITexture* mini3d::DX9GraphicsService::GetTexture(const unsigned int& ind
 {
 	if (index > deviceCaps.MaxSimultaneousTextures)
 	{
-		// Throw error in debug mode;
-		return 0;
+		throw Error::MINI3D_ERROR_TEXTURE_INDEX_OUTSIDE_VALID_RANGE;
 	}
 
 	return currentITextures[index];
@@ -650,8 +644,7 @@ void mini3d::DX9GraphicsService::SetTexture(ITexture* pTexture, const unsigned i
 
 	if (index > deviceCaps.MaxSimultaneousTextures)
 	{
-		// TODO: Throw error in debug mode;
-		return;
+		throw Error::MINI3D_ERROR_TEXTURE_INDEX_OUTSIDE_VALID_RANGE;
 	}
 
 	// if texture already assigned, then there is no need to re-assign it
@@ -733,7 +726,7 @@ void mini3d::DX9GraphicsService::SetRenderTarget(IRenderTarget* pRenderTarget)
 
 	// ---------- SETTING FULLSCREEN RENDER TARGET ----------------------------
 
-	// Todo: This is a dynamic cast used as a typecheck, code police says this should be solved with virtual function calls instead
+	// This is a dynamic cast used as a typecheck, code police says this should be solved with virtual function calls instead
 	DX9FullscreenRenderTarget* pDX9FullscreenRenderTarget = dynamic_cast<DX9FullscreenRenderTarget*>(pRenderTarget);
 
 	// if we are setting a fullscreen render target (other than the default, see above)
@@ -758,7 +751,7 @@ void mini3d::DX9GraphicsService::SetRenderTarget(IRenderTarget* pRenderTarget)
 
 	// ---------- SETTING WINDOW RENDER TARGET --------------------------------
 
-	// Todo: This is a dynamic cast used as a typecheck, code police says this should be solved with virtual function calls instead
+	// This is a dynamic cast used as a typecheck, code police says this should be solved with virtual function calls instead
 	DX9WindowRenderTarget* pDX9WindowRenderTarget = dynamic_cast<DX9WindowRenderTarget*>(pRenderTarget);
 
 	// if we are setting a rendertarget that is a window render target and the default swapchain is set to a fullscreenrendertarget
@@ -1009,102 +1002,4 @@ mini3d::IVertexShader* mini3d::DX9GraphicsService::CreateVertexShader(const void
 mini3d::IShaderProgram* mini3d::DX9GraphicsService::CreateShaderProgram(IVertexShader* pVertexShader, IPixelShader* pPixelShader)
 {
 	return new DX9ShaderProgram(this, pVertexShader, pPixelShader);
-}
-
-
-// Set up helper functions
-
-D3DFORMAT mini3d::DX9GraphicsService::GetCorrectBackBufferFormat(void)
-{
-	D3DDISPLAYMODE displayMode;
-	pD3D->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &displayMode);
-
-	// Get the color depth of the display
-	if (displayMode.Format == D3DFMT_X8R8G8B8)
-		return D3DFMT_X8R8G8B8;
-	else if (displayMode.Format == D3DFMT_R5G6B5)
-		return D3DFMT_R5G6B5;
-	else // TODO: will we ever end up here?
-		return D3DFMT_X8R8G8B8;
-}
-
-
-D3DFORMAT mini3d::DX9GraphicsService::GetCorrectDepthStencilFormat(void)
-{
-	// TODO: This similar to the ogre initialization code! Look this over and assert all assumptions!
-
-	D3DDISPLAYMODE displayMode;
-	pD3D->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &displayMode);
-
-	// Get the color depth of the display
-	D3DFORMAT displayFormat = GetCorrectBackBufferFormat();
-
-	// if we are only running 16 bit color format, then just run a 16 bit depth format...
-	if (displayFormat == D3DFMT_R5G6B5)
-		return D3DFMT_D16;
-
-	// check support for 24bit depth with 8 bit stencil
-	if (SUCCEEDED( pD3D->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, displayFormat, D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_SURFACE, D3DFMT_D24S8 )))
-	{
-		// "nVidia chips since the TNT1 have a restriction that the total depth+stencil bit depth MUST be the same as the bit depth of the frame buffer."
-		// - http://www.gamedev.net/community/forums/topic.asp?topic_id=73404
-		// TODO: True only for really old cards (order than 2004)?? Check nvida website!
-
-		if( SUCCEEDED( pD3D->CheckDepthStencilMatch(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, displayFormat, displayFormat, D3DFMT_D24S8 )))
-			return D3DFMT_D24S8;
-		else 
-			return D3DFMT_D24X8;
-	}
-
-	// Ok, so that did not work. Try a pure 32bit depth buffer with no stencil
-	if(SUCCEEDED( pD3D->CheckDeviceFormat(D3DFMT_D24S8, D3DDEVTYPE_HAL, displayMode.Format,  D3DUSAGE_DEPTHSTENCIL, D3DRTYPE_SURFACE, D3DFMT_D32 )))
-		return D3DFMT_D32;
-
-	// If all else failes, run a 16bit buffer
-	// TODO: This will probably never happen, but maby we should "crash" here instead??
-	return D3DFMT_D16;
-}
-
-void mini3d::DX9GraphicsService::CheckMultisampleFormat(IScreenRenderTarget::Quality& quality, bool fullscreen)
-{
-
-	D3DDISPLAYMODE displayMode;
-	pD3D->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &displayMode);
-	
-
-	DWORD pQualityLevels;
-	while (	quality > 0 && 
-			FAILED(pD3D->CheckDeviceMultiSampleType( D3DADAPTER_DEFAULT, 
-														D3DDEVTYPE_HAL, 
-														displayMode.Format, 
-														!fullscreen,
-														FromMultisampleFormat(quality),
-														&pQualityLevels)))
-	{
-		quality = (IWindowRenderTarget::Quality)((int)quality - 1);
-	}
-}
-
-D3DMULTISAMPLE_TYPE mini3d::DX9GraphicsService::FromMultisampleFormat(IScreenRenderTarget::Quality quality)
-{
-	switch(quality)
-	{
-	case IWindowRenderTarget::QUALITY_MINIMUM:
-			return D3DMULTISAMPLE_NONE;
-			break;
-		case IWindowRenderTarget::QUALITY_LOW:
-			return D3DMULTISAMPLE_2_SAMPLES;
-			break;
-		case IWindowRenderTarget::QUALITY_MEDIUM:
-			return D3DMULTISAMPLE_4_SAMPLES;
-			break;
-		case IWindowRenderTarget::QUALITY_HIGH:
-			return D3DMULTISAMPLE_8_SAMPLES;
-			break;
-		case IWindowRenderTarget::QUALITY_MAXIMUM:
-			return D3DMULTISAMPLE_16_SAMPLES;
-			break;
-	}
-	// default case, no multisample
-	return D3DMULTISAMPLE_NONE;
 }

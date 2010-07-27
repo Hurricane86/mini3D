@@ -32,7 +32,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "internal/IDX9RenderTarget.h"
 #include "internal/IDX9Resource.h"
 
-// Todo: make a c-file with implementations of all this
 
 namespace mini3d
 {

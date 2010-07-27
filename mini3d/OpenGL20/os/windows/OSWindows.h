@@ -24,29 +24,19 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef AURORA_IINDEXBUFFER_H
-#define AURORA_IINDEXBUFFER_H
+#ifndef AURORA_OSWINDOWS_H
+#define AURORA_OSWINDOWS_H
+
+#include "../IOS.h"
 
 namespace mini3d
 {
-class IIndexBuffer
+class OSWindows : public IOS
 {
 public:
-	enum CullMode { CULL_CLOCKWIZE = 0, CULL_COUNTERCLOCKWIZE = 1, CULL_NONE = 2 };
-	enum DataType { INT_16 = 0, INT_32 = 1 };
-
-	virtual ~IIndexBuffer() {};
 	
-	virtual void* GetIndices(unsigned int& sizeInBytes) const = 0;
-	virtual void SetIndices(const void* pIndices, const unsigned int& count, const IIndexBuffer::DataType& dataType = IIndexBuffer::INT_32, const IIndexBuffer::CullMode& cullMode = IIndexBuffer::CULL_COUNTERCLOCKWIZE) = 0;
+	virtual unsigned int GetMonitorBitDepth() const;
 
-	virtual void* Lock(unsigned int& sizeInBytes) const = 0;
-	virtual void Unlock(const bool& dataIsChanged) = 0;
-
-	virtual unsigned int GetIndexCount() const = 0;
-
-	virtual CullMode GetCullMode() const = 0;
-	virtual void SetCullMode(const CullMode& cullMode) = 0;
 };
 }
 

@@ -37,7 +37,6 @@ namespace mini3d
 class DX9DepthStencil;
 class DX9WindowRenderTarget : public IWindowRenderTarget, public IDX9RenderTarget, public IDX9Resource
 {
-// TODO: Public and private
 
 
 public:

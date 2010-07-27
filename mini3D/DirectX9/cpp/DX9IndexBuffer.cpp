@@ -24,7 +24,7 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "../DX9VertexBuffer.h"
+#include "../DX9IndexBuffer.h"
 #include <d3d9.h>
 
 mini3d::DX9IndexBuffer::DX9IndexBuffer(DX9GraphicsService* pGraphicsService, const void* pIndices, const unsigned int& count, const DataType& dataType, const CullMode& cullMode) : 
@@ -55,13 +55,12 @@ void mini3d::DX9IndexBuffer::SetIndices(const void* pIndices, const unsigned int
 {
 	UnloadIndices();
 
-	this->sizeInBytes = count * 4; // TODO: depends on index type
+	this->dataType = dataType;
+	this->sizeInBytes = count * GetBytesPerIndex();
 	this->pIndices = malloc(sizeInBytes);
 	memcpy(this->pIndices, pIndices, sizeInBytes);
 
 	this->indexCount = count;
-
-	this->dataType = dataType;
 	this->cullMode = cullMode;
 
 	isDirty = true;
@@ -118,10 +117,22 @@ void mini3d::DX9IndexBuffer::LoadResource(void)
 		UnloadResource();
 	}
 
+	D3DFORMAT indexFormat;
+
+	switch(dataType)
+	{
+		case INT_16:
+			indexFormat = D3DFMT_INDEX16;
+		break;
+		case INT_32:
+			indexFormat = D3DFMT_INDEX32;
+		break;
+	}	
+
 	// If it does not exist, create a new one
 	if (pIndexBuffer == 0)
 	{
-		if( FAILED( pDevice->CreateIndexBuffer(sizeInBytes, D3DUSAGE_WRITEONLY, D3DFMT_INDEX32, D3DPOOL_DEFAULT, &pIndexBuffer, NULL ) ) )
+		if( FAILED( pDevice->CreateIndexBuffer(sizeInBytes, D3DUSAGE_WRITEONLY, indexFormat, D3DPOOL_DEFAULT, &pIndexBuffer, NULL ) ) )
 		{
 			isDirty = true;
 			return;
@@ -144,7 +155,7 @@ void mini3d::DX9IndexBuffer::LoadResource(void)
 	isDirty = false;
 }
 
-void mini3d::DX9IndexBuffer::UnloadResource(void)
+void mini3d::DX9IndexBuffer::UnloadResource()
 {
 	if (pIndexBuffer != 0)
 	{
@@ -157,4 +168,15 @@ void mini3d::DX9IndexBuffer::UnloadResource(void)
 	}
 
 	isDirty = true;
+}
+
+unsigned int mini3d::DX9IndexBuffer::GetBytesPerIndex()
+{
+	switch(dataType)
+	{
+		case INT_16:
+		return 2;
+		case INT_32:
+		return 4;
+	}		
 }

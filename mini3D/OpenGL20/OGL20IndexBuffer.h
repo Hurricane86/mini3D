@@ -43,14 +43,14 @@ public:
 
 	// ::::: Constructor & Destructor :::::::::::::::::::::::::::::::::::::::::
 
-	OGL20IndexBuffer(OGL20GraphicsService* graphicsService, const void* pIndices, const unsigned int& count, const DataType& dataType = INT_16, const CullMode& cullMode = CULL_COUNTERCLOCKWIZE);
+	OGL20IndexBuffer(OGL20GraphicsService* graphicsService, const void* pIndices, const unsigned int& count, const DataType& dataType = INT_32, const CullMode& cullMode = CULL_COUNTERCLOCKWIZE);
 	~OGL20IndexBuffer();
 
 
 	// ::::: IIndexBuffer :::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 	virtual void* GetIndices(unsigned int& sizeInBytes) const;
-	virtual void SetIndices(const void* pIndices, const unsigned int& count, const DataType& dataType = INT_16, const CullMode& cullMode = CULL_COUNTERCLOCKWIZE);
+	virtual void SetIndices(const void* pIndices, const unsigned int& count, const DataType& dataType = INT_32, const CullMode& cullMode = CULL_COUNTERCLOCKWIZE);
 	
 	virtual void* Lock(unsigned int& sizeInBytes) const;
 	virtual void Unlock(const bool& dataIsChanged);
@@ -78,6 +78,7 @@ private:
 	// ::::: Private Methods ::::::::::::::::::::::::::::::::::::::::::::::::::
 
 	void UnloadIndices();
+	unsigned int GetBytesPerIndex();
 
 private:
 	

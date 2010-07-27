@@ -53,6 +53,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "OGL20RenderTargetTexture.h"
 #include "OGL20WindowRenderTarget.h"
 #include "OGL20FullscreenRenderTarget.h"
+#include "os\IOS.h"
 
 namespace mini3d
 {
@@ -68,6 +69,9 @@ private:
 
 	// Member variables
 	
+	// Operating system functions
+	IOS* pOS;
+
 	// currently loaded resources
 	IRenderTarget* pCurrentRenderTarget;
 	IDepthStencil* pCurrentDepthStencil;
@@ -99,6 +103,9 @@ private:
 	bool deviceLost;
 	bool isFullscreen;
 
+	// number of currently set vertex attributes
+	unsigned int numVertexAttributes;
+
 public:
 	
 
@@ -129,7 +136,7 @@ public:
 	virtual IRenderTargetTexture* CreateRenderTargetTexture(const unsigned int& width, const unsigned int& height, const bool& depthTestEnabled);
 	virtual IBitmapTexture* CreateBitmapTexture(const void* pBitmap, const unsigned int& width, const unsigned int& height, const IBitmapTexture::BitDepth bitDepth = IBitmapTexture::BIT_32, const ITexture::WrapStyle wrapStyle = ITexture::WRAP_TILE);
 	virtual IVertexBuffer* CreateVertexBuffer(const void* pVertices,const  unsigned int& count, const unsigned int& vertexSizeInBytes);
-	virtual IIndexBuffer* CreateIndexBuffer(const void* pIndices, const unsigned int& count, const IIndexBuffer::DataType& dataType = IIndexBuffer::INT_16, const IIndexBuffer::CullMode& cullMode = IIndexBuffer::CULL_COUNTERCLOCKWIZE);
+	virtual IIndexBuffer* CreateIndexBuffer(const void* pIndices, const unsigned int& count, const IIndexBuffer::DataType& dataType = IIndexBuffer::INT_32, const IIndexBuffer::CullMode& cullMode = IIndexBuffer::CULL_COUNTERCLOCKWIZE);
 	virtual IPixelShader* CreatePixelShader(const void* shaderBytes, const unsigned int& sizeInBytes);
 	virtual IVertexShader* CreateVertexShader(const void* shaderBytes, const unsigned int& sizeInBytes, const IVertexShader::VertexDataType vertexDeclaration[], const unsigned int& vertexDataCount);
 	virtual IShaderProgram* CreateShaderProgram(IVertexShader* pVertexShader, IPixelShader* pPixelShader);
@@ -173,6 +180,11 @@ public:
 	// Resource Management
 	void AddResource(IOGL20Resource* resource);
 	void RemoveResource(IOGL20Resource* resource);
+
+
+	// PUBLIC MEMBER FUNCTIONS ------------------------------------------------
+
+	IOS* GetOS() { return pOS; }
 
 private:
 	

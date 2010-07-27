@@ -31,7 +31,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 mini3d::OGL20IndexBuffer::OGL20IndexBuffer(OGL20GraphicsService* pGraphicsService, const void* pIndices, const unsigned int& count, const DataType& dataType, const CullMode& cullMode) : 
 	pGraphicsService(pGraphicsService), bufferSizeInBytes(0), pIndices(0), pIndexBuffer(0)
 {
-	SetIndices(pIndices, count);
+	SetIndices(pIndices, count, dataType, cullMode);
 	pGraphicsService->AddResource(this);
 }
 
@@ -56,13 +56,13 @@ void mini3d::OGL20IndexBuffer::SetIndices(const void* pIndices, const unsigned i
 {
 	UnloadIndices();
 
-	this->sizeInBytes = count * 4; // TODO: depends on index type
+	this->dataType = dataType;
+	this->sizeInBytes = count * GetBytesPerIndex();
 	this->pIndices = malloc(sizeInBytes);
 	memcpy(this->pIndices, pIndices, sizeInBytes);
 
 	this->indexCount = count;
 
-	this->dataType = dataType;
 	this->cullMode = cullMode;
 
 	isDirty = true;
@@ -168,3 +168,13 @@ void mini3d::OGL20IndexBuffer::UnloadResource(void)
 	isDirty = true;
 }
 
+unsigned int mini3d::OGL20IndexBuffer::GetBytesPerIndex()
+{
+	switch(dataType)
+	{
+		case INT_16:
+		return 2;
+		case INT_32:
+		return 4;
+	}		
+}

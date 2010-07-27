@@ -24,9 +24,9 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
-// TODO: Bitmap shall be recreate if call to SetBitmap with new bitDepth format
 
 #include "../DX9BitmapTexture.h"
+#include "../../error/error.h"
 #include <d3d9.h>
 
 mini3d::DX9BitmapTexture::DX9BitmapTexture(DX9GraphicsService* pGraphicsService, const void* pBitmap, const unsigned int& width, const unsigned int& height, const IBitmapTexture::BitDepth bitDepth, const ITexture::WrapStyle wrapStyle) :
@@ -54,9 +54,17 @@ void* mini3d::DX9BitmapTexture::GetBitmap(unsigned int& sizeInBytes) const
 
 void mini3d::DX9BitmapTexture::SetBitmap(const void* pBitmap, const unsigned int& width, const unsigned int& height, const IBitmapTexture::BitDepth bitDepth, const ITexture::WrapStyle wrapStyle)
 {
+
+	// If width or height is not a power of two
+	if (width & (width - 1) != 0 || height & (height - 1))
+	{
+		throw Error::MINI3D_ERROR_NON_POWER_OF_TWO;
+	}
+
 	UnloadBitmap();
-	
-	sizeInBytes = width * height * 4;  // TODO: Depends on graphics settings
+
+	this->bitDepth = bitDepth;
+	sizeInBytes = width * height * GetBytesPerPixel();
 	this->pBitmap = malloc(sizeInBytes);
 	memcpy(this->pBitmap, pBitmap, sizeInBytes);
 
@@ -64,7 +72,6 @@ void mini3d::DX9BitmapTexture::SetBitmap(const void* pBitmap, const unsigned int
 	this->height = height;
 	
 	this->wrapStyle = wrapStyle;
-	this->bitDepth = bitDepth;
 
 	isDirty = true;
 	LoadResource();
@@ -162,11 +169,12 @@ void mini3d::DX9BitmapTexture::LoadResource(void)
 	unsigned int rowSizeInBytes = sizeInBytes / height;
 	char* pD3DData;
 	char* pBitmapData;
-	
+	unsigned int bytesPerPixel = GetBytesPerPixel();
+
 	for (unsigned int i = 0; i < height; i++)
 	{
 		pD3DData = (char*)textureDataRectangle.pBits + i * textureDataRectangle.Pitch;
-		pBitmapData = (char*)pBitmap + width * i * 4; // TODO: depends on data type
+		pBitmapData = (char*)pBitmap + width * i * bytesPerPixel;
 		memcpy(pD3DData, pBitmapData, rowSizeInBytes);
 	}
 
@@ -192,4 +200,17 @@ void mini3d::DX9BitmapTexture::UnloadResource(void)
 	}
 
 	isDirty = true;
+}
+
+unsigned int mini3d::DX9BitmapTexture::GetBytesPerPixel(void)
+{
+	switch(bitDepth)
+	{
+		case IBitmapTexture::BIT_16:
+		return 2;
+		case IBitmapTexture::BIT_32:
+		return 4;
+		case IBitmapTexture::BIT_64:
+		return 8;
+	}
 }

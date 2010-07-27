@@ -26,6 +26,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 #include "../DX9RenderTargetTexture.h"
 #include "../DX9DepthStencil.h"
+#include "../../error/error.h"
 #include <d3d9.h>
 
 mini3d::DX9RenderTargetTexture::DX9RenderTargetTexture(DX9GraphicsService* pGraphicsService, const unsigned int& width, const unsigned int& height, const bool& depthTestEnabled) : 
@@ -47,6 +48,13 @@ mini3d::DX9RenderTargetTexture::~DX9RenderTargetTexture(void)
 
 void mini3d::DX9RenderTargetTexture::SetRenderTarget(const unsigned int& width, const unsigned int& height, const bool& depthTestEnabled)
 {
+
+	// If width or height is not a power of two
+	if (width & (width - 1) != 0 || height & (height - 1))
+	{
+		throw Error::MINI3D_ERROR_NON_POWER_OF_TWO;
+	}
+
 	this->width = width;
 	this->height = height;
 	this->depthTestEnabled = depthTestEnabled;
@@ -82,7 +90,7 @@ void mini3d::DX9RenderTargetTexture::LoadResource(void)
 	}
 
 	// If the buffer exists but is not the correct size, tear it down and recreate it
-	if (pRenderTarget != 0 && (bufferWidth != width || bufferHeight != height)) // TODO: power of 2
+	if (pRenderTarget != 0 && (bufferWidth != width || bufferHeight != height))
 	{
 		UnloadResource();
 	}

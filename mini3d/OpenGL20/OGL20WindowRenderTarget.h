@@ -102,7 +102,6 @@ private:
 	WNDPROC pOrigProc;
 	static std::map<int, OGL20WindowRenderTarget*> windowMap;
 
-	// TODO: Fix this with power of 2 comparison agains width, height...
 	unsigned int bufferWidth;
 	unsigned int bufferHeight;
 	

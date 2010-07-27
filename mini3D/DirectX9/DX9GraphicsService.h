@@ -219,23 +219,22 @@ public:
 	virtual void Draw();
 	virtual void DrawIndices(const unsigned int& startIndex, const unsigned int& numIndices);
 
-private:
 	
-	// INTERNAL HELPER FUNCTIONS ----------------------------------------------
+	// PUBLIC METHODS ------------------------------------------------------------
 	
 	// These functions are accessed by the DX9Resources
 	IDirect3DDevice9* GetDevice();
+	IDirect3D9* GetDirect3D() { return pD3D; };
 	D3DPRESENT_PARAMETERS GetPresentationParameters();
-	void CheckMultisampleFormat(IWindowRenderTarget::Quality& quality, bool fullscreen);
-	D3DMULTISAMPLE_TYPE FromMultisampleFormat(IWindowRenderTarget::Quality quality);
+
+
+private:
 
 	// INTERNAL HELPER FUNCTIONS ----------------------------------------------
 
 	// Device creation
 	void CreateDevice();
 	void CreateInternalWindow();
-	D3DFORMAT GetCorrectBackBufferFormat();
-	D3DFORMAT GetCorrectDepthStencilFormat();
 
 	// Drawing Graphics
 	virtual void BeginScene();

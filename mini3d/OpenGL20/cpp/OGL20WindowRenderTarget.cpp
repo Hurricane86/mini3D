@@ -25,6 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include "../OGL20WindowRenderTarget.h"
+#include "../../error/Error.h"
 #include <GL/glu.h>
 #include <GL/glext.h>
 #include <GL/wglext.h>
@@ -103,20 +104,28 @@ void mini3d::OGL20WindowRenderTarget::LoadResource(void)
 	PIXELFORMATDESCRIPTOR pfd;
 	int iFormat;
 
+	int colorBits = 24;
+	int depthBits = 32;
+
+	if (pGraphicsService->GetOS()->GetMonitorBitDepth() == 16)
+	{
+		colorBits = depthBits = 16;
+	}
+
     // set the pixel format for the DC
     ZeroMemory(&pfd, sizeof(pfd));
     pfd.nSize = sizeof(pfd);
     pfd.nVersion = 1;
     pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
     pfd.iPixelType = PFD_TYPE_RGBA;
-    pfd.cColorBits = 24;
-    pfd.cDepthBits = 16; // TODO: 16 vs 32 depth shizzle, get info from graphicsService
+    pfd.cColorBits = colorBits;
+	pfd.cDepthBits = depthBits;
     pfd.iLayerType = PFD_MAIN_PLANE;
     iFormat = ChoosePixelFormat(hDeviceContext, &pfd);
 
 	if (!SetPixelFormat(hDeviceContext, iFormat, &pfd))
 	{
-		int i = 0;
+		throw Error::MINI3D_ERROR_UNKNOWN;
 	}
 
 	bufferWidth = width;
@@ -130,40 +139,11 @@ void mini3d::OGL20WindowRenderTarget::LoadResource(void)
 
 
 	wglMakeCurrent(hDeviceContext, pGraphicsService->GetRenderContext());
-
 	glViewport(0, 0, width, height);					// Reset The Current Viewport
 
-	glMatrixMode(GL_PROJECTION);						// Select The Projection Matrix
-	glLoadIdentity();							// Reset The Projection Matrix
-
-	// Calculate The Aspect Ratio Of The Window
-	gluPerspective(45.0f,(GLfloat)width/(GLfloat)height,0.1f,100.0f);
-
-	glMatrixMode(GL_MODELVIEW);						// Select The Modelview Matrix
-	glLoadIdentity();							// Reset The Modelview Matrix
-
-
-
 	glShadeModel(GL_SMOOTH);
-	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	glClearDepth(1.0f);							// Depth Buffer Setup
 	glEnable(GL_DEPTH_TEST);						// Enables Depth Testing
 	glDepthFunc(GL_LEQUAL);							// The Type Of Depth Test To Do
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
-	glLoadIdentity();
-
-	glTranslatef(-1.5f,0.0f,-6.0f);					// Move Left 1.5 Units And Into The Screen 6.0
-
-	glBegin(GL_TRIANGLES);						// Drawing Using Triangles
-		glColor3f(1.0f, 1.0f, 1.0f);
-		glVertex3f( 0.0f, 1.0f, 0.0f);				// Top
-		glVertex3f(-1.0f,-1.0f, 0.0f);				// Bottom Left
-		glVertex3f( 1.0f,-1.0f, 0.0f);				// Bottom Right
-	glEnd();
-
-	SwapBuffers(hDeviceContext);
 
 	isDirty = false;
 }

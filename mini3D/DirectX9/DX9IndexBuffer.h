@@ -31,8 +31,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "DX9GraphicsService.h"
 #include "internal/IDX9Resource.h"
 
-// TODO: heed to specified index formats INT_32, INT_16
-
 namespace mini3d
 {
 class DX9IndexBuffer : public IIndexBuffer, public IDX9Resource
@@ -42,14 +40,14 @@ public:
 	
 	// ::::: Constructor & Destructor :::::::::::::::::::::::::::::::::::::::::
 	
-	DX9IndexBuffer(DX9GraphicsService* graphicsService, const void* pIndices, const unsigned int& count, const DataType& dataType = INT_16, const CullMode& cullMode = CULL_COUNTERCLOCKWIZE);
+	DX9IndexBuffer(DX9GraphicsService* graphicsService, const void* pIndices, const unsigned int& count, const DataType& dataType = INT_32, const CullMode& cullMode = CULL_COUNTERCLOCKWIZE);
 	~DX9IndexBuffer();
 
 
 	// ::::: IIndexBuffer :::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 	virtual void* GetIndices(unsigned int& sizeInBytes) const;
-	virtual void SetIndices(const void* pIndices, const unsigned int& count, const DataType& dataType = INT_16, const CullMode& cullMode = CULL_COUNTERCLOCKWIZE);
+	virtual void SetIndices(const void* pIndices, const unsigned int& count, const DataType& dataType = INT_32, const CullMode& cullMode = CULL_COUNTERCLOCKWIZE);
 
 	virtual void* Lock(unsigned int& sizeInBytes) const;
 	virtual void Unlock(const bool& dataIsChanged);
@@ -77,7 +75,7 @@ private:
 	// ::::: Private Methods ::::::::::::::::::::::::::::::::::::::::::::::::::
 
 	void UnloadIndices(void);
-
+	unsigned int GetBytesPerIndex();
 
 private:
 

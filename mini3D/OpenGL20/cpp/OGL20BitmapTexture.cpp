@@ -25,6 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include "../OGL20BitmapTexture.h"
+#include "../../error/error.h"
 #include <GL/glext.h>
 #include <GL/wglext.h>
 
@@ -54,9 +55,16 @@ void* mini3d::OGL20BitmapTexture::GetBitmap(unsigned int& sizeInBytes) const
 }
 void mini3d::OGL20BitmapTexture::SetBitmap(const void* pBitmap, const unsigned int& width, const unsigned int& height, const IBitmapTexture::BitDepth bitDepth, const ITexture::WrapStyle wrapStyle)
 {
+	// If width or height is not a power of two
+	if (width & (width - 1) != 0 || height & (height - 1))
+	{
+		throw Error::MINI3D_ERROR_NON_POWER_OF_TWO;
+	}
+
 	UnloadBitmap();
-	
-	sizeInBytes = width * height * 4;  // TODO: Depends on graphics settings
+
+	this->bitDepth = bitDepth;
+	sizeInBytes = width * height * GetBytesPerPixel();
 	this->pBitmap = malloc(sizeInBytes);
 	memcpy(this->pBitmap, pBitmap, sizeInBytes);
 
@@ -64,7 +72,6 @@ void mini3d::OGL20BitmapTexture::SetBitmap(const void* pBitmap, const unsigned i
 	this->height = height;
 	
 	this->wrapStyle = wrapStyle;
-	this->bitDepth = bitDepth;
 
 	isDirty = true;
 	LoadResource();
@@ -174,3 +181,15 @@ void mini3d::OGL20BitmapTexture::UnloadResource(void)
 	isDirty = true;
 }
 
+unsigned int mini3d::OGL20BitmapTexture::GetBytesPerPixel(void)
+{
+	switch(bitDepth)
+	{
+		case IBitmapTexture::BIT_16:
+		return 2;
+		case IBitmapTexture::BIT_32:
+		return 4;
+		case IBitmapTexture::BIT_64:
+		return 8;
+	}
+}

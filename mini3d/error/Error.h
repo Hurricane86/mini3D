@@ -24,29 +24,19 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#ifndef AURORA_IINDEXBUFFER_H
-#define AURORA_IINDEXBUFFER_H
+#ifndef AURORA_ERROR_H
+#define AURORA_ERROR_H
 
 namespace mini3d
 {
-class IIndexBuffer
+class Error
 {
 public:
-	enum CullMode { CULL_CLOCKWIZE = 0, CULL_COUNTERCLOCKWIZE = 1, CULL_NONE = 2 };
-	enum DataType { INT_16 = 0, INT_32 = 1 };
-
-	virtual ~IIndexBuffer() {};
-	
-	virtual void* GetIndices(unsigned int& sizeInBytes) const = 0;
-	virtual void SetIndices(const void* pIndices, const unsigned int& count, const IIndexBuffer::DataType& dataType = IIndexBuffer::INT_32, const IIndexBuffer::CullMode& cullMode = IIndexBuffer::CULL_COUNTERCLOCKWIZE) = 0;
-
-	virtual void* Lock(unsigned int& sizeInBytes) const = 0;
-	virtual void Unlock(const bool& dataIsChanged) = 0;
-
-	virtual unsigned int GetIndexCount() const = 0;
-
-	virtual CullMode GetCullMode() const = 0;
-	virtual void SetCullMode(const CullMode& cullMode) = 0;
+	static const unsigned int MINI3D_ERROR_UNKNOWN = 0;
+	static const unsigned int MINI3D_ERROR_NON_POWER_OF_TWO = 1;
+	static const unsigned int MINI3D_ERROR_TEXTURE_INDEX_OUTSIDE_VALID_RANGE = 2;
+	static const unsigned int MINI3D_ERROR_UNKNOWN_BACK_BUFFER_FORMAT = 3;
+	static const unsigned int MINI3D_ERROR_NO_SUPPORTED_DEPTH_STENCIL_FORMAT = 4;
 };
 }
 
