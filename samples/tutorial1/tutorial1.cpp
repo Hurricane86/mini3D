@@ -143,11 +143,10 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	HWND hWindow = (HWND)window.GetWindowHandle();
 	ShowWindow(hWindow, SW_SHOW);
 
-
 	// ----- CREATE GRAPHICS SERVICE ------------------------------------------
 	
 	//graphics = new mini3d::DX9GraphicsService();
-	graphics = new mini3d::DX9GraphicsService();
+	graphics = new mini3d::OGL20GraphicsService();
 
 	// ----- CREATE GRAPHICS RESOURCES ----------------------------------------
 
@@ -170,12 +169,12 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	unsigned int sizeInBytes;
 	
 	// create vertex shader
-	char* shaderBytes = mini3d::utilites::BinaryFileReader::ReadBytesFromFile(L"shaders/hlsl/vertexshader.hlsl", sizeInBytes); // shaders/hlsl/vertexshader.hlsl
+	char* shaderBytes = mini3d::utilites::BinaryFileReader::ReadBytesFromFile(L"shaders/glsl/vertexshader.glsl", sizeInBytes); // shaders/hlsl/vertexshader.hlsl
 	pVertexShader = graphics->CreateVertexShader(shaderBytes, sizeInBytes, vertexDeclaration, 3);
 	delete shaderBytes;
 
 	// create pixel shader
-	char* shaderBytes2 = mini3d::utilites::BinaryFileReader::ReadBytesFromFile(L"shaders/hlsl/pixelshader.hlsl", sizeInBytes); // shaders/hlsl/pixelshader.hlsl
+	char* shaderBytes2 = mini3d::utilites::BinaryFileReader::ReadBytesFromFile(L"shaders/glsl/pixelshader.glsl", sizeInBytes); // shaders/hlsl/pixelshader.hlsl
 	pPixelShader = graphics->CreatePixelShader(shaderBytes2, sizeInBytes);
 	delete shaderBytes2;
 
@@ -208,18 +207,18 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	// loop while the window is not closed
 	while(GetMessage(&Msg, NULL, 0, 0) > 0)
 	{
-	// set render prarameters
-	graphics->SetIndexBuffer(iBuffer);
-	graphics->SetVertexBuffer(vBuffer);
-	graphics->SetShaderProgram(pShaderProgram);
+		// set render prarameters
+		graphics->SetIndexBuffer(iBuffer);
+		graphics->SetVertexBuffer(vBuffer);
+		graphics->SetShaderProgram(pShaderProgram);
 
-	graphics->SetRenderTarget(pScreenRenderTarget);
+		graphics->SetRenderTarget(pScreenRenderTarget);
 
-	// Set the Texture
-	graphics->SetTexture(pTexture, 0);
+		// Set the Texture
+		graphics->SetTexture(pTexture, 0);
 
-	// Set the ViewProjection matrix
-	UpdateViewProjectionMatrix();
+		// Set the ViewProjection matrix
+		UpdateViewProjectionMatrix();
 
 		// clear render target with color
 		graphics->Clear(0.5,0.5,0.5,1.0);

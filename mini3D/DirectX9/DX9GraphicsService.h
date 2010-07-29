@@ -49,14 +49,13 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "DX9WindowRenderTarget.h"
 #include "DX9FullscreenRenderTarget.h"
 
-// TODO: keep track of states for renderstates (cull mode, zbuffer) and initialize them to proper values in constructor
 
 namespace mini3d
 {
 
 struct VertexDeclarationContainer
 {
-	// TOFO: leeks memory like crazy (vertexDeclarations should be deleted properly)
+
 	VertexDeclarationContainer(IVertexShader::VertexDataType mini3dDeclaration[], const unsigned int& count, IDirect3DVertexDeclaration9* direct3dDeclaration) : 
 								mini3dDeclaration(mini3dDeclaration), direct3dDeclaration(direct3dDeclaration), count(count), counter(1)
 	{

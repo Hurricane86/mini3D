@@ -960,7 +960,11 @@ void mini3d::DX9GraphicsService::Clear(const float& r, const float& g, const flo
 	}
 
 	// Pack the color into bits.
-	DWORD color = ((int)a * 255) & ((int)r * 255) << 8 & ((int)g * 255) << 16 & ((int)b * 255)<<24;
+	unsigned int red = static_cast<unsigned int>(r * 255) << 16;
+	unsigned int green = static_cast<unsigned int>(g * 255) << 8;
+	unsigned int blue = static_cast<unsigned int>(b * 255);
+	unsigned int alpha = static_cast<unsigned int>(a * 255) << 24;
+	DWORD color = alpha | red | green | blue;
 
 	pDevice->Clear(0, 0, flags, color, 1.0f, 0);
 }

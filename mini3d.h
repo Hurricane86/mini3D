@@ -28,7 +28,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "mini3d/utilities/PNGReader.h"
 
 #define NOMINMAX
-//#include "mini3d/OpenGL20/OGL20GraphicsService.h"
+#include "mini3d/OpenGL20/OGL20GraphicsService.h"
 #include "mini3d/DirectX9/DX9GraphicsService.h"
 
 #include "mini3d/utilities/Math3d.h"

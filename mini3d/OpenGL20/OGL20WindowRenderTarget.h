@@ -72,7 +72,8 @@ public:
 	
 	// ::::: IOGL20RenderTarget :::::::::::::::::::::::::::::::::::::::::::::::
 
-	HDC  GetRenderTargetBuffer(void) const { return hDeviceContext; }
+	HDC GetDeviceContext(void) const { return GetDC((HWND)hWindow); }
+	HGLRC GetRenderContext(void) const { return hRenderContext; }
 	GLuint GetDepthStencil(void) const { return pDepthStencil; }
 
 
@@ -89,7 +90,12 @@ private:
 
 	OGL20GraphicsService* pGraphicsService;
 
+	// The device context for the window
 	HDC hDeviceContext;
+
+	// This is a link to a windows device context
+	HGLRC hRenderContext;
+
 	GLuint pDepthStencil;
 
 	unsigned int width;

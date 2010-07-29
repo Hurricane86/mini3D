@@ -144,7 +144,7 @@ void mini3d::OGL20BitmapTexture::LoadResource(void)
 		glBindTexture(GL_TEXTURE_2D, pTexture);
 		
 		try{
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, pBitmap);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, 0);
 		}
 		catch  (GLuint error) //GL_OUT_OF_MEMORY
 		{
@@ -154,8 +154,14 @@ void mini3d::OGL20BitmapTexture::LoadResource(void)
 	}
 
 	// write bitmap data to texture
-	//TODO: This instead of doing it above so we can recreate the texture...
-	//glTexSubImage2D(pTexture, 0, 0, 0, width, height, fmt, GL_UNSIGNED_INT_8_8_8_8, pBitmap);
+	try
+	{
+		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, pBitmap);
+	}
+	catch (GLuint error)
+	{
+		isDirty = true;
+	}
 
 	// Clear the current bound texture
 	glBindTexture(GL_TEXTURE_2D, 0);

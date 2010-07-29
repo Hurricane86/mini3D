@@ -40,12 +40,25 @@ mini3d::OGL20GraphicsService::OGL20GraphicsService() :
 {
 	pOS = new OSWindows();
 	CreateInternalWindow();
+
+	// Get the device context for the window
+	hDeviceContext = GetDC(hWindow);
+
+	// Create the renderContext
 	CreateDevice();
 }
 
 mini3d::OGL20GraphicsService::~OGL20GraphicsService(void)
 {
-    wglMakeCurrent( NULL, NULL );
+	// Remove the default device context
+	DeleteDC(hDeviceContext);
+
+	// Clear the device/render context setting
+    wglMakeCurrent(0, 0);
+
+	// delete the default render context
+	wglDeleteContext(hRenderContext);
+
 	delete pOS;
 }
 
@@ -54,48 +67,25 @@ mini3d::OGL20GraphicsService::~OGL20GraphicsService(void)
 
 void mini3d::OGL20GraphicsService::CreateDevice(void)
 {
-    HDC hDeviceContext = GetDC(hWindow);
-	
-	PIXELFORMATDESCRIPTOR pfd;
-	int iFormat;
-
-	int colorBits = 24;
-	int depthBits = 32;
-
-	if (pOS->GetMonitorBitDepth() == 16)
-	{
-		colorBits = depthBits = 16;
-	}
-
-	// set the pixel format for the DC
-    ZeroMemory(&pfd, sizeof(pfd));
+	// get the pixel format for the device context
+	PIXELFORMATDESCRIPTOR pfd={0};
     pfd.nSize = sizeof(pfd);
     pfd.nVersion = 1;
-    pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
-    pfd.iPixelType = PFD_TYPE_RGBA;
-    pfd.cColorBits = colorBits;
-    pfd.cDepthBits = depthBits;
-    pfd.iLayerType = PFD_MAIN_PLANE;
-    iFormat = ChoosePixelFormat(hDeviceContext, &pfd);
+	pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER; // Make the pixel format compatible with opengl
+	pfd.iPixelType = PFD_TYPE_RGBA;
+    pfd.cColorBits = 24;
+	pfd.cDepthBits = 0;
+	pfd.iLayerType = PFD_MAIN_PLANE;
+    
+	// Get the pixel format index for the new pixel format
+	int iNewFormat = ChoosePixelFormat(hDeviceContext, &pfd);
 
-	if (!SetPixelFormat(hDeviceContext, iFormat, &pfd))
-	{
-		throw Error::MINI3D_ERROR_UNKNOWN;
-	}
-	
-	hRenderContext=wglCreateContext(hDeviceContext);
-	
-	if (!wglMakeCurrent(hDeviceContext, hRenderContext))
-	{
-		throw Error::MINI3D_ERROR_UNKNOWN;
-	}
+	// Set the pixel format for the device context
+	SetPixelFormat( hDeviceContext, iNewFormat, &pfd);
 
-	// create the shader program
-	PFNGLCREATEPROGRAMPROC glCreateProgram = (PFNGLCREATEPROGRAMPROC)wglGetProcAddress("glCreateProgram");
-	PFNGLUSEPROGRAMPROC glUseProgram = (PFNGLUSEPROGRAMPROC)wglGetProcAddress("glUseProgram");
-
-	hProgram = glCreateProgram();
-	glUseProgram(hProgram);
+	// Create a default reder context and set it as current so we can start loading graphics data to the graphics card
+	hRenderContext = wglCreateContext(hDeviceContext);
+	wglMakeCurrent(hDeviceContext, hRenderContext);
 
 }
 
@@ -146,7 +136,9 @@ void mini3d::OGL20GraphicsService::CreateInternalWindow(void)
 // Locking resources
 void mini3d::OGL20GraphicsService::BeginScene(void)
 {
-
+	glShadeModel(GL_SMOOTH);
+	glEnable(GL_DEPTH_TEST);						// Enables Depth Testing
+	glDepthFunc(GL_LEQUAL);							// The Type Of Depth Test To Do
 }
 void mini3d::OGL20GraphicsService::EndScene(void)
 {
@@ -340,6 +332,13 @@ void mini3d::OGL20GraphicsService::SetRenderTarget(IRenderTarget* pRenderTarget)
 
 	PFNGLBINDFRAMEBUFFERPROC glBindFramebuffer = (PFNGLBINDFRAMEBUFFERPROC)wglGetProcAddress("glBindFramebuffer");
 
+	if (pRenderTarget == 0)
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		wglMakeCurrent(hDeviceContext, hRenderContext);
+		return;
+	}
+
 	// This is a dynamic cast used as a typecheck, code police says this should be solved with virtual function calls instead
 	OGL20RenderTargetTexture* pOGL20RenderTargetTexture = dynamic_cast<OGL20RenderTargetTexture*>(pRenderTarget);
 
@@ -371,15 +370,34 @@ void mini3d::OGL20GraphicsService::SetRenderTarget(IRenderTarget* pRenderTarget)
 		else
 		{
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
-			wglMakeCurrent(pOGL20WindowRenderTarget->GetRenderTargetBuffer(), hRenderContext);
+			wglMakeCurrent(pOGL20WindowRenderTarget->GetDeviceContext(), hRenderContext);
+			glViewport(0,0,pOGL20WindowRenderTarget->GetWidth(), pOGL20WindowRenderTarget->GetHeight());
 		}
 	
 		pCurrentRenderTarget = pRenderTarget;
 		return;
 	}
 
+	// This is a dynamic cast used as a typecheck, code police says this should be solved with virtual function calls instead
+	OGL20FullscreenRenderTarget* pOGL20FullscreenRenderTarget = dynamic_cast<OGL20FullscreenRenderTarget*>(pRenderTarget);
+
+	if (pOGL20FullscreenRenderTarget != 0)
+	{
+
+		if (pRenderTarget == 0)
+		{
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		}
+		else
+		{
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			wglMakeCurrent(pOGL20FullscreenRenderTarget->GetDeviceContext(), hRenderContext);
+		}
 	
-	//TODO: Default case
+		pCurrentRenderTarget = pRenderTarget;
+		return;
+	}
+
 }
 
 // DepthStencil
@@ -497,6 +515,7 @@ void mini3d::OGL20GraphicsService::Draw()
 	glDrawElements(GL_TRIANGLES, pCurrentIndexBuffer->GetIndexCount(), GL_UNSIGNED_INT, 0);
 	glDisableClientState(GL_VERTEX_ARRAY);
 	glDisableClientState(GL_INDEX_ARRAY);
+
 }
 void mini3d::OGL20GraphicsService::DrawIndices(const unsigned int& startIndex, const unsigned int& numIndices)
 {

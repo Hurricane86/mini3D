@@ -171,11 +171,46 @@ void mini3d::DX9BitmapTexture::LoadResource(void)
 	char* pBitmapData;
 	unsigned int bytesPerPixel = GetBytesPerPixel();
 
+	// When copying we need to shift the bits from RBGA to ARGB which is used in DirectX9
 	for (unsigned int i = 0; i < height; i++)
 	{
 		pD3DData = (char*)textureDataRectangle.pBits + i * textureDataRectangle.Pitch;
 		pBitmapData = (char*)pBitmap + width * i * bytesPerPixel;
-		memcpy(pD3DData, pBitmapData, rowSizeInBytes);
+
+		if (bitDepth == BIT_32)
+		{
+			for (int j = 0; j < rowSizeInBytes; j += bytesPerPixel)
+			{
+				// ARGB > RGBA
+				pD3DData[j] = pBitmapData[j + 1];
+				pD3DData[j + 1] = pBitmapData[j + 2];
+				pD3DData[j + 2] = pBitmapData[j + 3];
+				pD3DData[j + 3] = pBitmapData[j];
+				//memcpy(pD3DData, pBitmapData, rowSizeInBytes);
+			}
+		}
+		else if (bitDepth == BIT_64)
+		{
+			for (int j = 0; j < rowSizeInBytes; j += bytesPerPixel)
+			{
+				// ARGB > RGBA
+				pD3DData[j] = pBitmapData[j + 1];
+				pD3DData[j + 1] = pBitmapData[j + 2];
+				pD3DData[j + 2] = pBitmapData[j + 3];
+				pD3DData[j + 3] = pBitmapData[j];
+				//memcpy(pD3DData, pBitmapData, rowSizeInBytes);
+			}
+		}
+		else if (bitDepth == BIT_16)
+		{
+			for (int j = 0; j < rowSizeInBytes; j += bytesPerPixel)
+			{
+				// ARGB > RGBA
+				pD3DData[j] = pBitmapData[j] << 1 + pBitmapData[j + 1] >> 1;
+				pD3DData[j + 1] = pBitmapData[j] >> 1 + pBitmapData[j + 1] << 1;
+				//memcpy(pD3DData, pBitmapData, rowSizeInBytes);
+			}
+		}
 	}
 
 	pSurface->UnlockRect();

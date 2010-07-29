@@ -72,14 +72,13 @@ private:
 		wc.hCursor       = LoadCursor(NULL, IDC_ARROW);
 		wc.hbrBackground = (HBRUSH)(COLOR_WINDOW+1);
 		wc.lpszMenuName  = NULL;
-		wc.lpszClassName = "mini3d";
+		wc.lpszClassName = "mini3D";
 		wc.hIconSm       = LoadIcon(NULL, IDI_APPLICATION);
 
 		if(!RegisterClassEx(&wc))
 		{
 			MessageBox(NULL, "Window Registration Failed!", "Error!",
 				MB_ICONEXCLAMATION | MB_OK);
-			return 0;
 		}
 
 		windowClass = wc;
@@ -87,11 +86,11 @@ private:
 
 		HWND hWindow = CreateWindowEx(
 			WS_EX_CLIENTEDGE,
-			"mini3d",
-			"The title of my window",
+			"mini3D",
+			"Mini3D",
 			WS_OVERLAPPEDWINDOW,
 			CW_USEDEFAULT, CW_USEDEFAULT, width, height,
-			NULL, NULL, hInstance, NULL);
+			0, 0, hInstance, 0);
 
 		return hWindow;
 	}

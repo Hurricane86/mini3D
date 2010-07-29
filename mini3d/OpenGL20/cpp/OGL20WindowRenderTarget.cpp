@@ -33,7 +33,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 std::map<int, mini3d::OGL20WindowRenderTarget*> mini3d::OGL20WindowRenderTarget::windowMap;
 
 mini3d::OGL20WindowRenderTarget::OGL20WindowRenderTarget(OGL20GraphicsService* pGraphicsService, const unsigned int& width, const unsigned int& height, const int& windowHandle, const bool& depthTestEnabled, const Quality& quality) : 
-	pGraphicsService(pGraphicsService), pScreenRenderTarget(0), pDepthStencil(0), quality(quality)
+	pGraphicsService(pGraphicsService), pScreenRenderTarget(0), pDepthStencil(0), quality(quality), hDeviceContext(0)
 {
 	SetWindowRenderTarget(width, height, windowHandle, depthTestEnabled, quality);
 	pGraphicsService->AddResource(this);
@@ -74,6 +74,15 @@ void mini3d::OGL20WindowRenderTarget::SetWindowRenderTarget(const unsigned int& 
 
 	// set the variables from the call
 	this->hWindow = windowHandle;
+	
+	// Delete the old device context
+	if (hDeviceContext != 0)
+		DeleteDC(hDeviceContext);
+
+	// Get new device context
+	hDeviceContext = GetDC((HWND)hWindow);
+
+	// set parameters
 	this->width = width;
 	this->height = height;
 	this->depthTestEnabled = depthTestEnabled;
@@ -88,22 +97,20 @@ void mini3d::OGL20WindowRenderTarget::Display(void)
 	if (hDeviceContext == 0)
 		return;
 
-	///// Make sure we do an endScene before we present (DirectX9 specific).
-	//if (pGraphicsService->isDrawingScene == true)
-	//	pGraphicsService->EndScene();
+	//HDC dc = wglGetCurrentDC();
+
+	// Only swap if we are calling swap on the currently bound device context
+	//if (dc != hDeviceContext)
+		//return;
 
 	SwapBuffers(hDeviceContext);
 }
 
 void mini3d::OGL20WindowRenderTarget::LoadResource(void)
 {
-
-	// get the device context (DC)
-	hDeviceContext = GetDC((HWND)hWindow);
-
 	PIXELFORMATDESCRIPTOR pfd;
 	int iFormat;
-
+	
 	int colorBits = 24;
 	int depthBits = 32;
 
@@ -131,20 +138,7 @@ void mini3d::OGL20WindowRenderTarget::LoadResource(void)
 	bufferWidth = width;
 	bufferHeight = height;
 	hBufferWindow = hWindow;
-
-	if (pGraphicsService->GetRenderContext() == 0)
-	{
-		pGraphicsService->SetRenderContext(wglCreateContext(hDeviceContext));
-	}
-
-
-	wglMakeCurrent(hDeviceContext, pGraphicsService->GetRenderContext());
-	glViewport(0, 0, width, height);					// Reset The Current Viewport
-
-	glShadeModel(GL_SMOOTH);
-	glEnable(GL_DEPTH_TEST);						// Enables Depth Testing
-	glDepthFunc(GL_LEQUAL);							// The Type Of Depth Test To Do
-
+	
 	isDirty = false;
 }
 
@@ -158,6 +152,9 @@ void mini3d::OGL20WindowRenderTarget::UnloadResource(void)
 
 		ReleaseDC( (HWND)hWindow, hDeviceContext );
 		hDeviceContext = 0;
+
+		wglDeleteContext(hRenderContext);
+		hRenderContext = 0;
 	}
 
 	isDirty = true;
