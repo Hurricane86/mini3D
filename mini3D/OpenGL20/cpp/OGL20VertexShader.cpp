@@ -93,9 +93,6 @@ void mini3d::OGL20VertexShader::LoadResource(void)
 	// update the vertex Attributes
 	CreateOGL20VertexAttributes();
 
-	// TODO: What about this one and the one below?
-	// load the vertex declaration into the pool
-	//pGraphicsService->PoolVertexDeclaration(vertexDeclaration);
 }
 
 void mini3d::OGL20VertexShader::UnloadResource(void)
@@ -104,20 +101,11 @@ void mini3d::OGL20VertexShader::UnloadResource(void)
 	{
 		PFNGLDELETESHADERPROC glDeleteShader = (PFNGLDELETESHADERPROC)wglGetProcAddress("glDeleteShader");
 
-		// if this is the currently loaded pixel shader, release it
-		//if (pGraphicsService_->GetVertexShader() == this)
-		//	pGraphicsService_->SetVertexShader(0);
-
 		glDeleteShader(pShaderBuffer);
 		pShaderBuffer = 0;
 	}
 
 	isDirty = true;
-
-	// TODO: What about this one and the one above?
-	// remove the vertex declaration from the pool
-	// pGraphicsService_->ReleaseVertexDeclaration(vertexDeclaration_);
-
 }
 
 void mini3d::OGL20VertexShader::CreateOGL20VertexAttributes()
