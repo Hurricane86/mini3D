@@ -27,13 +27,17 @@ OTHER DEALINGS IN THE SOFTWARE.
 #ifndef AURORA_IWINDOWRENDERTARGET_H
 #define AURORA_IWINDOWRENDERTARGET_H
 
-#include "internal/IScreenRenderTarget.h"
+#include "internal\IRenderTarget.h"
 
 namespace mini3d
 {
-class IWindowRenderTarget : public virtual IScreenRenderTarget
+class IWindowRenderTarget : public virtual IRenderTarget
 {
 public:
+
+	enum ScreenState { SCREEN_STATE_WINDOWED = 0, SCREEN_STATE_FULLSCREEN = 1 };
+	
+	enum Quality{QUALITY_MINIMUM, QUALITY_LOW, QUALITY_MEDIUM, QUALITY_HIGH, QUALITY_MAXIMUM};
 
 	virtual ~IWindowRenderTarget() {};
 
@@ -41,11 +45,19 @@ public:
 	
 	virtual unsigned int GetWidth() const = 0;
 	virtual unsigned int GetHeight() const = 0;
+	virtual void SetSize(const int& width, const int& height) = 0;
+
+	virtual unsigned int GetFullscreenWidth() const = 0;
+	virtual unsigned int GetFullscreenHeight() const = 0;
+	virtual void SetFullscreenSize(const int& width, const int& height) = 0;
 
 	virtual bool GetDepthTestEnabled() const = 0;
 	virtual Quality GetQuality() const = 0;
 	virtual int GetWindowHandle() const = 0;
 	
+	virtual ScreenState GetScreenState() const = 0;
+	virtual void SetScreenState(ScreenState value) = 0;
+
 	virtual void Display() = 0;
 };
 }

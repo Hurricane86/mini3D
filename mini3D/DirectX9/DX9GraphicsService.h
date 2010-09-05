@@ -47,7 +47,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "DX9RenderTargetTexture.h"
 #include "DX9DepthStencil.h"
 #include "DX9WindowRenderTarget.h"
-#include "DX9FullscreenRenderTarget.h"
 
 
 namespace mini3d
@@ -146,7 +145,7 @@ private:
 	//IDirect3DSurface9* pCurrentDepthStencilBuffer;
 	IDirect3DSurface9* pDefaultRenderTarget;
 	IDirect3DSurface9* pDefaultDepthStencilSurface;
-	IScreenRenderTarget* pDefaultSwapChain;
+	IWindowRenderTarget* pDefaultSwapChain;
 	D3DPRESENT_PARAMETERS presentationParameters;
 
 public:
@@ -166,6 +165,7 @@ public:
 		return pDefaultSwapChain != 0; 
 	};
 
+
 	// Get Graphics Card Capabilities
 	virtual int GetMaxTextures() const;
 	virtual int GetMaxTextureSize() const;
@@ -174,7 +174,7 @@ public:
 
 	// Create Resources
 	virtual IWindowRenderTarget* CreateWindowRenderTarget(const unsigned int& width, const unsigned int& height, const int& hWindow, const bool& depthTestEnabled, const IWindowRenderTarget::Quality& quality);
-	virtual IFullscreenRenderTarget* CreateFullscreenRenderTarget(const unsigned int& width, const unsigned int& height, const int& hWindow, const bool& depthTestEnabled, const IFullscreenRenderTarget::Quality& quality);
+//	virtual IFullscreenRenderTarget* CreateFullscreenRenderTarget(const unsigned int& width, const unsigned int& height, const int& hWindow, const bool& depthTestEnabled, const IFullscreenRenderTarget::Quality& quality);
 	virtual IRenderTargetTexture* CreateRenderTargetTexture(const unsigned int& width, const unsigned int& height, const bool& depthTestEnabled);
 	virtual IBitmapTexture* CreateBitmapTexture(const void* pBitmap, const unsigned int& width, const unsigned int& height, const IBitmapTexture::BitDepth bitDepth = IBitmapTexture::BIT_32, const ITexture::WrapStyle wrapStyle = ITexture::WRAP_TILE);
 	virtual IVertexBuffer* CreateVertexBuffer(const void* pVertices,const  unsigned int& count, const unsigned int& vertexSizeInBytes);
@@ -225,7 +225,6 @@ public:
 	IDirect3DDevice9* GetDevice();
 	IDirect3D9* GetDirect3D() { return pD3D; };
 	D3DPRESENT_PARAMETERS GetPresentationParameters();
-
 
 private:
 

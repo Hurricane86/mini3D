@@ -198,4 +198,7 @@ unsigned int mini3d::OGL20BitmapTexture::GetBytesPerPixel(void)
 		case IBitmapTexture::BIT_64:
 		return 8;
 	}
+
+	// error should not end up here!
+	return 0;
 }

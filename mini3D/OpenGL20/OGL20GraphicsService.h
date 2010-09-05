@@ -52,7 +52,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "OGL20IndexBuffer.h"
 #include "OGL20RenderTargetTexture.h"
 #include "OGL20WindowRenderTarget.h"
-#include "OGL20FullscreenRenderTarget.h"
 #include "os\IOS.h"
 
 namespace mini3d
@@ -74,11 +73,10 @@ private:
 
 	// currently loaded resources
 	IRenderTarget* pCurrentRenderTarget;
+	IWindowRenderTarget* pCurrentWindowRenderTarget; // Keeps track of the windowrendertarget containing the current bound devicecontext (this is OpenGL specific)
 	IDepthStencil* pCurrentDepthStencil;
 	IVertexBuffer* pCurrentVertexBuffer;
 	IIndexBuffer* pCurrentIndexBuffer;
-	//IPixelShader* pCurrentPixelShader;
-	//IVertexShader* pCurrentVertexShader;
 	IShaderProgram* pCurrentShaderProgram;
 	ITexture** currentITextures;
 
@@ -91,6 +89,7 @@ private:
 	IVertexShader* pLostDeviceVertexShader;
 	ITexture** lostDeviceCurrentITextures;
 
+
 	// other state tracking
 	bool isDrawingScene;
 	
@@ -101,7 +100,7 @@ private:
 	GLuint hProgram;
 	ITexture* hCurrentTexture;
 	bool deviceLost;
-	bool isFullscreen;
+	OGL20WindowRenderTarget::ScreenState isFullscreen;
 
 	// number of currently set vertex attributes
 	unsigned int numVertexAttributes;
@@ -118,8 +117,8 @@ public:
 	// IGRAPHICS SERVICE INTERFACE --------------------------------------------
 
 	// Properties
-	virtual bool GetIsFullScreen() { return isFullscreen; };
-	virtual void SetIsFullScreen(bool value) { isFullscreen = value; };
+	virtual OGL20WindowRenderTarget::ScreenState GetIsFullScreen() { return isFullscreen; };
+	virtual void SetIsFullScreen(OGL20WindowRenderTarget::ScreenState value) { isFullscreen = value; };
 	
 	virtual HGLRC GetRenderContext() const { return hRenderContext; };
 	virtual void SetRenderContext(HGLRC hRenderContext) { this->hRenderContext = hRenderContext; };	
@@ -132,7 +131,6 @@ public:
 
 	// Create Resources
 	virtual IWindowRenderTarget* CreateWindowRenderTarget(const unsigned int& width, const unsigned int& height, const int& hWindow, const bool& depthTestEnabled, const IWindowRenderTarget::Quality& quality);
-	virtual IFullscreenRenderTarget* CreateFullscreenRenderTarget(const unsigned int& width, const unsigned int& height, const int& hWindow, const bool& depthTestEnabled, const IFullscreenRenderTarget::Quality& quality);
 	virtual IRenderTargetTexture* CreateRenderTargetTexture(const unsigned int& width, const unsigned int& height, const bool& depthTestEnabled);
 	virtual IBitmapTexture* CreateBitmapTexture(const void* pBitmap, const unsigned int& width, const unsigned int& height, const IBitmapTexture::BitDepth bitDepth = IBitmapTexture::BIT_32, const ITexture::WrapStyle wrapStyle = ITexture::WRAP_TILE);
 	virtual IVertexBuffer* CreateVertexBuffer(const void* pVertices,const  unsigned int& count, const unsigned int& vertexSizeInBytes);
@@ -154,8 +152,11 @@ public:
 	virtual ITexture* GetTexture(const unsigned int& index) const;
 	virtual void SetTexture(ITexture* pTexture, const unsigned int& index);
 	
-	virtual IRenderTarget* GetRenderTarget() const;
+	virtual IRenderTarget* GetRenderTarget() const { return pCurrentRenderTarget; }
 	virtual void SetRenderTarget(IRenderTarget* pRenderTarget);
+
+	// get the windowrendertarget containing the current bound devicecontext (this is OpenGL specific)
+	inline IWindowRenderTarget* GetWindowRenderTarget() const {return pCurrentWindowRenderTarget;}
 	
 	virtual IDepthStencil* GetDepthStencil() const;
 	virtual void SetDepthStencil(IDepthStencil* pDepthStencil);
@@ -184,7 +185,9 @@ public:
 
 	// PUBLIC MEMBER FUNCTIONS ------------------------------------------------
 
-	IOS* GetOS() { return pOS; }
+	IOS* GetOS() { return pOS; };
+
+	IWindowRenderTarget* GetScreenRenderTarget() { return pCurrentWindowRenderTarget; };
 
 private:
 	

@@ -85,10 +85,10 @@ private:
 
 
 		HWND hWindow = CreateWindowEx(
-			WS_EX_CLIENTEDGE,
+			WS_EX_APPWINDOW | WS_EX_WINDOWEDGE,
 			"mini3D",
 			"Mini3D",
-			WS_OVERLAPPEDWINDOW,
+			WS_OVERLAPPEDWINDOW | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
 			CW_USEDEFAULT, CW_USEDEFAULT, width, height,
 			0, 0, hInstance, 0);
 

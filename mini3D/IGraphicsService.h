@@ -38,7 +38,6 @@ OTHER DEALINGS IN THE SOFTWARE.
 #include "IVertexBuffer.h"
 #include "IIndexBuffer.h"
 #include "IWindowRenderTarget.h"
-#include "IFullscreenRenderTarget.h"
 #include "IShaderProgram.h"
 
 namespace mini3d
@@ -58,7 +57,7 @@ public:
 
 	// Create Resources
 	virtual IWindowRenderTarget* CreateWindowRenderTarget(const unsigned int& width, const unsigned int& height, const int& windowHandle, const bool& depthTestEnabled, const IWindowRenderTarget::Quality& quality) = 0;
-	virtual IFullscreenRenderTarget* CreateFullscreenRenderTarget(const unsigned int& width, const unsigned int& height, const int& hWindow, const bool& depthTestEnabled, const IFullscreenRenderTarget::Quality& quality) = 0;
+	//virtual IFullscreenRenderTarget* CreateFullscreenRenderTarget(const unsigned int& width, const unsigned int& height, const int& hWindow, const bool& depthTestEnabled, const IFullscreenRenderTarget::Quality& quality) = 0;
 	virtual IRenderTargetTexture* CreateRenderTargetTexture(const unsigned int& width, const unsigned int& height, const bool& depthTestEnabled) = 0;
 	virtual IBitmapTexture* CreateBitmapTexture(const void* pBitmap, const unsigned int& width, const unsigned int& height, const IBitmapTexture::BitDepth bitDepth = IBitmapTexture::BIT_32, const ITexture::WrapStyle wrapStyle = ITexture::WRAP_TILE) = 0;
 	virtual IVertexBuffer* CreateVertexBuffer(const void* pVertices,const  unsigned int& count, const unsigned int& vertexSizeInBytes) = 0;

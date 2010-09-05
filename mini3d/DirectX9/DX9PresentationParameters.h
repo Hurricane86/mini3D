@@ -29,7 +29,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 #include <d3d9.h>
 #include "DX9GraphicsSettings.h"
-#include "..\internal\IScreenRenderTarget.h"
+#include "..\IWindowRenderTarget.h"
 #include "..\error\Error.h"
 
 namespace mini3d
@@ -49,7 +49,7 @@ public:
 	{
 	}
 
-	static D3DPRESENT_PARAMETERS GetPresentationParametersFromGraphicsSettings(IDirect3D9* pD3D, IScreenRenderTarget* pScreenRenderTarget)
+	static D3DPRESENT_PARAMETERS GetPresentationParametersFromGraphicsSettings(IDirect3D9* pD3D, IWindowRenderTarget* pScreenRenderTarget)
 	{
 		// get the display mode
 		D3DDISPLAYMODE d3ddm;
@@ -60,7 +60,7 @@ public:
 		ZeroMemory(&d3dpp, sizeof(d3dpp));
 
 		// For storing the quality setting as defined in if statements below
-		IScreenRenderTarget::Quality quality;
+		IWindowRenderTarget::Quality quality;
 
 		// If pScreenRenderTarget != 0 then we have a screen render target that should be used as the default screen render target
 		// This is used for fullscreen mode
@@ -68,15 +68,15 @@ public:
 		{
 			quality = pScreenRenderTarget->GetQuality();
 			// safe because only DX9FullscreenRenderTargets are assigned to pFullscreenRenderTarget
-			d3dpp.BackBufferWidth = pScreenRenderTarget->GetWidth();
-			d3dpp.BackBufferHeight = pScreenRenderTarget->GetHeight();
+			d3dpp.BackBufferWidth = pScreenRenderTarget->GetFullscreenWidth();
+			d3dpp.BackBufferHeight = pScreenRenderTarget->GetFullscreenHeight();
 			d3dpp.Windowed = false;
 			d3dpp.EnableAutoDepthStencil = pScreenRenderTarget->GetDepthTestEnabled();
 		}
 		// Create an "empty" default render target
 		else
 		{
-			quality = IScreenRenderTarget::QUALITY_MINIMUM;
+			quality = IWindowRenderTarget::QUALITY_MINIMUM;
 			d3dpp.BackBufferWidth = 1; // Default backbuffer should be 1x1 and is never used
 			d3dpp.BackBufferHeight = 1; // Default backbuffer should be 1x1 and is never used
 			d3dpp.Windowed = true;
@@ -98,7 +98,7 @@ public:
 	}
 
 
-	static void CheckMultisampleFormat(IDirect3D9* pD3D, IScreenRenderTarget::Quality& quality, bool fullscreen)
+	static void CheckMultisampleFormat(IDirect3D9* pD3D, IWindowRenderTarget::Quality& quality, bool fullscreen)
 	{
 
 		D3DDISPLAYMODE displayMode;
@@ -114,27 +114,27 @@ public:
 															FromMultisampleFormat(quality),
 															&pQualityLevels)))
 		{
-			quality = (IScreenRenderTarget::Quality)((int)quality - 1);
+			quality = (IWindowRenderTarget::Quality)((int)quality - 1);
 		}
 	}
 
-	static D3DMULTISAMPLE_TYPE FromMultisampleFormat(IScreenRenderTarget::Quality quality)
+	static D3DMULTISAMPLE_TYPE FromMultisampleFormat(IWindowRenderTarget::Quality quality)
 	{
 		switch(quality)
 		{
-		case IScreenRenderTarget::QUALITY_MINIMUM:
+		case IWindowRenderTarget::QUALITY_MINIMUM:
 				return D3DMULTISAMPLE_NONE;
 				break;
-			case IScreenRenderTarget::QUALITY_LOW:
+			case IWindowRenderTarget::QUALITY_LOW:
 				return D3DMULTISAMPLE_2_SAMPLES;
 				break;
-			case IScreenRenderTarget::QUALITY_MEDIUM:
+			case IWindowRenderTarget::QUALITY_MEDIUM:
 				return D3DMULTISAMPLE_4_SAMPLES;
 				break;
-			case IScreenRenderTarget::QUALITY_HIGH:
+			case IWindowRenderTarget::QUALITY_HIGH:
 				return D3DMULTISAMPLE_8_SAMPLES;
 				break;
-			case IScreenRenderTarget::QUALITY_MAXIMUM:
+			case IWindowRenderTarget::QUALITY_MAXIMUM:
 				return D3DMULTISAMPLE_16_SAMPLES;
 				break;
 		}

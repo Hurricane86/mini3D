@@ -118,9 +118,7 @@ MSG Msg;
 mini3d::IGraphicsService* graphics;
 
 // Graphics Resources
-mini3d::IScreenRenderTarget* pScreenRenderTarget;
 mini3d::IWindowRenderTarget* pWindowRenderTarget;
-mini3d::IFullscreenRenderTarget* pFullScreenRenderTarget;
 
 mini3d::IIndexBuffer* iBuffer;
 mini3d::IVertexBuffer* vBuffer;
@@ -151,8 +149,7 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	// ----- CREATE GRAPHICS RESOURCES ----------------------------------------
 
 	// create a render target (mini3d does not have a default render target)
-	pWindowRenderTarget = graphics->CreateWindowRenderTarget(640, 480,(int)hWindow, true, mini3d::IScreenRenderTarget::QUALITY_MINIMUM);
-	//pFullScreenRenderTarget = graphics->CreateFullscreenRenderTarget(1680, 1050,(int)hWindow, true, mini3d::IScreenRenderTarget::QUALITY_MINIMUM);
+	pWindowRenderTarget = graphics->CreateWindowRenderTarget(640, 480,(int)hWindow, true, mini3d::IWindowRenderTarget::QUALITY_MINIMUM);
 
 	// create index buffer
 	iBuffer = graphics->CreateIndexBuffer(indices, 36);
@@ -192,8 +189,7 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	graphics->SetVertexBuffer(vBuffer);
 	graphics->SetShaderProgram(pShaderProgram);
 
-	pScreenRenderTarget = pWindowRenderTarget;
-	graphics->SetRenderTarget(pScreenRenderTarget);
+	graphics->SetRenderTarget(pWindowRenderTarget);
 
 	// Set the Texture
 	graphics->SetTexture(pTexture, 0);
@@ -212,7 +208,7 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 		graphics->SetVertexBuffer(vBuffer);
 		graphics->SetShaderProgram(pShaderProgram);
 
-		graphics->SetRenderTarget(pScreenRenderTarget);
+		graphics->SetRenderTarget(pWindowRenderTarget);
 
 		// Set the Texture
 		graphics->SetTexture(pTexture, 0);
@@ -227,7 +223,7 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 		graphics->Draw();
 
 		// do a flip
-		pScreenRenderTarget->Display();
+		pWindowRenderTarget->Display();
 
 		// window message stuff
 		TranslateMessage(&Msg);
@@ -243,8 +239,7 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	delete pPixelShader;
 	delete pVertexShader;
 	delete pShaderProgram;
-	delete pScreenRenderTarget;
-	delete pFullScreenRenderTarget;
+	delete pWindowRenderTarget;
 	delete graphics;
 
 	return Msg.wParam;
@@ -294,12 +289,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 				// Set the screenrendertarget to the correct one
 				if (fullscreen == true)
-					pScreenRenderTarget = pFullScreenRenderTarget;
+					pWindowRenderTarget->SetScreenState(mini3d::IWindowRenderTarget::SCREEN_STATE_FULLSCREEN);
 				else
-					pScreenRenderTarget = pWindowRenderTarget;
-
-				// set the correct rendertarget depeding on fullscreen mode
-				graphics->SetRenderTarget(pScreenRenderTarget);
+					pWindowRenderTarget->SetScreenState(mini3d::IWindowRenderTarget::SCREEN_STATE_WINDOWED);
 			}
 		break;
 		case WM_MOUSEMOVE:

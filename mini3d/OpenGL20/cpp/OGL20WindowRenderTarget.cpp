@@ -25,6 +25,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include "../OGL20WindowRenderTarget.h"
+#include "../OGL20GraphicsService.h"
 #include "../../error/Error.h"
 #include <GL/glu.h>
 #include <GL/glext.h>
@@ -33,8 +34,11 @@ OTHER DEALINGS IN THE SOFTWARE.
 std::map<int, mini3d::OGL20WindowRenderTarget*> mini3d::OGL20WindowRenderTarget::windowMap;
 
 mini3d::OGL20WindowRenderTarget::OGL20WindowRenderTarget(OGL20GraphicsService* pGraphicsService, const unsigned int& width, const unsigned int& height, const int& windowHandle, const bool& depthTestEnabled, const Quality& quality) : 
-	pGraphicsService(pGraphicsService), pScreenRenderTarget(0), pDepthStencil(0), quality(quality), hDeviceContext(0)
+	pGraphicsService(pGraphicsService), pScreenRenderTarget(0), pDepthStencil(0), quality(quality), hDeviceContext(0), fullscreenWidth(0), fullscreenHeight(0)
 {
+	fullscreenWidth = 1680;
+	fullscreenHeight = 1050;
+	screenState = SCREEN_STATE_WINDOWED;
 	SetWindowRenderTarget(width, height, windowHandle, depthTestEnabled, quality);
 	pGraphicsService->AddResource(this);
 }
@@ -43,6 +47,30 @@ mini3d::OGL20WindowRenderTarget::~OGL20WindowRenderTarget(void)
 {
 	UnloadResource();
 	pGraphicsService->RemoveResource(this);
+}
+
+void mini3d::OGL20WindowRenderTarget::SetFullscreenSize(const int& width, const int& height)
+{ 
+
+	if (fullscreenWidth == width && fullscreenHeight == height)
+		return;
+	
+	fullscreenWidth = width; 
+	fullscreenHeight = height;
+
+	if (pGraphicsService->GetScreenRenderTarget() == this) 
+		pGraphicsService->SetRenderTarget(this); 
+}
+
+void mini3d::OGL20WindowRenderTarget::SetScreenState(ScreenState value)
+{ 
+	if (screenState == value)
+		return;
+
+	screenState = value;
+
+	if (pGraphicsService->GetScreenRenderTarget() == this) 
+		pGraphicsService->SetRenderTarget(this);
 }
 
 void mini3d::OGL20WindowRenderTarget::SetWindowRenderTarget(const unsigned int& width, const unsigned int& height, const int& windowHandle, const bool& depthTestEnabled, const Quality& quality)

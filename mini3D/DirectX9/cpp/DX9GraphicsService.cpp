@@ -705,17 +705,33 @@ void mini3d::DX9GraphicsService::SetRenderTarget(IRenderTarget* pRenderTarget)
 	// This method is tricky and complex because if the user sets a fullscreen render target
 	// we need to reset the device to get a new default fullscreen swapchain (and the opposite when we switch back...)
 	
-	// Dont set the rendertarget if it is already set
-	if (pRenderTarget == pCurrentRenderTarget)
-		return;
-	
+
+	// This is a dynamic cast used as a typecheck, code police says this should be solved with virtual function calls instead
+	DX9WindowRenderTarget* pDX9WindowRenderTarget = dynamic_cast<DX9WindowRenderTarget*>(pRenderTarget);
+
 
 	// ---------- SETTING DEFAULT RENDER TARGET -------------------------------
+	if (pRenderTarget == 0)
+	{
+		// Dont set the rendertarget if it is already set
+		if (pRenderTarget == pCurrentRenderTarget)
+			return;
+
+		pDevice->SetRenderTarget(0, pDefaultRenderTarget);
+		pDevice->SetDepthStencilSurface(pDefaultDepthStencilSurface);
+		
+		pCurrentRenderTarget = pRenderTarget;
+		return;	
+	}
 
 	// pDefaultSwapChain == 0 if device was not created in fullscreen
 	// Setting the render target to 0 or the pDefaultSwapChain will restore the default render target
-	if (pRenderTarget == pDefaultSwapChain)
+	if ((pRenderTarget == pDefaultSwapChain) && (pDX9WindowRenderTarget != 0) && (pDX9WindowRenderTarget->GetScreenState() == IWindowRenderTarget::SCREEN_STATE_FULLSCREEN))
 	{
+		// Dont set the rendertarget if it is already set
+		if (pRenderTarget == pCurrentRenderTarget)
+			return;
+
 		pDevice->SetRenderTarget(0, pDefaultRenderTarget);
 		pDevice->SetDepthStencilSurface(pDefaultDepthStencilSurface);
 		
@@ -723,59 +739,43 @@ void mini3d::DX9GraphicsService::SetRenderTarget(IRenderTarget* pRenderTarget)
 		return;
 	}
 
+	// ---------- SCREEN RENDER TARGETS ------------------------------------------
 
-	// ---------- SETTING FULLSCREEN RENDER TARGET ----------------------------
-
-	// This is a dynamic cast used as a typecheck, code police says this should be solved with virtual function calls instead
-	DX9FullscreenRenderTarget* pDX9FullscreenRenderTarget = dynamic_cast<DX9FullscreenRenderTarget*>(pRenderTarget);
-
-	// if we are setting a fullscreen render target (other than the default, see above)
-	if (pDX9FullscreenRenderTarget != 0)
-	{
-		// Set the current rendertarget to the new fullscreen render target so it gets set when we restore the device
-		pCurrentRenderTarget = pDX9FullscreenRenderTarget;
-
-		//pDX9FullcreenRenderTarget is not the pDefaultSwapChain because that was checked above. so release the device
-		ReleaseDevice();
-		
-		//We now need to recreate the device with pDX9FullscreenRenderTarget as the pDefualtIRenderTarget.
-		pDefaultSwapChain = pDX9FullscreenRenderTarget;
-
-		// Restore the device pDX9FullscreenRenderTarget as the default swapchain
-		RestoreDevice();
-
-		// done
-		return;
-	}
-
-
-	// ---------- SETTING WINDOW RENDER TARGET --------------------------------
-
-	// This is a dynamic cast used as a typecheck, code police says this should be solved with virtual function calls instead
-	DX9WindowRenderTarget* pDX9WindowRenderTarget = dynamic_cast<DX9WindowRenderTarget*>(pRenderTarget);
-
-	// if we are setting a rendertarget that is a window render target and the default swapchain is set to a fullscreenrendertarget
-	if (pDX9WindowRenderTarget != 0 && pDefaultSwapChain != 0)
+	// If the type check above succeded we need to check if we should change the default swap chain
+	if (pDX9WindowRenderTarget != 0)
 	{
 
-		// Set the current rendertarget to the new window render target so it gets set when we resotre the device
-		pCurrentRenderTarget = pDX9WindowRenderTarget;
+		bool isFullscreen = (pDX9WindowRenderTarget->GetScreenState() == IWindowRenderTarget::SCREEN_STATE_FULLSCREEN);
 
-		// Release the device
-		ReleaseDevice();
+		// if this rendertarget is already the current and the correct screen state is set, return
+		if ((pRenderTarget == pCurrentRenderTarget) && (isFullscreen == GetIsFullScreen()))
+			return;
 
-		//We now need to recreate the device with pDX9FullscreenRenderTarget as the pDefualtIRenderTarget
-		pDefaultSwapChain = 0;
+		// if the device is not created for the screen mode we want to set, we need to recreate the device
+		if (isFullscreen != GetIsFullScreen())
+		{
+			// Set the current rendertarget to the new screen render target so it gets set when we restore the device
+			pCurrentRenderTarget = pDX9WindowRenderTarget;
 
-		// restore the device with an empty internal default swapchain and this window render target as the current render target
-		RestoreDevice();
+			//pDX9FullcreenRenderTarget is not the pDefaultSwapChain because that was checked above. so release the device
+			ReleaseDevice();
 
-		// done
-		return;
+			// Set the pDefualtSwapChain depending on screen state
+			pDefaultSwapChain = isFullscreen ? pDX9WindowRenderTarget : 0;
+
+			// Restore the device pDX9FullscreenRenderTarget as the default swapchain
+			RestoreDevice();
+
+			// done
+			return;
+		}
 	}
-
 
 	// ---------- ALL OTHER CASES ---------------------------------------------
+
+	// Dont set the rendertarget if it is already set
+	if (pRenderTarget == pCurrentRenderTarget)
+		return;
 
 	// this cast is "unfailable" (will never return NULL), whoever inherits from IRenderTarget must also inherit from IDX9RenderTarget
 	IDX9RenderTarget* pDX9RenderTarget = dynamic_cast<IDX9RenderTarget*>(pRenderTarget);
@@ -975,10 +975,10 @@ mini3d::IWindowRenderTarget* mini3d::DX9GraphicsService::CreateWindowRenderTarge
 {
 	return new DX9WindowRenderTarget(this, width, height, hWindow, depthTestEnabled, quality);
 }
-mini3d::IFullscreenRenderTarget* mini3d::DX9GraphicsService::CreateFullscreenRenderTarget(const unsigned int& width, const unsigned int& height, const int& hWindow, const bool& depthTestEnabled, const IFullscreenRenderTarget::Quality& quality)
-{
-	return new DX9FullscreenRenderTarget(this, width, height, hWindow, depthTestEnabled, quality);
-}
+//mini3d::IFullscreenRenderTarget* mini3d::DX9GraphicsService::CreateFullscreenRenderTarget(const unsigned int& width, const unsigned int& height, const int& hWindow, const bool& depthTestEnabled, const IFullscreenRenderTarget::Quality& quality)
+//{
+//	return new DX9FullscreenRenderTarget(this, width, height, hWindow, depthTestEnabled, quality);
+//}
 mini3d::IRenderTargetTexture* mini3d::DX9GraphicsService::CreateRenderTargetTexture(const unsigned int& width, const unsigned int& height, const bool& depthTestEnabled)
 {
 	return new DX9RenderTargetTexture(this, width, height, depthTestEnabled);

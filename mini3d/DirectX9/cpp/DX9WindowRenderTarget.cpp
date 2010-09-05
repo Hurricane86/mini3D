@@ -33,7 +33,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 std::map<int, mini3d::DX9WindowRenderTarget*> mini3d::DX9WindowRenderTarget::windowMap;
 
 mini3d::DX9WindowRenderTarget::DX9WindowRenderTarget(DX9GraphicsService* pGraphicsService, const unsigned int& width, const unsigned int& height, const int& windowHandle, const bool& depthTestEnabled, const Quality& quality) : 
-	pGraphicsService(pGraphicsService), pScreenRenderTarget(0), pDepthStencil(0), quality(quality), depthTestEnabled(depthTestEnabled), pOrigProc(0)
+pGraphicsService(pGraphicsService), pScreenRenderTarget(0), pDepthStencil(0), quality(quality), depthTestEnabled(depthTestEnabled), pOrigProc(0), fullscreenWidth(1680), fullscreenHeight(1050)
 {
 	SetWindowRenderTarget(width, height, windowHandle, depthTestEnabled, quality);
 	pGraphicsService->AddResource(this);
@@ -46,6 +46,30 @@ mini3d::DX9WindowRenderTarget::~DX9WindowRenderTarget(void)
 	
 	if (pDepthStencil != 0)
 		delete pDepthStencil;
+}
+
+void mini3d::DX9WindowRenderTarget::SetFullscreenSize(const int& width, const int& height)
+{ 
+
+	if (fullscreenWidth == width && fullscreenHeight == height)
+		return;
+	
+	fullscreenWidth = width; 
+	fullscreenHeight = height;
+
+	if (pGraphicsService->GetRenderTarget() == this) 
+		pGraphicsService->SetRenderTarget(this); 
+}
+
+void mini3d::DX9WindowRenderTarget::SetScreenState(ScreenState value)
+{ 
+	if (screenState == value)
+		return;
+
+	screenState = value;
+
+	if (pGraphicsService->GetRenderTarget() == this) 
+		pGraphicsService->SetRenderTarget(this);
 }
 
 void mini3d::DX9WindowRenderTarget::SetWindowRenderTarget(const unsigned int& width, const unsigned int& height, const int& windowHandle, const bool& depthTestEnabled, const Quality& quality)
@@ -85,20 +109,24 @@ void mini3d::DX9WindowRenderTarget::SetWindowRenderTarget(const unsigned int& wi
 	this->isDirty = true;
 	LoadResource();
 
-	// Create/Update depth Stencil as needed
-	if (depthTestEnabled == true)
+	// Change the settings if we are in windowed mode
+	if (pGraphicsService->GetIsFullScreen() == false)
 	{
-		if (pDepthStencil == 0)
-			pDepthStencil = new DX9DepthStencil(pGraphicsService, width, height);
-		else
-			pDepthStencil->SetDepthStencil(width, height);
-	}
-	else
-	{
-		if (pDepthStencil != 0)
+		// Create/Update depth Stencil as needed
+		if (depthTestEnabled == true)
 		{
-			delete pDepthStencil;
-			pDepthStencil = 0;
+			if (pDepthStencil == 0)
+				pDepthStencil = new DX9DepthStencil(pGraphicsService, width, height);
+			else
+				pDepthStencil->SetDepthStencil(width, height);
+		}
+		else
+		{
+			if (pDepthStencil != 0)
+			{
+				delete pDepthStencil;
+				pDepthStencil = 0;
+			}
 		}
 	}
 

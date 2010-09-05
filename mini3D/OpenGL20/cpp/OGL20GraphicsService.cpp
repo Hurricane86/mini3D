@@ -36,7 +36,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 mini3d::OGL20GraphicsService::OGL20GraphicsService() :
 	isFullscreen(isFullscreen),
-	pCurrentDepthStencil(0), isDrawingScene(false), deviceLost(true), lostDeviceCurrentITextures(0), currentITextures(0), pCurrentShaderProgram(0)
+	pCurrentDepthStencil(0), isDrawingScene(false), deviceLost(true), lostDeviceCurrentITextures(0), currentITextures(0), pCurrentShaderProgram(0), pCurrentWindowRenderTarget(0)
 {
 	pOS = new OSWindows();
 	CreateInternalWindow();
@@ -68,6 +68,10 @@ mini3d::OGL20GraphicsService::~OGL20GraphicsService(void)
 void mini3d::OGL20GraphicsService::CreateDevice(void)
 {
 	// get the pixel format for the device context
+	// query desktop video settings
+	DEVMODE SDL_desktop_mode;
+	EnumDisplaySettings (NULL, ENUM_CURRENT_SETTINGS, &SDL_desktop_mode);
+	
 	PIXELFORMATDESCRIPTOR pfd={0};
     pfd.nSize = sizeof(pfd);
     pfd.nVersion = 1;
@@ -320,22 +324,21 @@ void mini3d::OGL20GraphicsService::SetTexture(ITexture* pTexture, const unsigned
 }
 
 // Render Target
-mini3d::IRenderTarget* mini3d::OGL20GraphicsService::GetRenderTarget(void) const
-{
-	return pCurrentRenderTarget;
-}
 void mini3d::OGL20GraphicsService::SetRenderTarget(IRenderTarget* pRenderTarget)
 {
-
-	if (pRenderTarget == pCurrentRenderTarget)
-		return;
 
 	PFNGLBINDFRAMEBUFFERPROC glBindFramebuffer = (PFNGLBINDFRAMEBUFFERPROC)wglGetProcAddress("glBindFramebuffer");
 
 	if (pRenderTarget == 0)
 	{
+		// early out if there is no change
+		if (pRenderTarget == pCurrentRenderTarget)
+			return;
+		
+		// set the frame buffer 0 and the device/render context to the default
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		wglMakeCurrent(hDeviceContext, hRenderContext);
+		pCurrentRenderTarget = 0;
 		return;
 	}
 
@@ -363,38 +366,58 @@ void mini3d::OGL20GraphicsService::SetRenderTarget(IRenderTarget* pRenderTarget)
 	if (pOGL20WindowRenderTarget != 0)
 	{
 
-		if (pRenderTarget == 0)
+		// TODO: Verify screen res also if switching fullscreen -> fullscreen (force set?)
+
+		// if this rendertarget is already the current and the correct screen state is set, return
+		if ((pCurrentWindowRenderTarget == (IWindowRenderTarget*)pOGL20WindowRenderTarget) && (isFullscreen == pOGL20WindowRenderTarget->GetScreenState()))
+			return;
+		
+		if (pOGL20WindowRenderTarget->GetScreenState() == OGL20WindowRenderTarget::SCREEN_STATE_WINDOWED)
 		{
-			glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		}
-		else
-		{
+			// TODO: Restore screen resolution if necessary
+
+			ChangeDisplaySettings(NULL,0);	// Switch back to the desktop default resolution stored in registry
+			ShowCursor(TRUE);	// Show mouse pointer
+			
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 			wglMakeCurrent(pOGL20WindowRenderTarget->GetDeviceContext(), hRenderContext);
 			glViewport(0,0,pOGL20WindowRenderTarget->GetWidth(), pOGL20WindowRenderTarget->GetHeight());
 		}
-	
-		pCurrentRenderTarget = pRenderTarget;
-		return;
-	}
-
-	// This is a dynamic cast used as a typecheck, code police says this should be solved with virtual function calls instead
-	OGL20FullscreenRenderTarget* pOGL20FullscreenRenderTarget = dynamic_cast<OGL20FullscreenRenderTarget*>(pRenderTarget);
-
-	if (pOGL20FullscreenRenderTarget != 0)
-	{
-
-		if (pRenderTarget == 0)
+		else if (pOGL20WindowRenderTarget->GetScreenState() == OGL20WindowRenderTarget::SCREEN_STATE_FULLSCREEN)
 		{
+			
+			// Set the video resolution to the fullscreen resolution
+
+			DEVMODE dmScreenSettings = {0}; // Device Mode initialized to zero
+			dmScreenSettings.dmSize=sizeof(dmScreenSettings); // Size Of The Devmode Structure
+			dmScreenSettings.dmPelsWidth = pOGL20WindowRenderTarget->GetFullscreenWidth(); // Selected Screen Width
+			dmScreenSettings.dmPelsHeight = pOGL20WindowRenderTarget->GetFullscreenHeight();	// Selected Screen Height
+
+			// if the size is zero, use the default desktop size
+			if (dmScreenSettings.dmPelsWidth != 0 && dmScreenSettings.dmPelsWidth != 0)
+			{
+				dmScreenSettings.dmFields |= DM_PELSWIDTH | DM_PELSHEIGHT;
+			}
+
+			if (ChangeDisplaySettings(&dmScreenSettings, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)
+			{
+				return;
+			}
+
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			wglMakeCurrent(pOGL20WindowRenderTarget->GetDeviceContext(), hRenderContext);
+			glViewport(0,0,pOGL20WindowRenderTarget->GetFullscreenWidth(), pOGL20WindowRenderTarget->GetFullscreenHeight());
 		}
-		else
-		{
-			glBindFramebuffer(GL_FRAMEBUFFER, 0);
-			wglMakeCurrent(pOGL20FullscreenRenderTarget->GetDeviceContext(), hRenderContext);
-		}
-	
+
+		// set the current render target to this
 		pCurrentRenderTarget = pRenderTarget;
+		
+		// Because render target textures overrides window render targets we need to store this one also.
+		pCurrentWindowRenderTarget = pOGL20WindowRenderTarget;
+
+		// Set the current fullscreen state (to keep track if the user sets the screen state of the current render target)
+		SetIsFullScreen(pOGL20WindowRenderTarget->GetScreenState());
+
 		return;
 	}
 
@@ -538,10 +561,6 @@ void mini3d::OGL20GraphicsService::Clear(const float& r, const float& g, const f
 mini3d::IWindowRenderTarget* mini3d::OGL20GraphicsService::CreateWindowRenderTarget(const unsigned int& width, const unsigned int& height, const int& hWindow, const bool& depthTestEnabled, const IWindowRenderTarget::Quality& quality)
 {
 	return new OGL20WindowRenderTarget(this, width, height, hWindow, depthTestEnabled, quality);
-}
-mini3d::IFullscreenRenderTarget* mini3d::OGL20GraphicsService::CreateFullscreenRenderTarget(const unsigned int& width, const unsigned int& height, const int& hWindow, const bool& depthTestEnabled, const IFullscreenRenderTarget::Quality& quality)
-{
-	return new OGL20FullscreenRenderTarget(this, width, height, hWindow, depthTestEnabled, quality);
 }
 mini3d::IRenderTargetTexture* mini3d::OGL20GraphicsService::CreateRenderTargetTexture(const unsigned int& width, const unsigned int& height, const bool& depthTestEnabled)
 {

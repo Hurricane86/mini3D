@@ -28,11 +28,12 @@ OTHER DEALINGS IN THE SOFTWARE.
 #define AURORA_IOGL20WINDOWRENDERTARGET_H
 
 #include "../IWindowRenderTarget.h"
-#include "OGL20GraphicsService.h"
 #include "internal/IOGL20Resource.h"
 #include "internal/IOGL20RenderTarget.h"
 #include <Windows.h>
 #include <GL/gl.h>
+#include <map>
+
 
 namespace mini3d
 {
@@ -55,10 +56,18 @@ public:
 	virtual unsigned int GetWidth() const { return width; };
 	virtual unsigned int GetHeight() const { return height; };
 	virtual void SetSize(const int& width, const int& height);
+
+	virtual unsigned int GetFullscreenWidth() const { return fullscreenWidth; };
+	virtual unsigned int GetFullscreenHeight() const { return fullscreenHeight; };
+	virtual void SetFullscreenSize(const int& width, const int& height);
 	
 	virtual bool GetDepthTestEnabled() const { return depthTestEnabled; };
 	virtual Quality GetQuality() const { return quality; };
 	virtual int GetWindowHandle() const { return hWindow; };
+
+	ScreenState GetScreenState() const { return screenState; }
+	void SetScreenState(ScreenState value);
+
 
 	virtual void Display();
 
@@ -100,6 +109,10 @@ private:
 
 	unsigned int width;
 	unsigned int height;
+
+	unsigned int fullscreenWidth;
+	unsigned int fullscreenHeight;
+
 	int hWindow;
 
 	bool depthTestEnabled;
@@ -113,6 +126,8 @@ private:
 	
 	int hBufferWindow;
 	int bufferDepthTestEnabled;
+
+	ScreenState screenState;
 
 	GLuint pScreenRenderTarget;
 

@@ -27,14 +27,14 @@ OTHER DEALINGS IN THE SOFTWARE.
 #ifndef AURORA_DX9GRAPHICSSETTINGS_H
 #define AURORA_DX9GRAPHICSSETTINGS_H
 
-#include "..\internal\IScreenRenderTarget.h"
+#include "..\IWindowRenderTarget.h"
 
 namespace mini3d
 {
 class DX9GraphicsSettings
 {
 public:
-	IScreenRenderTarget* pDefaultSwapChain;
+	IWindowRenderTarget* pDefaultSwapChain;
 };
 }
 

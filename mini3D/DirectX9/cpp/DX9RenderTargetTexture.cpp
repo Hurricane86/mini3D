@@ -50,7 +50,7 @@ void mini3d::DX9RenderTargetTexture::SetRenderTarget(const unsigned int& width, 
 {
 
 	// If width or height is not a power of two
-	if (width & (width - 1) != 0 || height & (height - 1))
+	if ((width & (width - 1) != 0) || (height & (height - 1)))
 	{
 		throw Error::MINI3D_ERROR_NON_POWER_OF_TWO;
 	}

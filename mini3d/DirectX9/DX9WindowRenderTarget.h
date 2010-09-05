@@ -55,9 +55,16 @@ public:
 	virtual unsigned int GetHeight() const { return height; };
 	virtual void SetSize(const int& width, const int& height);
 	
+	virtual unsigned int GetFullscreenWidth() const { return fullscreenWidth; };
+	virtual unsigned int GetFullscreenHeight() const { return fullscreenHeight; };
+	virtual void SetFullscreenSize(const int& width, const int& height);
+
 	virtual bool GetDepthTestEnabled() const { return depthTestEnabled; };
 	virtual Quality GetQuality() const { return quality; }
 	virtual int GetWindowHandle() const { return hWindow; };
+
+	ScreenState GetScreenState() const { return screenState; }
+	void SetScreenState(ScreenState value);
 
 	virtual void Display();
 
@@ -97,9 +104,16 @@ private:
 
 	int width;
 	int height;
+
+	unsigned int fullscreenWidth;
+	unsigned int fullscreenHeight;
+
 	int hWindow;
 	bool depthTestEnabled;
 	Quality quality;
+	
+	ScreenState screenState;
+	
 	WNDPROC pOrigProc;
 
 	static std::map<int, DX9WindowRenderTarget*> windowMap;
