@@ -247,5 +247,8 @@ unsigned int mini3d::DX9BitmapTexture::GetBytesPerPixel(void)
 		return 4;
 		case IBitmapTexture::BIT_64:
 		return 8;
+
+		// Default case to avoid compiler warnings
+		return 4;
 	}
 }

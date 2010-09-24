@@ -558,9 +558,9 @@ void mini3d::OGL20GraphicsService::Clear(const float& r, const float& g, const f
 
 
 // Create Resources
-mini3d::IWindowRenderTarget* mini3d::OGL20GraphicsService::CreateWindowRenderTarget(const unsigned int& width, const unsigned int& height, const int& hWindow, const bool& depthTestEnabled, const IWindowRenderTarget::Quality& quality)
+mini3d::IWindowRenderTarget* mini3d::OGL20GraphicsService::CreateWindowRenderTarget(const int& hWindow, const bool& depthTestEnabled, const IWindowRenderTarget::Quality& quality)
 {
-	return new OGL20WindowRenderTarget(this, width, height, hWindow, depthTestEnabled, quality);
+	return new OGL20WindowRenderTarget(this, hWindow, depthTestEnabled, quality);
 }
 mini3d::IRenderTargetTexture* mini3d::OGL20GraphicsService::CreateRenderTargetTexture(const unsigned int& width, const unsigned int& height, const bool& depthTestEnabled)
 {

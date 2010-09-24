@@ -971,9 +971,9 @@ void mini3d::DX9GraphicsService::Clear(const float& r, const float& g, const flo
 
 
 // Create Resources
-mini3d::IWindowRenderTarget* mini3d::DX9GraphicsService::CreateWindowRenderTarget(const unsigned int& width, const unsigned int& height, const int& hWindow, const bool& depthTestEnabled, const IWindowRenderTarget::Quality& quality)
+mini3d::IWindowRenderTarget* mini3d::DX9GraphicsService::CreateWindowRenderTarget(const int& hWindow, const bool& depthTestEnabled, const IWindowRenderTarget::Quality& quality)
 {
-	return new DX9WindowRenderTarget(this, width, height, hWindow, depthTestEnabled, quality);
+	return new DX9WindowRenderTarget(this, hWindow, depthTestEnabled, quality);
 }
 //mini3d::IFullscreenRenderTarget* mini3d::DX9GraphicsService::CreateFullscreenRenderTarget(const unsigned int& width, const unsigned int& height, const int& hWindow, const bool& depthTestEnabled, const IFullscreenRenderTarget::Quality& quality)
 //{

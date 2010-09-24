@@ -32,10 +32,10 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 std::map<int, mini3d::DX9WindowRenderTarget*> mini3d::DX9WindowRenderTarget::windowMap;
 
-mini3d::DX9WindowRenderTarget::DX9WindowRenderTarget(DX9GraphicsService* pGraphicsService, const unsigned int& width, const unsigned int& height, const int& windowHandle, const bool& depthTestEnabled, const Quality& quality) : 
+mini3d::DX9WindowRenderTarget::DX9WindowRenderTarget(DX9GraphicsService* pGraphicsService, const int& windowHandle, const bool& depthTestEnabled, const Quality& quality) : 
 pGraphicsService(pGraphicsService), pScreenRenderTarget(0), pDepthStencil(0), quality(quality), depthTestEnabled(depthTestEnabled), pOrigProc(0), fullscreenWidth(1680), fullscreenHeight(1050)
 {
-	SetWindowRenderTarget(width, height, windowHandle, depthTestEnabled, quality);
+	SetWindowRenderTarget(windowHandle, depthTestEnabled, quality);
 	pGraphicsService->AddResource(this);
 }
 
@@ -61,6 +61,20 @@ void mini3d::DX9WindowRenderTarget::SetFullscreenSize(const int& width, const in
 		pGraphicsService->SetRenderTarget(this); 
 }
 
+void mini3d::DX9WindowRenderTarget::SetScreenStateWindowed()
+{
+	SetScreenState(SCREEN_STATE_WINDOWED);
+}
+
+void mini3d::DX9WindowRenderTarget::SetScreenStateFullscreen(const int& fullscreenWidth, const int& fullscreenHeight)
+{
+	this->fullscreenWidth = fullscreenWidth;
+	this->fullscreenHeight = fullscreenHeight;
+
+	SetScreenState(SCREEN_STATE_FULLSCREEN);
+}
+
+
 void mini3d::DX9WindowRenderTarget::SetScreenState(ScreenState value)
 { 
 	if (screenState == value)
@@ -72,7 +86,7 @@ void mini3d::DX9WindowRenderTarget::SetScreenState(ScreenState value)
 		pGraphicsService->SetRenderTarget(this);
 }
 
-void mini3d::DX9WindowRenderTarget::SetWindowRenderTarget(const unsigned int& width, const unsigned int& height, const int& windowHandle, const bool& depthTestEnabled, const Quality& quality)
+void mini3d::DX9WindowRenderTarget::SetWindowRenderTarget(const int& windowHandle, const bool& depthTestEnabled, const Quality& quality)
 {
 
 	if (windowHandle != hWindow)
@@ -98,6 +112,16 @@ void mini3d::DX9WindowRenderTarget::SetWindowRenderTarget(const unsigned int& wi
 			windowMap.insert(std::pair<int, DX9WindowRenderTarget*>(windowHandle, this));
 		}
 	}
+
+	// Get the size of the client area of the window 
+	LPRECT clientRectangle = new tagRECT();
+	GetClientRect(HWND(windowHandle), clientRectangle);
+
+	// get the width and height (must be bigger than 0)
+	int width = (clientRectangle->right - clientRectangle->left) | 1;
+	int height = (clientRectangle->bottom - clientRectangle->top) | 1;
+
+	delete clientRectangle;
 
 	// set the variables from the call
 	this->hWindow = windowHandle;
@@ -221,9 +245,9 @@ void mini3d::DX9WindowRenderTarget::UnloadResource(void)
 	isDirty = true;
 }
 
-void mini3d::DX9WindowRenderTarget::SetSize(const int& width, const int& height)
+void mini3d::DX9WindowRenderTarget::UpdateSize()
 {
-	SetWindowRenderTarget(width, height, hWindow, depthTestEnabled, quality);
+	SetWindowRenderTarget(hWindow, depthTestEnabled, quality);
 }
 
 LRESULT CALLBACK mini3d::DX9WindowRenderTarget::HookWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -234,14 +258,9 @@ LRESULT CALLBACK mini3d::DX9WindowRenderTarget::HookWndProc(HWND hwnd, UINT msg,
 	{
 	// Window has been resized
 	case WM_SIZE:
-		
-		// make sure we dont set the size to 0 (happens when we minimize the window)
-		int width = LOWORD(lParam) | 1;
-		int height = HIWORD(lParam) | 1;
 
 		// update the render target size
-		screenRenderTarget->SetSize(width, height);
-		
+		screenRenderTarget->UpdateSize();
 		break;
 	}
 

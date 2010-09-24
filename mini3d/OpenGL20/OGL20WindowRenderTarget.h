@@ -45,29 +45,27 @@ public:
 
 	// ::::: Constructor & Destructor :::::::::::::::::::::::::::::::::::::::::
 
-	OGL20WindowRenderTarget(OGL20GraphicsService* pGraphicsService, const unsigned int& width, const unsigned int& height, const int& windowHandle, const bool& depthTestEnabled, const Quality& quality);
+	OGL20WindowRenderTarget(OGL20GraphicsService* pGraphicsService, const int& windowHandle, const bool& depthTestEnabled, const Quality& quality);
 	virtual ~OGL20WindowRenderTarget(void);
 
 
 	// ::::: IWindowRenderTarget ::::::::::::::::::::::::::::::::::::::::::::::
 
-	virtual void SetWindowRenderTarget(const unsigned int& width, const unsigned int& height, const int& windowHandle, const bool& depthTestEnabled, const Quality& quality);
+	virtual void SetWindowRenderTarget(const int& windowHandle, const bool& depthTestEnabled, const Quality& quality);
 	
 	virtual unsigned int GetWidth() const { return width; };
 	virtual unsigned int GetHeight() const { return height; };
-	virtual void SetSize(const int& width, const int& height);
-
-	virtual unsigned int GetFullscreenWidth() const { return fullscreenWidth; };
-	virtual unsigned int GetFullscreenHeight() const { return fullscreenHeight; };
-	virtual void SetFullscreenSize(const int& width, const int& height);
 	
 	virtual bool GetDepthTestEnabled() const { return depthTestEnabled; };
+	
 	virtual Quality GetQuality() const { return quality; };
+	
 	virtual int GetWindowHandle() const { return hWindow; };
 
 	ScreenState GetScreenState() const { return screenState; }
-	void SetScreenState(ScreenState value);
 
+	virtual void SetScreenStateWindowed();
+	virtual void SetScreenStateFullscreen(const int& fullscreenWidth, const int& fullscreenHeight);
 
 	virtual void Display();
 
@@ -85,13 +83,23 @@ public:
 	HGLRC GetRenderContext(void) const { return hRenderContext; }
 	GLuint GetDepthStencil(void) const { return pDepthStencil; }
 
+public:
+
+	// ::::: Public Methods :::::::::::::::::::::::::::::::::::::::::::::::::::
+
+	void SetScreenState(ScreenState value);
+
+	virtual unsigned int GetFullscreenWidth() const { return fullscreenWidth; };
+	virtual unsigned int GetFullscreenHeight() const { return fullscreenHeight; };
+	virtual void SetFullscreenSize(const int& width, const int& height);
+
 
 private:
 
 	// ::::: Private Methods :::::::::::::::::::::::::::::::::::::::::::::::::::
 
+	virtual void UpdateSize();
 	static LRESULT CALLBACK HookWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-
 
 private:
 

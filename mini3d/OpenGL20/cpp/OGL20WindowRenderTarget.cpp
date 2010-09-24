@@ -33,13 +33,13 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 std::map<int, mini3d::OGL20WindowRenderTarget*> mini3d::OGL20WindowRenderTarget::windowMap;
 
-mini3d::OGL20WindowRenderTarget::OGL20WindowRenderTarget(OGL20GraphicsService* pGraphicsService, const unsigned int& width, const unsigned int& height, const int& windowHandle, const bool& depthTestEnabled, const Quality& quality) : 
+mini3d::OGL20WindowRenderTarget::OGL20WindowRenderTarget(OGL20GraphicsService* pGraphicsService, const int& windowHandle, const bool& depthTestEnabled, const Quality& quality) : 
 	pGraphicsService(pGraphicsService), pScreenRenderTarget(0), pDepthStencil(0), quality(quality), hDeviceContext(0), fullscreenWidth(0), fullscreenHeight(0)
 {
 	fullscreenWidth = 1680;
 	fullscreenHeight = 1050;
 	screenState = SCREEN_STATE_WINDOWED;
-	SetWindowRenderTarget(width, height, windowHandle, depthTestEnabled, quality);
+	SetWindowRenderTarget(windowHandle, depthTestEnabled, quality);
 	pGraphicsService->AddResource(this);
 }
 
@@ -73,7 +73,20 @@ void mini3d::OGL20WindowRenderTarget::SetScreenState(ScreenState value)
 		pGraphicsService->SetRenderTarget(this);
 }
 
-void mini3d::OGL20WindowRenderTarget::SetWindowRenderTarget(const unsigned int& width, const unsigned int& height, const int& windowHandle, const bool& depthTestEnabled, const Quality& quality)
+void mini3d::OGL20WindowRenderTarget::SetScreenStateWindowed()
+{
+	SetScreenState(SCREEN_STATE_WINDOWED);
+}
+
+void mini3d::OGL20WindowRenderTarget::SetScreenStateFullscreen(const int& fullscreenWidth, const int& fullscreenHeight)
+{
+	this->fullscreenWidth = fullscreenWidth;
+	this->fullscreenHeight = fullscreenHeight;
+
+	SetScreenState(SCREEN_STATE_FULLSCREEN);
+}
+
+void mini3d::OGL20WindowRenderTarget::SetWindowRenderTarget(const int& windowHandle, const bool& depthTestEnabled, const Quality& quality)
 {
 
 	if (windowHandle != hWindow)
@@ -99,6 +112,18 @@ void mini3d::OGL20WindowRenderTarget::SetWindowRenderTarget(const unsigned int& 
 			windowMap.insert(std::pair<int,OGL20WindowRenderTarget*>(windowHandle, this));
 		}
 	}
+
+	// Get the size of the client area of the window 
+
+	// TODO: Should be RECT somehow?
+	LPRECT clientRectangle = new tagRECT();
+	GetClientRect(HWND(windowHandle), clientRectangle);
+
+	// get the width and height (must be bigger than 0)
+	int width = (clientRectangle->right - clientRectangle->left) | 1;
+	int height = (clientRectangle->bottom - clientRectangle->top) | 1;
+
+	delete clientRectangle;
 
 	// set the variables from the call
 	this->hWindow = windowHandle;
@@ -188,9 +213,9 @@ void mini3d::OGL20WindowRenderTarget::UnloadResource(void)
 	isDirty = true;
 }
 
-void mini3d::OGL20WindowRenderTarget::SetSize(const int& width, const int& height)
+void mini3d::OGL20WindowRenderTarget::UpdateSize()
 {
-	SetWindowRenderTarget(width, height, hWindow, depthTestEnabled, quality);
+	SetWindowRenderTarget(hWindow, depthTestEnabled, quality);
 }
 
 
@@ -203,12 +228,8 @@ LRESULT CALLBACK mini3d::OGL20WindowRenderTarget::HookWndProc(HWND hwnd, UINT ms
 	// Window has been resized
 	case WM_SIZE:
 		
-		// make sure we dont set the size to 0 (happens when we minimize the window)
-		int width = LOWORD(lParam) | 1;
-		int height = HIWORD(lParam) | 1;
-
 		// update the render target size
-		windowRenderTarget->SetSize(width, height);
+		windowRenderTarget->UpdateSize();
 		
 		break;
 	}

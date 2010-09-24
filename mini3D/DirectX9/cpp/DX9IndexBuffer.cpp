@@ -178,5 +178,8 @@ unsigned int mini3d::DX9IndexBuffer::GetBytesPerIndex()
 		return 2;
 		case INT_32:
 		return 4;
-	}		
+	}
+
+	// TODO: Default case to avoid build warnings
+	return 4;
 }

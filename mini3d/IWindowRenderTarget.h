@@ -1,28 +1,8 @@
-/*
-This source file is part of mini3D. 
-Copyright (c) <2010> <www.mini3d.org>
 
-Permission is hereby granted, free of charge, to any person
-obtaining a copy of this software and associated documentation
-files (the "Software"), to deal in the Software without
-restriction, including without limitation the rights to use,
-copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the
-Software is furnished to do so, subject to the following
-conditions:
+// Copyright (c) <2010> Daniel Peterson
+// This file is part of mini3d <www.mini3d.org>
+// It is distributed under the MIT Software License <www.mini3d.org/license>
 
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-3
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
-OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
-*/
 
 #ifndef AURORA_IWINDOWRENDERTARGET_H
 #define AURORA_IWINDOWRENDERTARGET_H
@@ -31,33 +11,162 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 namespace mini3d
 {
+		
+/**
+  IScreenRenderTarget is the interface for a screen render target texture.
+
+  A screen render target is a render target that can be output to the monitor
+  or screen (depending on the type of device used).
+
+  The reference of an os window (such as a window handle) is used to identify the
+  window that the IWindowRenderTarget should use to create itself. The
+  IWindowRenderTarget is the bridge that directs whatever is output by graphics
+  hardware to the window the result should be displayed in.
+
+  To create an instance of a IScreenRenderTarget, use the CreateScreenRenderTarget
+  method in IGraphicsService.
+  
+  To use the IScreenRenderTarget as a texture, bind it to a textur slot in using the
+  SetRenderTarget function in IGraphicsService.
+  @see CreateScreenRenderTarget
+*/
 class IWindowRenderTarget : public virtual IRenderTarget
 {
 public:
 
+/**
+	Enum describing if the screen render target is in fullscreen state or windowed state
+*/
 	enum ScreenState { SCREEN_STATE_WINDOWED = 0, SCREEN_STATE_FULLSCREEN = 1 };
-	
+
+/**
+	Enum describing the rendering quality used when rendering to the render target.
+	For most implemenations this will correspond to antialiasing and related setings.
+
+	QUALITY_MINIMUM setting corresponds to no multisampling and no anisotropic filtering.
+	QUALITY_LOW setting corresponds to the lowest multisampling available and no
+	Anisotropic filtering.
+	QUALITY_MEDIUM corresponds to a well balanced multisample and anisotropic filtering settings.
+	QUALITY_HIGH corresponds to a high multisaple and anisotropic filtering setting.
+	QUALITY_MAXIMUM corresponds to both multisampe and anisotropic filtering settings being maxed out.
+
+	For best performance use QUALITY_MINIMUM.
+	For best performance with some multisample and anisotropic filtering, use QUALITY_LOW;
+	For well balanced high quality graphics, use the QUALITY_MEDIUM setting.
+	For applications where quality is of higher importance than performance, use QUALITY_HIGH or QUALITY_MAXIMUM.
+
+	This is a highly implementation and hardware dependent setting. If the graphics hardware offers free
+	antialiasing even the minimum quality setting may use it.
+
+*/
 	enum Quality{QUALITY_MINIMUM, QUALITY_LOW, QUALITY_MEDIUM, QUALITY_HIGH, QUALITY_MAXIMUM};
 
+/**
+	Destructor
+*/
 	virtual ~IWindowRenderTarget() {};
 
-	virtual void SetWindowRenderTarget(const unsigned int& width, const unsigned int& height, const int& windowHandle, const bool& depthTestEnabled, const Quality& quality) = 0;
-	
+/**
+	Sets the parameters for creating the screen render target
+	 
+	@param windowHandle Operating system specific handle to the widget that shall define the region
+	of the render target. This could be a window or a graphical component depending on the implementaion
+	and the operating system used.
+	@param depthTestEnabled Determine if the graphics service should use a depth buffer when rendering
+	to the render target. Enabeling depth testing hides geometry that is hidden behind other geometry.
+	If depth testing is disabled triangles will draw on top of each other depending on the order in which
+	they are drawn and not depending on their depth.
+	@param quality The quality level that should be used for drawing.
+	@see Quality
+*/
+	virtual void SetWindowRenderTarget(const int& windowHandle, const bool& depthTestEnabled, const Quality& quality) = 0;
+
+/**
+	Get the width of the render target in windowed mode.
+
+	@return Width of the render target in windowed mode.
+ */
 	virtual unsigned int GetWidth() const = 0;
+
+/**
+	Get the height of the render target in windowed mode.
+
+	@return Height of the render target in windowed mode.
+ */
 	virtual unsigned int GetHeight() const = 0;
-	virtual void SetSize(const int& width, const int& height) = 0;
 
-	virtual unsigned int GetFullscreenWidth() const = 0;
-	virtual unsigned int GetFullscreenHeight() const = 0;
-	virtual void SetFullscreenSize(const int& width, const int& height) = 0;
+/**
+	Gets a boolean determining if depth test is enabled.
 
+	@return A boolean determining if depth test is enabled
+	@see SetRenderTargetTexture
+ */
 	virtual bool GetDepthTestEnabled() const = 0;
-	virtual Quality GetQuality() const = 0;
-	virtual int GetWindowHandle() const = 0;
-	
-	virtual ScreenState GetScreenState() const = 0;
-	virtual void SetScreenState(ScreenState value) = 0;
 
+/**
+	Get the quality level used for rendering to the screen render target
+
+	@return Quality level used for rendering to the screen render target
+	@see Quality
+ */
+	virtual Quality GetQuality() const = 0;
+
+/**
+	The handle to the widget that contains the window render target.
+
+	@return Handle to the widget that contains the window render target.
+	@see SetWindowRenderTarget
+ */
+	virtual int GetWindowHandle() const = 0;
+
+/**
+	Gets the current screen state.
+
+	@return Current screen state.
+	@see ScreenState
+ */
+	virtual ScreenState GetScreenState() const = 0;
+
+/**
+	Sets the current screen state to windowed screen state mode.
+	The render target window will assume the same size it had before going into fullscreen mode.
+	It is not possible to resize the render target window while in fullscreen mode. It is only
+	possible to resize the window while in windowed mode
+	
+	@see ScreenState
+ */
+	virtual void SetScreenStateWindowed() = 0;
+
+/**
+	Sets the current screen state to fullscreen. This will make the render target window cover the
+	whole screen and possibly get exclusive access to the rendering hardware depending on
+	implementation.
+	
+	When going into fullscreen mode it is possible to set the horizontal and vertical resolution
+	for the fullscreen mode.
+
+	If either fullscreenWidth or fullscreenHeight is set 0 or both fullscreenWidth and fullscreenHeight
+	are set to 0 the current screen resolution will be used as resolution in fullscreen mode.
+
+	If the given width and height does not make up a valid fullscreen mode for the graphics device
+	the closest valid lower resolution will be used. If no valid lower resolution can be find the
+	closest valid higher resolution will be used.
+
+	If that resolution is not valid, the next valid lower resolution will be used, and so on...
+
+	@param fullscreenWidth Width of the render target in fullscreen mode.
+	@param fullscreenHeight Height of the render target in fullscreen mode.
+	@see ScreenState
+*/
+	virtual void SetScreenStateFullscreen(const int& fullscreenWidth, const int& fullscreenHeight) = 0;
+
+/**
+	This function shall be called when all rendering to the screen render target
+	is done and the render target shall be shown on the screen.
+
+	Rendering to render targets is buffered, this means that the rendering is done
+	off screen and the result is not shown until the method Display is called.
+*/
 	virtual void Display() = 0;
 };
 }

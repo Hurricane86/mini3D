@@ -31,7 +31,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 mini3d::OGL20RenderTargetTexture::OGL20RenderTargetTexture(OGL20GraphicsService* pGraphicsService, const unsigned int& width, const unsigned int& height, const bool& depthTestEnabled) : 
 	pGraphicsService(pGraphicsService), pDepthStencil(0)
 {
-	SetRenderTarget(width, height, depthTestEnabled);
+	SetRenderTargetTexture(width, height, depthTestEnabled);
 	pGraphicsService->AddResource(this);
 }
 
@@ -41,7 +41,7 @@ mini3d::OGL20RenderTargetTexture::~OGL20RenderTargetTexture(void)
 	pGraphicsService->RemoveResource(this);
 }
 
-void mini3d::OGL20RenderTargetTexture::SetRenderTarget(const unsigned int& width, const unsigned int& height, const bool& depthTestEnabled)
+void mini3d::OGL20RenderTargetTexture::SetRenderTargetTexture(const unsigned int& width, const unsigned int& height, const bool& depthTestEnabled)
 {
 	this->width = width;
 	this->height = height;

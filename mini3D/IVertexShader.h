@@ -1,37 +1,44 @@
-/*
-This source file is part of mini3D. 
-Copyright (c) <2010> <www.mini3d.org>
 
-Permission is hereby granted, free of charge, to any person
-obtaining a copy of this software and associated documentation
-files (the "Software"), to deal in the Software without
-restriction, including without limitation the rights to use,
-copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the
-Software is furnished to do so, subject to the following
-conditions:
+// Copyright (c) <2010> Daniel Peterson
+// This file is part of mini3d <www.mini3d.org>
+// It is distributed under the MIT Software License <www.mini3d.org/license>
 
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
-OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
-*/
 
 #ifndef AURORA_IVERTEXSHADER_H
 #define AURORA_IVERTEXSHADER_H
 
 namespace mini3d
 {
+/**
+  IvertexShader is the interface for a vertex shader. A vertex shader is a program
+  that runs on the GPU and modifies geometry before it is used to draw to the
+  render target. This way meshes can be dynamically altered before being rendered.
+
+  @see http://en.wikipedia.org/wiki/Vertex_shader
+   
+  The shader language used for vertex shaders is implementation specific.
+
+  To create an instance of a IVertexShader, use the CreateVertexShader method in 
+  IGraphicsService.
+  
+  To use the IVertexShader in rendering, create an IShaderProgram combining the
+  IVertexShader and a IPixelShader and bind that IShaderProgram as the current
+  shader program using the SetShaderProgram method in IGraphicsService.
+*/
 class IVertexShader
 {
 public:
+
+/**
+	An enum describing the different possible vertex data types that makes up a
+	vertex.
+
+	A vertex consists of several data fields such as position, color, texture
+	coordinates and so on... when creating a vertex shader it is required to specify
+	the type of vertices that that shader operates on. This is done by creating a
+	vertex declaration. A vertex declaration is an array of vertex data types
+	describing the layout of data in a vertex.
+*/
 	enum VertexDataType { 
 							POSITION_FLOAT3 = 0,
 							POSITION_FLOAT4 = 1,
@@ -49,9 +56,30 @@ public:
 						};
 	
 public:
+/**
+	Destructor
+*/
 	virtual ~IVertexShader() {};
 
+/**
+	Gets a pointer to a buffer containing the source for the vertex shader.
+
+	There is no SetVertexShader function. Istead create a whole new new vertex
+	shader if needed and delete the old one.
+
+	@param[out] sizeInBytes Size of the vertex shader buffer in bytes.
+	@return Pointer to a buffer containing the source for the vertex shader.
+ */
 	virtual void* GetVertexShader(unsigned int& sizeInBytes) const = 0;
+
+/**
+	Gets the vertex declaration describing the vertex data layout expected by
+	the vertex shader.
+
+	@param[out] vertexDataCount Number of elements in the vertex declaration.
+	@return Pointer to an array of type VertexDataType.
+	@see VertexDataType
+ */
 	virtual VertexDataType* GetVertexDeclaration(unsigned int& vertexDatacount) const = 0;
 };
 }

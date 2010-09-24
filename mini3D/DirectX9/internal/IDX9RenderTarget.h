@@ -38,7 +38,6 @@ public:
 
 	virtual unsigned int GetWidth() const = 0;
 	virtual unsigned int GetHeight() const = 0;
-	virtual void SetSize(const int& width, const int& height) = 0;
 
 	virtual bool GetDepthTestEnabled() const = 0;
 	virtual bool GetFullscreenCompatible() const = 0;

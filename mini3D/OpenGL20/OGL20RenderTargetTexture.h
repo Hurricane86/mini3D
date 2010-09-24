@@ -52,11 +52,11 @@ public:
 
 	// ::::: IRenderTargetTexture :::::::::::::::::::::::::::::::::::::::::::::
 
-	void SetRenderTarget(const unsigned int& width, const unsigned int& height, const bool& depthTestEnabled);
+	void SetRenderTargetTexture(const unsigned int& width, const unsigned int& height, const bool& depthTestEnabled);
 
 	virtual unsigned int GetWidth() const { return width; };
 	virtual unsigned int GetHeight() const { return height; }
-	virtual void SetSize(const int& width, const int& height) { SetRenderTarget(width, height, depthTestEnabled); };
+	virtual void SetSize(const int& width, const int& height) { SetRenderTargetTexture(width, height, depthTestEnabled); };
 
 	virtual WrapStyle GetWrapStyle() const { return WRAP_CLAMP; };
 

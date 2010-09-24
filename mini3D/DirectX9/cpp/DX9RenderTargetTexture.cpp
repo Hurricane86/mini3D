@@ -32,7 +32,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 mini3d::DX9RenderTargetTexture::DX9RenderTargetTexture(DX9GraphicsService* pGraphicsService, const unsigned int& width, const unsigned int& height, const bool& depthTestEnabled) : 
 	pGraphicsService(pGraphicsService), pDepthStencil(0), pRenderTarget(0)
 {
-	SetRenderTarget(width, height, depthTestEnabled);
+	SetRenderTargetTexture(width, height, depthTestEnabled);
 	pGraphicsService->AddResource(this);
 
 }
@@ -46,7 +46,7 @@ mini3d::DX9RenderTargetTexture::~DX9RenderTargetTexture(void)
 		delete pDepthStencil;
 }
 
-void mini3d::DX9RenderTargetTexture::SetRenderTarget(const unsigned int& width, const unsigned int& height, const bool& depthTestEnabled)
+void mini3d::DX9RenderTargetTexture::SetRenderTargetTexture(const unsigned int& width, const unsigned int& height, const bool& depthTestEnabled)
 {
 
 	// If width or height is not a power of two

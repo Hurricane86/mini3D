@@ -143,13 +143,13 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 
 	// ----- CREATE GRAPHICS SERVICE ------------------------------------------
 	
-	//graphics = new mini3d::DX9GraphicsService();
-	graphics = new mini3d::OGL20GraphicsService();
+	graphics = new mini3d::DX9GraphicsService();
+	//graphics = new mini3d::OGL20GraphicsService();
 
 	// ----- CREATE GRAPHICS RESOURCES ----------------------------------------
 
 	// create a render target (mini3d does not have a default render target)
-	pWindowRenderTarget = graphics->CreateWindowRenderTarget(640, 480,(int)hWindow, true, mini3d::IWindowRenderTarget::QUALITY_MINIMUM);
+	pWindowRenderTarget = graphics->CreateWindowRenderTarget((int)hWindow, true, mini3d::IWindowRenderTarget::QUALITY_MINIMUM);
 
 	// create index buffer
 	iBuffer = graphics->CreateIndexBuffer(indices, 36);
@@ -166,12 +166,12 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	unsigned int sizeInBytes;
 	
 	// create vertex shader
-	char* shaderBytes = mini3d::utilites::BinaryFileReader::ReadBytesFromFile(L"shaders/glsl/vertexshader.glsl", sizeInBytes); // shaders/hlsl/vertexshader.hlsl
+	char* shaderBytes = mini3d::utilites::BinaryFileReader::ReadBytesFromFile(L"shaders/hlsl/vertexshader.hlsl", sizeInBytes); // shaders/hlsl/vertexshader.hlsl
 	pVertexShader = graphics->CreateVertexShader(shaderBytes, sizeInBytes, vertexDeclaration, 3);
 	delete shaderBytes;
 
 	// create pixel shader
-	char* shaderBytes2 = mini3d::utilites::BinaryFileReader::ReadBytesFromFile(L"shaders/glsl/pixelshader.glsl", sizeInBytes); // shaders/hlsl/pixelshader.hlsl
+	char* shaderBytes2 = mini3d::utilites::BinaryFileReader::ReadBytesFromFile(L"shaders/hlsl/pixelshader.hlsl", sizeInBytes); // shaders/hlsl/pixelshader.hlsl
 	pPixelShader = graphics->CreatePixelShader(shaderBytes2, sizeInBytes);
 	delete shaderBytes2;
 
@@ -289,9 +289,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 				// Set the screenrendertarget to the correct one
 				if (fullscreen == true)
-					pWindowRenderTarget->SetScreenState(mini3d::IWindowRenderTarget::SCREEN_STATE_FULLSCREEN);
+					pWindowRenderTarget->SetScreenStateFullscreen(0,0);
 				else
-					pWindowRenderTarget->SetScreenState(mini3d::IWindowRenderTarget::SCREEN_STATE_WINDOWED);
+					pWindowRenderTarget->SetScreenStateWindowed();
 			}
 		break;
 		case WM_MOUSEMOVE:

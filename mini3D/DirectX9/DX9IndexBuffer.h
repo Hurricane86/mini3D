@@ -53,6 +53,7 @@ public:
 	virtual void Unlock(const bool& dataIsChanged);
 
 	virtual unsigned int GetIndexCount() const { return indexCount; };
+	virtual DataType GetDataType() const { return dataType; };
 
 	virtual CullMode GetCullMode() const { return cullMode; };
 	virtual void SetCullMode(const CullMode& cullMode) { this->cullMode = cullMode; };

@@ -27,7 +27,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 #ifndef AURORA_DX9DEPTHSTENCIL_H
 #define AURORA_DX9DEPTHSTENCIL_H
 
-#include "../IDepthStencil.h"
+#include "../internal/IDepthStencil.h"
 #include "DX9GraphicsService.h"
 #include "internal/IDX9Resource.h"
 

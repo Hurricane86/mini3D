@@ -68,8 +68,8 @@ public:
 		{
 			quality = pScreenRenderTarget->GetQuality();
 			// safe because only DX9FullscreenRenderTargets are assigned to pFullscreenRenderTarget
-			d3dpp.BackBufferWidth = pScreenRenderTarget->GetFullscreenWidth();
-			d3dpp.BackBufferHeight = pScreenRenderTarget->GetFullscreenHeight();
+			d3dpp.BackBufferWidth = pScreenRenderTarget->GetWidth();
+			d3dpp.BackBufferHeight = pScreenRenderTarget->GetHeight();
 			d3dpp.Windowed = false;
 			d3dpp.EnableAutoDepthStencil = pScreenRenderTarget->GetDepthTestEnabled();
 		}

@@ -1,46 +1,64 @@
-/*
-This source file is part of mini3D. 
-Copyright (c) <2010> <www.mini3d.org>
 
-Permission is hereby granted, free of charge, to any person
-obtaining a copy of this software and associated documentation
-files (the "Software"), to deal in the Software without
-restriction, including without limitation the rights to use,
-copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the
-Software is furnished to do so, subject to the following
-conditions:
-
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
-OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
-*/
+// Copyright (c) <2010> Daniel Peterson
+// This file is part of mini3d <www.mini3d.org>
+// It is distributed under the MIT Software License <www.mini3d.org/license>
 
 #ifndef AURORA_ISHADERPROGRAM_H
 #define AURORA_ISHADERPROGRAM_H
+
 
 namespace mini3d
 {
 class IPixelShader;
 class IVertexShader;
 
+/**
+  IShaderProgram is the interface for a shader program. A shader program is a
+  combination of a pixel shader and a vertex shader that together defines the
+  programmable render stages in mini3d.
+  
+  @see IPixelShader
+  @see IVertexShader
+  @see http://en.wikipedia.org/wiki/Shader
+
+  The shader language used for pixel and vertex shaders is implementation
+  specific.
+
+  To create an instance of a IShaderProgram, use the CreateShaderProgram method
+  in IGraphicsService.
+  
+  To use the IShaderProgram in rendering bind it as the current shader program 
+  using the SetShaderProgram method in IGraphicsService.
+*/
 class IShaderProgram
 {
-	friend class IGraphicsDevice;
-
 public:
-	// Methods
+
+/**
+	Destructor
+*/	
 	virtual ~IShaderProgram(void) {};
 
+/**
+	Gets a pointer to the pixel shader used in this shader program
+
+	There is no SetPixelShader, instead create a new shader program with the 
+	desired pixel and vertex shader and delete the old one if it is no longer
+	needed.
+	
+	@return Pointer to the pixel shader in this shader program.
+ */
 	virtual IPixelShader* GetPixelShader() const = 0;
+
+/**
+	Gets a pointer to the vertex shader used in this shader program
+
+	There is no SetVertexlShader, instead create a new shader program with the 
+	desired pixel and vertex shader and delete the old one if it is no longer
+	needed.
+	
+	@return Pointer to the vertex shader in this shader program.
+ */
 	virtual IVertexShader* GetVertexShader() const = 0;
 };
 }

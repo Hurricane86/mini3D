@@ -176,5 +176,9 @@ unsigned int mini3d::OGL20IndexBuffer::GetBytesPerIndex()
 		return 2;
 		case INT_32:
 		return 4;
-	}		
+	}
+
+	// TODO: Default case to avoid build warnings
+	return 4;
+
 }
