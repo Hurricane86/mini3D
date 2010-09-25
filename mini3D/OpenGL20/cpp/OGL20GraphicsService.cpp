@@ -158,25 +158,25 @@ void mini3d::OGL20GraphicsService::SetRenderStates()
 
 // Graphics Pipeline States ---------------------------------------------------
 
-int mini3d::OGL20GraphicsService::GetMaxTextures() const
+unsigned int mini3d::OGL20GraphicsService::GetMaxTextures() const
 {
 	GLint units;
 	glGetIntegerv(GL_MAX_TEXTURE_UNITS, &units);
 
 	return units;
 }
-int mini3d::OGL20GraphicsService::GetMaxTextureSize() const
+unsigned int mini3d::OGL20GraphicsService::GetMaxTextureSize() const
 {
 	GLint units;
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &units);
 
 	return units;
 }
-int mini3d::OGL20GraphicsService::GetPixelShaderVersion() const
+unsigned int mini3d::OGL20GraphicsService::GetPixelShaderVersion() const
 {
 	return 0;
 }
-int mini3d::OGL20GraphicsService::GetVertexShaderVersion() const
+unsigned int mini3d::OGL20GraphicsService::GetVertexShaderVersion() const
 {
 	return 0;
 }

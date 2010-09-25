@@ -123,7 +123,7 @@ void mini3d::OGL20RenderTargetTexture::UnloadResource(void)
 			pGraphicsService->SetRenderTarget(0);
 
 		// if we are removing one of the current textures, clear that texture slot first
-		for(int i = 0; i < pGraphicsService->GetMaxTextures(); i++)
+		for(unsigned int i = 0; i < pGraphicsService->GetMaxTextures(); i++)
 			if (pGraphicsService->GetTexture(i) == this)
 				pGraphicsService->SetTexture(0, i);
 

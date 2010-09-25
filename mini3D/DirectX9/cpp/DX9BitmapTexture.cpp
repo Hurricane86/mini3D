@@ -56,7 +56,7 @@ void mini3d::DX9BitmapTexture::SetBitmap(const void* pBitmap, const unsigned int
 {
 
 	// If width or height is not a power of two
-	if (width & (width - 1) != 0 || height & (height - 1))
+	if (((width & (width - 1)) != 0) || ((height & (height - 1)) != 0))
 	{
 		throw Error::MINI3D_ERROR_NON_POWER_OF_TWO;
 	}
@@ -179,7 +179,7 @@ void mini3d::DX9BitmapTexture::LoadResource(void)
 
 		if (bitDepth == BIT_32)
 		{
-			for (int j = 0; j < rowSizeInBytes; j += bytesPerPixel)
+			for (unsigned int j = 0; j < rowSizeInBytes; j += bytesPerPixel)
 			{
 				// ARGB > RGBA
 				pD3DData[j] = pBitmapData[j + 1];
@@ -191,7 +191,7 @@ void mini3d::DX9BitmapTexture::LoadResource(void)
 		}
 		else if (bitDepth == BIT_64)
 		{
-			for (int j = 0; j < rowSizeInBytes; j += bytesPerPixel)
+			for (unsigned int j = 0; j < rowSizeInBytes; j += bytesPerPixel)
 			{
 				// ARGB > RGBA
 				pD3DData[j] = pBitmapData[j + 1];
@@ -203,11 +203,11 @@ void mini3d::DX9BitmapTexture::LoadResource(void)
 		}
 		else if (bitDepth == BIT_16)
 		{
-			for (int j = 0; j < rowSizeInBytes; j += bytesPerPixel)
+			for (unsigned int j = 0; j < rowSizeInBytes; j += bytesPerPixel)
 			{
 				// ARGB > RGBA
-				pD3DData[j] = pBitmapData[j] << 1 + pBitmapData[j + 1] >> 1;
-				pD3DData[j + 1] = pBitmapData[j] >> 1 + pBitmapData[j + 1] << 1;
+				pD3DData[j] = (pBitmapData[j] << 1) + (pBitmapData[j + 1] >> 1);
+				pD3DData[j + 1] = (pBitmapData[j] >> 1) + (pBitmapData[j + 1] << 1);
 				//memcpy(pD3DData, pBitmapData, rowSizeInBytes);
 			}
 		}
@@ -226,7 +226,7 @@ void mini3d::DX9BitmapTexture::UnloadResource(void)
 	if (pTexture != 0)
 	{
 		// if we are removing one of the current textures, clear that texture slot first
-		for(int i = 0; i < pGraphicsService->GetMaxTextures(); i++)
+		for(unsigned int i = 0; i < pGraphicsService->GetMaxTextures(); i++)
 			if (pGraphicsService->GetTexture(i) == this)
 				pGraphicsService->SetTexture(0, i);
 
@@ -247,8 +247,8 @@ unsigned int mini3d::DX9BitmapTexture::GetBytesPerPixel(void)
 		return 4;
 		case IBitmapTexture::BIT_64:
 		return 8;
-
-		// Default case to avoid compiler warnings
-		return 4;
 	}
+
+	// Default case to avoid compiler warnings
+	return 4;
 }

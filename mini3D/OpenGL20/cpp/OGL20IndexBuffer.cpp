@@ -132,9 +132,13 @@ void mini3d::OGL20IndexBuffer::LoadResource(void)
 		}
 		catch (GLuint error)
 		{
-			//GL_OUT_OF_MEMORY
-			isDirty = true;
-			return;
+			switch (error)
+			{
+			case GL_OUT_OF_MEMORY:
+				isDirty = true;
+				return;
+				break;
+			}
 		}
 	}
 

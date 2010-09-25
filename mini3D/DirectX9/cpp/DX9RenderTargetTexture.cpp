@@ -50,7 +50,7 @@ void mini3d::DX9RenderTargetTexture::SetRenderTargetTexture(const unsigned int& 
 {
 
 	// If width or height is not a power of two
-	if ((width & (width - 1) != 0) || (height & (height - 1)))
+	if (((width & (width - 1)) != 0) || ((height & (height - 1)) != 0))
 	{
 		throw Error::MINI3D_ERROR_NON_POWER_OF_TWO;
 	}
@@ -124,7 +124,7 @@ void mini3d::DX9RenderTargetTexture::UnloadResource(void)
 			pGraphicsService->SetRenderTarget(0);
 
 		// if we are removing one of the current textures, clear that texture slot first
-		for(int i = 0; i < pGraphicsService->GetMaxTextures(); i++)
+		for(unsigned int i = 0; i < pGraphicsService->GetMaxTextures(); i++)
 			if (pGraphicsService->GetTexture(i) == this)
 				pGraphicsService->SetTexture(0, i);
 

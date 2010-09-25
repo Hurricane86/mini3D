@@ -103,7 +103,7 @@ void mini3d::OGL20ShaderProgram::LoadResource(void)
 	glGetProgramiv(hProgram, GL_ACTIVE_ATTRIBUTES, &active_attribs);
 	glGetProgramiv(hProgram, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &max_length);
 
-	for (unsigned i = 0; i < active_attribs; i++) 
+	for (int i = 0; i < active_attribs; i++) 
 	{
 		glGetActiveAttrib(hProgram, i, max_length + 1, NULL, &size, &type, name);
 		std::stringstream ss;
@@ -119,7 +119,7 @@ void mini3d::OGL20ShaderProgram::LoadResource(void)
 	glGetProgramiv(hProgram, GL_ACTIVE_UNIFORMS, &active_attribs);
 	glGetProgramiv(hProgram, GL_ACTIVE_UNIFORM_MAX_LENGTH, &max_length);
 
-	for (unsigned i = 0; i < active_attribs; i++) 
+	for (int i = 0; i < active_attribs; i++) 
 	{
 		glGetActiveUniform(hProgram, i, max_length + 1, NULL, &size, &type, name);
 		std::stringstream ss;

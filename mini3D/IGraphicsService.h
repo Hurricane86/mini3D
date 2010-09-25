@@ -42,10 +42,10 @@ public:
 	virtual ~IGraphicsService() { };
 
 	// Get Graphics Card Capabilities
-	virtual int GetMaxTextures() const = 0;
-	virtual int GetMaxTextureSize() const = 0;
-	virtual int GetPixelShaderVersion() const = 0;
-	virtual int GetVertexShaderVersion() const = 0;
+	virtual unsigned int GetMaxTextures() const = 0;
+	virtual unsigned int GetMaxTextureSize() const = 0;
+	virtual unsigned int GetPixelShaderVersion() const = 0;
+	virtual unsigned int GetVertexShaderVersion() const = 0;
 
 	// Create Resources
 

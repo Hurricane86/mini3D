@@ -121,14 +121,19 @@ void mini3d::OGL20VertexBuffer::LoadResource(void)
 		glGenBuffers(1, &pVertexBuffer);
 		glBindBuffer(GL_ARRAY_BUFFER, pVertexBuffer);
 
-		try {
+		try 
+		{
 			glBufferData(GL_ARRAY_BUFFER, sizeInBytes, pVertices, GL_STATIC_DRAW);
 		}
 		catch (GLuint error)
 		{
-			//GL_OUT_OF_MEMORY
-			isDirty = true;
-			return;
+			switch (error)
+			{
+			case GL_OUT_OF_MEMORY:
+				isDirty = true;
+				return;
+				break;
+			}
 		}
 	}
 

@@ -124,10 +124,10 @@ public:
 	virtual void SetRenderContext(HGLRC hRenderContext) { this->hRenderContext = hRenderContext; };	
 
 	// Get Graphics Card Capabilities
-	virtual int GetMaxTextures() const;
-	virtual int GetMaxTextureSize() const;
-	virtual int GetPixelShaderVersion() const;
-	virtual int GetVertexShaderVersion() const;
+	virtual unsigned int GetMaxTextures() const;
+	virtual unsigned int GetMaxTextureSize() const;
+	virtual unsigned int GetPixelShaderVersion() const;
+	virtual unsigned int GetVertexShaderVersion() const;
 
 	// Create Resources
 	virtual IWindowRenderTarget* CreateWindowRenderTarget(const int& hWindow, const bool& depthTestEnabled, const IWindowRenderTarget::Quality& quality);

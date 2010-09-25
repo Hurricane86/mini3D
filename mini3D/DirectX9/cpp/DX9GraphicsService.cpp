@@ -221,7 +221,7 @@ void mini3d::DX9GraphicsService::SaveGraphicsState()
 
 	pLostDeviceShaderProgram = pCurrentShaderProgram;
 
-	for (int i = 0; i < GetMaxTextures(); i++)
+	for (unsigned int i = 0; i < GetMaxTextures(); i++)
 	{
 		lostDeviceCurrentITextures[i] = currentITextures[i]; 
 		currentITextures[i] = 0;
@@ -237,7 +237,7 @@ void mini3d::DX9GraphicsService::RestoreGraphicsState()
 //	SetPixelShader(pLostDevicePixelShader);
 //	SetVertexShader(pLostDeviceVertexShader);
 	SetShaderProgram(pLostDeviceShaderProgram);
-	for (int i = 0; i < GetMaxTextures(); i++)
+	for (unsigned int i = 0; i < GetMaxTextures(); i++)
 		SetTexture(lostDeviceCurrentITextures[i], i);
 
 }
@@ -542,21 +542,21 @@ void mini3d::DX9GraphicsService::SetRenderStates()
 
 // Graphics Pipeline States ---------------------------------------------------
 
-int mini3d::DX9GraphicsService::GetMaxTextures() const
+unsigned int mini3d::DX9GraphicsService::GetMaxTextures() const
 {
-	return deviceCaps.MaxSimultaneousTextures;
+	return (unsigned int)deviceCaps.MaxSimultaneousTextures;
 }
-int mini3d::DX9GraphicsService::GetMaxTextureSize() const
+unsigned int mini3d::DX9GraphicsService::GetMaxTextureSize() const
 {
-	return min(deviceCaps.MaxTextureHeight, deviceCaps.MaxTextureWidth);
+	return (unsigned int)min(deviceCaps.MaxTextureHeight, deviceCaps.MaxTextureWidth);
 }
-int mini3d::DX9GraphicsService::GetPixelShaderVersion() const
+unsigned int mini3d::DX9GraphicsService::GetPixelShaderVersion() const
 {
-	return deviceCaps.PixelShaderVersion;
+	return (unsigned int)deviceCaps.PixelShaderVersion;
 }
-int mini3d::DX9GraphicsService::GetVertexShaderVersion() const
+unsigned int mini3d::DX9GraphicsService::GetVertexShaderVersion() const
 {
-	return deviceCaps.VertexShaderVersion;
+	return (unsigned int)deviceCaps.VertexShaderVersion;
 }
 
 

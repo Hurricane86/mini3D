@@ -56,7 +56,7 @@ void* mini3d::OGL20BitmapTexture::GetBitmap(unsigned int& sizeInBytes) const
 void mini3d::OGL20BitmapTexture::SetBitmap(const void* pBitmap, const unsigned int& width, const unsigned int& height, const IBitmapTexture::BitDepth bitDepth, const ITexture::WrapStyle wrapStyle)
 {
 	// If width or height is not a power of two
-	if (width & (width - 1) != 0 || height & (height - 1))
+	if (((width & (width - 1)) != 0) || ((height & (height - 1)) != 0))
 	{
 		throw Error::MINI3D_ERROR_NON_POWER_OF_TWO;
 	}
@@ -146,10 +146,15 @@ void mini3d::OGL20BitmapTexture::LoadResource(void)
 		try{
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, 0);
 		}
-		catch  (GLuint error) //GL_OUT_OF_MEMORY
+		catch  (GLuint error)
 		{
-			isDirty = true;
-			return;			
+			switch (error)
+			{
+			case GL_OUT_OF_MEMORY:
+				isDirty = true;
+				return;
+				break;
+			}
 		}
 	}
 
@@ -158,9 +163,15 @@ void mini3d::OGL20BitmapTexture::LoadResource(void)
 	{
 		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, pBitmap);
 	}
-	catch (GLuint error)
+	catch (GLuint error) // TODO: Fix this to something useful
 	{
-		isDirty = true;
+		switch (error)
+		{
+		case 0:
+		default:
+			isDirty = true;
+			break;
+		}
 	}
 
 	// Clear the current bound texture
@@ -176,7 +187,7 @@ void mini3d::OGL20BitmapTexture::UnloadResource(void)
 	if (pTexture != 0)
 	{
 		// if we are removing one of the current textures, clear that texture slot first
-		for(int i = 0; i < pGraphicsService->GetMaxTextures(); i++)
+		for(unsigned int i = 0; i < pGraphicsService->GetMaxTextures(); i++)
 			if (pGraphicsService->GetTexture(i) == this)
 				pGraphicsService->SetTexture(0, i);
 
