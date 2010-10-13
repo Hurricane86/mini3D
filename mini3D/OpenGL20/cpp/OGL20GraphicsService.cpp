@@ -1,28 +1,8 @@
-/*
-This source file is part of mini3D. 
-Copyright (c) <2010> <www.mini3d.org>
 
-Permission is hereby granted, free of charge, to any person
-obtaining a copy of this software and associated documentation
-files (the "Software"), to deal in the Software without
-restriction, including without limitation the rights to use,
-copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the
-Software is furnished to do so, subject to the following
-conditions:
+// Copyright (c) <2010> Daniel Peterson
+// This file is part of mini3d <www.mini3d.org>
+// It is distributed under the MIT Software License <www.mini3d.org/license>
 
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
-OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
-*/
 
 #include "../OGL20GraphicsService.h"
 #include "../os/windows/OSWindows.h"
@@ -46,6 +26,9 @@ mini3d::OGL20GraphicsService::OGL20GraphicsService() :
 
 	// Create the renderContext
 	CreateDevice();
+
+	// Should be able to init the pOS connections
+	pOS->Init();
 }
 
 mini3d::OGL20GraphicsService::~OGL20GraphicsService(void)
@@ -73,11 +56,11 @@ void mini3d::OGL20GraphicsService::CreateDevice(void)
 	EnumDisplaySettings (NULL, ENUM_CURRENT_SETTINGS, &SDL_desktop_mode);
 	
 	PIXELFORMATDESCRIPTOR pfd={0};
-    pfd.nSize = sizeof(pfd);
-    pfd.nVersion = 1;
+	pfd.nSize = sizeof(pfd);
+	pfd.nVersion = 1;
 	pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER; // Make the pixel format compatible with opengl
 	pfd.iPixelType = PFD_TYPE_RGBA;
-    pfd.cColorBits = 24;
+	pfd.cColorBits = 24;
 	pfd.cDepthBits = 0;
 	pfd.iLayerType = PFD_MAIN_PLANE;
     
@@ -140,9 +123,9 @@ void mini3d::OGL20GraphicsService::CreateInternalWindow(void)
 // Locking resources
 void mini3d::OGL20GraphicsService::BeginScene(void)
 {
-	glShadeModel(GL_SMOOTH);
-	glEnable(GL_DEPTH_TEST);						// Enables Depth Testing
-	glDepthFunc(GL_LEQUAL);							// The Type Of Depth Test To Do
+	pOS->GLShadeModel(GL_SMOOTH);
+	pOS->GLEnable(GL_DEPTH_TEST);						// Enables Depth Testing
+	pOS->GLDepthFunc(GL_LEQUAL);						// The Type Of Depth Test To Do
 }
 void mini3d::OGL20GraphicsService::EndScene(void)
 {
@@ -161,14 +144,14 @@ void mini3d::OGL20GraphicsService::SetRenderStates()
 unsigned int mini3d::OGL20GraphicsService::GetMaxTextures() const
 {
 	GLint units;
-	glGetIntegerv(GL_MAX_TEXTURE_UNITS, &units);
+	pOS->GLGetIntegerv(GL_MAX_TEXTURE_UNITS, &units);
 
 	return units;
 }
 unsigned int mini3d::OGL20GraphicsService::GetMaxTextureSize() const
 {
 	GLint units;
-	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &units);
+	pOS->GLGetIntegerv(GL_MAX_TEXTURE_SIZE, &units);
 
 	return units;
 }
@@ -186,28 +169,28 @@ unsigned int mini3d::OGL20GraphicsService::GetVertexShaderVersion() const
 
 void mini3d::OGL20GraphicsService::printLog(GLuint obj)
 {
-	PFNGLISSHADERPROC glIsShader = (PFNGLISSHADERPROC)wglGetProcAddress("glIsShader");
+//	PFNGLISSHADERPROC glIsShader = (PFNGLISSHADERPROC)wglGetProcAddress("glIsShader");
 
-	PFNGLGETSHADERIVPROC glGetShaderiv = (PFNGLGETSHADERIVPROC)wglGetProcAddress("glGetShaderiv");
-	PFNGLGETPROGRAMIVNVPROC glGetProgramiv = (PFNGLGETPROGRAMIVNVPROC)wglGetProcAddress("glGetProgramiv");
-	PFNGLGETSHADERINFOLOGPROC glGetShaderInfoLog = (PFNGLGETSHADERINFOLOGPROC)wglGetProcAddress("glGetShaderInfoLog");
-	PFNGLGETPROGRAMINFOLOGPROC glGetProgramInfoLog = (PFNGLGETPROGRAMINFOLOGPROC)wglGetProcAddress("glGetProgramInfoLog");
+//	PFNGLGETSHADERIVPROC glGetShaderiv = (PFNGLGETSHADERIVPROC)wglGetProcAddress("glGetShaderiv");
+//	PFNGLGETPROGRAMIVNVPROC glGetProgramiv = (PFNGLGETPROGRAMIVNVPROC)wglGetProcAddress("glGetProgramiv");
+//	PFNGLGETSHADERINFOLOGPROC glGetShaderInfoLog = (PFNGLGETSHADERINFOLOGPROC)wglGetProcAddress("glGetShaderInfoLog");
+//	PFNGLGETPROGRAMINFOLOGPROC glGetProgramInfoLog = (PFNGLGETPROGRAMINFOLOGPROC)wglGetProcAddress("glGetProgramInfoLog");
 	
 	int infologLength = 0;
 	int maxLength;
 	
-	if(glIsShader(obj))
-		glGetShaderiv(obj,GL_INFO_LOG_LENGTH,&maxLength);
+	if(pOS->GLIsShader(obj))
+		pOS->GLGetShaderiv(obj,GL_INFO_LOG_LENGTH,&maxLength);
 	else
-		glGetProgramiv(obj,GL_INFO_LOG_LENGTH,&maxLength);
+		pOS->GLGetProgramiv(obj,GL_INFO_LOG_LENGTH,&maxLength);
 			
 	char* infoLog = new char[maxLength];
 	LPCWSTR* infoLogW = new LPCWSTR[maxLength];
 
-	if (glIsShader(obj))
-		glGetShaderInfoLog(obj, maxLength, &infologLength, infoLog);
+	if (pOS->GLIsShader(obj))
+		pOS->GLGetShaderInfoLog(obj, maxLength, &infologLength, infoLog);
 	else
-		glGetProgramInfoLog(obj, maxLength, &infologLength, infoLog);
+		pOS->GLGetProgramInfoLog(obj, maxLength, &infologLength, infoLog);
  
 	OutputDebugStringA("\nDEBUG INFO ---------\n");
 
@@ -227,19 +210,19 @@ void mini3d::OGL20GraphicsService::SetShaderProgram(IShaderProgram* pShaderProgr
 	if (pCurrentShaderProgram == pShaderProgram)
 		return;
 
-	PFNGLUSEPROGRAMPROC glUseProgram = (PFNGLUSEPROGRAMPROC)wglGetProcAddress("glUseProgram");
+	//PFNGLUSEPROGRAMPROC glUseProgram = (PFNGLUSEPROGRAMPROC)wglGetProcAddress("glUseProgram");
 
 	if (pShaderProgram == 0)
 	{
-		glUseProgram(0);
+		pOS->GLUseProgram(0);
 	}
 	else
 	{
 		OGL20ShaderProgram* pOLG20ShaderProgram = (OGL20ShaderProgram*)pShaderProgram;
-		glUseProgram(pOLG20ShaderProgram->GetProgram());
+		pOS->GLUseProgram(pOLG20ShaderProgram->GetProgram());
 	
-		PFNGLENABLEVERTEXATTRIBARRAYPROC glEnableVertexAttribArray = (PFNGLENABLEVERTEXATTRIBARRAYPROC)wglGetProcAddress("glEnableVertexAttribArray");
-		PFNGLVERTEXATTRIBPOINTERPROC glVertexAttribPointer = (PFNGLVERTEXATTRIBPOINTERPROC)wglGetProcAddress("glVertexAttribPointer");
+//		PFNGLENABLEVERTEXATTRIBARRAYPROC glEnableVertexAttribArray = (PFNGLENABLEVERTEXATTRIBARRAYPROC)wglGetProcAddress("glEnableVertexAttribArray");
+//		PFNGLVERTEXATTRIBPOINTERPROC glVertexAttribPointer = (PFNGLVERTEXATTRIBPOINTERPROC)wglGetProcAddress("glVertexAttribPointer");
 
 		// Set the vertexattributes
 		unsigned int vertexAttributeCount;
@@ -247,11 +230,9 @@ void mini3d::OGL20GraphicsService::SetShaderProgram(IShaderProgram* pShaderProgr
 
 		for(unsigned int i = 0; i < vertexAttributeCount; i++)
 		{
-			glVertexAttribPointer(vA[i].index, vA[i].size, vA[i].type, vA[i].normalized, vA[i].stride, vA[i].pointer);
-			glEnableVertexAttribArray(vA[i].index);
+			pOS->GLVertexAttribPointer(vA[i].index, vA[i].size, vA[i].type, vA[i].normalized, vA[i].stride, vA[i].pointer);
+			pOS->GLEnableVertexAttribArray(vA[i].index);
 		}
-
-
 	}
 
 	pCurrentShaderProgram = pShaderProgram;
@@ -278,17 +259,17 @@ void mini3d::OGL20GraphicsService::SetTexture(ITexture* pTexture, const unsigned
 		throw Error::MINI3D_ERROR_TEXTURE_INDEX_OUTSIDE_VALID_RANGE;
 	}
 
-	PFNGLACTIVETEXTUREPROC glActiveTexture = (PFNGLACTIVETEXTUREPROC)wglGetProcAddress("glActiveTexture");
+	//PFNGLACTIVETEXTUREPROC glActiveTexture = (PFNGLACTIVETEXTUREPROC)wglGetProcAddress("glActiveTexture");
 
 	// if texture already assigned, then there is no need to re-assign it
 	//if (pTexture == currentITextures[index])
 	//	return;
 
-	glActiveTexture(GL_TEXTURE0 + index);
+	pOS->GLActiveTexture(GL_TEXTURE0 + index);
 
 	if (pTexture == 0)
 	{
-		glBindTexture(GL_TEXTURE_2D, 0);
+		pOS->GLBindTexture(GL_TEXTURE_2D, 0);
 	}
 	else
 	{
@@ -313,11 +294,11 @@ void mini3d::OGL20GraphicsService::SetTexture(ITexture* pTexture, const unsigned
 		// set the texture
 		// this cast is "unfailable" (not exception caught). Whoever inherits from ITexture must also inherit from IOGL20Texture
 		IOGL20Texture* pOGL20Texture = dynamic_cast<IOGL20Texture*>(pTexture);
-		glBindTexture(GL_TEXTURE_2D, pOGL20Texture->GetTextureBuffer());
+		pOS->GLBindTexture(GL_TEXTURE_2D, pOGL20Texture->GetTextureBuffer());
 	}
 
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);	// Linear Filtering
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);	// Linear Filtering
+	pOS->GLTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);	// Linear Filtering
+	pOS->GLTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);	// Linear Filtering
 
 	hCurrentTexture = pTexture;
 //	currentITextures[index] = pTexture;
@@ -327,7 +308,7 @@ void mini3d::OGL20GraphicsService::SetTexture(ITexture* pTexture, const unsigned
 void mini3d::OGL20GraphicsService::SetRenderTarget(IRenderTarget* pRenderTarget)
 {
 
-	PFNGLBINDFRAMEBUFFERPROC glBindFramebuffer = (PFNGLBINDFRAMEBUFFERPROC)wglGetProcAddress("glBindFramebuffer");
+	//PFNGLBINDFRAMEBUFFERPROC glBindFramebuffer = (PFNGLBINDFRAMEBUFFERPROC)wglGetProcAddress("glBindFramebuffer");
 
 	if (pRenderTarget == 0)
 	{
@@ -336,7 +317,7 @@ void mini3d::OGL20GraphicsService::SetRenderTarget(IRenderTarget* pRenderTarget)
 			return;
 		
 		// set the frame buffer 0 and the device/render context to the default
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		pOS->GLBindFramebuffer(GL_FRAMEBUFFER, 0);
 		wglMakeCurrent(hDeviceContext, hRenderContext);
 		pCurrentRenderTarget = 0;
 		return;
@@ -349,11 +330,11 @@ void mini3d::OGL20GraphicsService::SetRenderTarget(IRenderTarget* pRenderTarget)
 	{
 		if (pRenderTarget == 0)
 		{
-			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			pOS->GLBindFramebuffer(GL_FRAMEBUFFER, 0);
 		}
 		else
 		{
-			glBindFramebuffer(GL_FRAMEBUFFER, pOGL20RenderTargetTexture->GetRenderTargetBuffer());
+			pOS->GLBindFramebuffer(GL_FRAMEBUFFER, pOGL20RenderTargetTexture->GetRenderTargetBuffer());
 		}
 		
 		pCurrentRenderTarget = pRenderTarget;
@@ -379,7 +360,7 @@ void mini3d::OGL20GraphicsService::SetRenderTarget(IRenderTarget* pRenderTarget)
 			ChangeDisplaySettings(NULL,0);	// Switch back to the desktop default resolution stored in registry
 			ShowCursor(TRUE);	// Show mouse pointer
 			
-			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			pOS->GLBindFramebuffer(GL_FRAMEBUFFER, 0);
 			wglMakeCurrent(pOGL20WindowRenderTarget->GetDeviceContext(), hRenderContext);
 			glViewport(0,0,pOGL20WindowRenderTarget->GetWidth(), pOGL20WindowRenderTarget->GetHeight());
 		}
@@ -404,7 +385,7 @@ void mini3d::OGL20GraphicsService::SetRenderTarget(IRenderTarget* pRenderTarget)
 				return;
 			}
 
-			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			pOS->GLBindFramebuffer(GL_FRAMEBUFFER, 0);
 			wglMakeCurrent(pOGL20WindowRenderTarget->GetDeviceContext(), hRenderContext);
 			glViewport(0,0,pOGL20WindowRenderTarget->GetFullscreenWidth(), pOGL20WindowRenderTarget->GetFullscreenHeight());
 		}
@@ -443,19 +424,19 @@ mini3d::IIndexBuffer* mini3d::OGL20GraphicsService::GetIndexBuffer() const
 }
 void mini3d::OGL20GraphicsService::SetIndexBuffer(IIndexBuffer* pIndexBuffer)
 {
-	PFNGLBINDBUFFERPROC glBindBuffer = (PFNGLBINDBUFFERPROC)wglGetProcAddress("glBindBuffer");
+	//PFNGLBINDBUFFERPROC glBindBuffer = (PFNGLBINDBUFFERPROC)wglGetProcAddress("glBindBuffer");
 
 	if (pCurrentIndexBuffer == pIndexBuffer)
 		return;
 
 	if (pIndexBuffer == 0)
 	{
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		pOS->GLBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
 	else
 	{
 		OGL20IndexBuffer* pOGL20IndexBuffer = (OGL20IndexBuffer*)pIndexBuffer;
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, pOGL20IndexBuffer->GetIndexBuffer());
+		pOS->GLBindBuffer(GL_ELEMENT_ARRAY_BUFFER, pOGL20IndexBuffer->GetIndexBuffer());
 	}
 
 	pCurrentIndexBuffer = pIndexBuffer;
@@ -468,19 +449,19 @@ mini3d::IVertexBuffer* mini3d::OGL20GraphicsService::GetVertexBuffer() const
 }
 void mini3d::OGL20GraphicsService::SetVertexBuffer(IVertexBuffer* pVertexBuffer)
 {
-	PFNGLBINDBUFFERPROC glBindBuffer = (PFNGLBINDBUFFERPROC)wglGetProcAddress("glBindBuffer");
+	//PFNGLBINDBUFFERPROC glBindBuffer = (PFNGLBINDBUFFERPROC)wglGetProcAddress("glBindBuffer");
 
 	if (pCurrentVertexBuffer == pVertexBuffer)
 		return;
 
 	if (pVertexBuffer == 0)
 	{
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		pOS->GLBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
 	else
 	{
 		OGL20VertexBuffer* pOGL20VertexBuffer = (OGL20VertexBuffer*)pVertexBuffer;
-		glBindBuffer(GL_ARRAY_BUFFER, pOGL20VertexBuffer->GetVertexBuffer());		
+		pOS->GLBindBuffer(GL_ARRAY_BUFFER, pOGL20VertexBuffer->GetVertexBuffer());		
 	}
 
 	pCurrentVertexBuffer = pVertexBuffer;
@@ -489,43 +470,42 @@ void mini3d::OGL20GraphicsService::SetVertexBuffer(IVertexBuffer* pVertexBuffer)
 // Shader Parameters
 void mini3d::OGL20GraphicsService::SetShaderParameterMatrix(const unsigned int& index, const float* pData, const unsigned int& rows, const unsigned int& columns)
 {
-	PFNGLUNIFORMMATRIX4FVPROC glUniformMatrix4fv = (PFNGLUNIFORMMATRIX4FVPROC)wglGetProcAddress("glUniformMatrix4fv");
+	//PFNGLUNIFORMMATRIX4FVPROC glUniformMatrix4fv = (PFNGLUNIFORMMATRIX4FVPROC)wglGetProcAddress("glUniformMatrix4fv");
 
 	if (rows == 4 && columns == 4)
-		glUniformMatrix4fv(index, 1, GL_FALSE, pData);
+		pOS->GLUniformMatrix4fv(index, 1, GL_FALSE, pData);
 }
 void mini3d::OGL20GraphicsService::SetShaderParameterFloat(const unsigned int& index, const float* pData, const unsigned int& count)
 {
-	PFNGLUNIFORM1FPROC glUniform1f = (PFNGLUNIFORM1FPROC)wglGetProcAddress("glUniform1f");
-	PFNGLUNIFORM2FPROC glUniform2f = (PFNGLUNIFORM2FPROC)wglGetProcAddress("glUniform2f");
-	PFNGLUNIFORM3FPROC glUniform3f = (PFNGLUNIFORM3FPROC)wglGetProcAddress("glUniform3f");
-	PFNGLUNIFORM4FPROC glUniform4f = (PFNGLUNIFORM4FPROC)wglGetProcAddress("glUniform4f");
+	//PFNGLUNIFORM1FPROC glUniform1f = (PFNGLUNIFORM1FPROC)wglGetProcAddress("glUniform1f");
+	//PFNGLUNIFORM2FPROC glUniform2f = (PFNGLUNIFORM2FPROC)wglGetProcAddress("glUniform2f");
+	//PFNGLUNIFORM3FPROC glUniform3f = (PFNGLUNIFORM3FPROC)wglGetProcAddress("glUniform3f");
+	//PFNGLUNIFORM4FPROC glUniform4f = (PFNGLUNIFORM4FPROC)wglGetProcAddress("glUniform4f");
 
 	if (count == 1)
-		glUniform1f(index, *pData);
+		pOS->GLUniform1f(index, *pData);
 	else if (count == 2)
-		glUniform2f(index, *pData, *(pData + 1));
+		pOS->GLUniform2f(index, *pData, *(pData + 1));
 	else if (count == 3)
-		glUniform3f(index, *pData, *(pData + 1), *(pData + 2));
+		pOS->GLUniform3f(index, *pData, *(pData + 1), *(pData + 2));
 	else if (count == 4)
-		glUniform4f(index, *pData, *(pData + 1), *(pData + 2), *(pData + 3));
+		pOS->GLUniform4f(index, *pData, *(pData + 1), *(pData + 2), *(pData + 3));
 }
 void mini3d::OGL20GraphicsService::SetShaderParameterInt(const unsigned int& index, const int* pData, const unsigned int& count)
 {
-	
-	PFNGLUNIFORM1IPROC glUniform1i = (PFNGLUNIFORM1IPROC)wglGetProcAddress("glUniform1i");
-	PFNGLUNIFORM2IPROC glUniform2i = (PFNGLUNIFORM2IPROC)wglGetProcAddress("glUniform2i");
-	PFNGLUNIFORM3IPROC glUniform3i = (PFNGLUNIFORM3IPROC)wglGetProcAddress("glUniform3i");
-	PFNGLUNIFORM4IPROC glUniform4i = (PFNGLUNIFORM4IPROC)wglGetProcAddress("glUniform4i");
+	//PFNGLUNIFORM1IPROC glUniform1i = (PFNGLUNIFORM1IPROC)wglGetProcAddress("glUniform1i");
+	//PFNGLUNIFORM2IPROC glUniform2i = (PFNGLUNIFORM2IPROC)wglGetProcAddress("glUniform2i");
+	//PFNGLUNIFORM3IPROC glUniform3i = (PFNGLUNIFORM3IPROC)wglGetProcAddress("glUniform3i");
+	//PFNGLUNIFORM4IPROC glUniform4i = (PFNGLUNIFORM4IPROC)wglGetProcAddress("glUniform4i");
 
 	if (count == 1)
-		glUniform1i(index, *pData);
+		pOS->GLUniform1i(index, *pData);
 	else if (count == 2)
-		glUniform2i(index, *pData, *(pData + 1));
+		pOS->GLUniform2i(index, *pData, *(pData + 1));
 	else if (count == 3)
-		glUniform3i(index, *pData, *(pData + 1), *(pData + 2));
+		pOS->GLUniform3i(index, *pData, *(pData + 1), *(pData + 2));
 	else if (count == 4)
-		glUniform4i(index, *pData, *(pData + 1), *(pData + 2), *(pData + 3));
+		pOS->GLUniform4i(index, *pData, *(pData + 1), *(pData + 2), *(pData + 3));
 }
 
 // Drawing
@@ -533,27 +513,27 @@ void mini3d::OGL20GraphicsService::Draw()
 {
 	BeginScene();
 
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_INDEX_ARRAY);
-	glDrawElements(GL_TRIANGLES, pCurrentIndexBuffer->GetIndexCount(), GL_UNSIGNED_INT, 0);
-	glDisableClientState(GL_VERTEX_ARRAY);
-	glDisableClientState(GL_INDEX_ARRAY);
+	pOS->GLEnableClientState(GL_VERTEX_ARRAY);
+	pOS->GLEnableClientState(GL_INDEX_ARRAY);
+	pOS->GLDrawElements(GL_TRIANGLES, pCurrentIndexBuffer->GetIndexCount(), GL_UNSIGNED_INT, 0);
+	pOS->GLDisableClientState(GL_VERTEX_ARRAY);
+	pOS->GLDisableClientState(GL_INDEX_ARRAY);
 
 }
 void mini3d::OGL20GraphicsService::DrawIndices(const unsigned int& startIndex, const unsigned int& numIndices)
 {
-	PFNGLDRAWRANGEELEMENTSPROC glDrawRangeElements = (PFNGLDRAWRANGEELEMENTSPROC)wglGetProcAddress("glDrawRangeElements");
+	//PFNGLDRAWRANGEELEMENTSPROC glDrawRangeElements = (PFNGLDRAWRANGEELEMENTSPROC)wglGetProcAddress("glDrawRangeElements");
 
 	BeginScene();
-	glDrawRangeElements(GL_TRIANGLES, startIndex, numIndices + startIndex, numIndices / 3, GL_UNSIGNED_INT, 0);
+	pOS->GLDrawRangeElements(GL_TRIANGLES, startIndex, numIndices + startIndex, numIndices / 3, GL_UNSIGNED_INT, 0);
 }
 
 // Clear
 void mini3d::OGL20GraphicsService::Clear(const float& r, const float& g, const float& b, const float& a)
 {
-	glClearColor(r, g, b, a);
-	glClearDepth(1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	pOS->GLClearColor(r, g, b, a);
+	pOS->GLClearDepth(1.0f);
+	pOS->GLClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 

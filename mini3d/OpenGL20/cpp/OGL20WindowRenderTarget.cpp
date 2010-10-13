@@ -1,28 +1,8 @@
-/*
-This source file is part of mini3D. 
-Copyright (c) <2010> <www.mini3d.org>
 
-Permission is hereby granted, free of charge, to any person
-obtaining a copy of this software and associated documentation
-files (the "Software"), to deal in the Software without
-restriction, including without limitation the rights to use,
-copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the
-Software is furnished to do so, subject to the following
-conditions:
+// Copyright (c) <2010> Daniel Peterson
+// This file is part of mini3d <www.mini3d.org>
+// It is distributed under the MIT Software License <www.mini3d.org/license>
 
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
-OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
-*/
 
 #include "../OGL20WindowRenderTarget.h"
 #include "../OGL20GraphicsService.h"
@@ -114,16 +94,8 @@ void mini3d::OGL20WindowRenderTarget::SetWindowRenderTarget(const int& windowHan
 	}
 
 	// Get the size of the client area of the window 
-
-	// TODO: Should be RECT somehow?
-	LPRECT clientRectangle = new tagRECT();
-	GetClientRect(HWND(windowHandle), clientRectangle);
-
-	// get the width and height (must be bigger than 0)
-	int width = (clientRectangle->right - clientRectangle->left) | 1;
-	int height = (clientRectangle->bottom - clientRectangle->top) | 1;
-
-	delete clientRectangle;
+	unsigned int width, height;
+	pGraphicsService->GetOS()->GetClientAreaSize(windowHandle, width, height);
 
 	// set the variables from the call
 	this->hWindow = windowHandle;
@@ -135,9 +107,10 @@ void mini3d::OGL20WindowRenderTarget::SetWindowRenderTarget(const int& windowHan
 	// Get new device context
 	hDeviceContext = GetDC((HWND)hWindow);
 
-	// set parameters
-	this->width = width;
-	this->height = height;
+	// The width and height (must be bigger than 0)
+	this->width = width | 1;
+	this->height = height | 1;
+	
 	this->depthTestEnabled = depthTestEnabled;
 	
 	// load the buffer
