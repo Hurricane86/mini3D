@@ -4,8 +4,8 @@
 // It is distributed under the MIT Software License <www.mini3d.org/license>
 
 
-#ifndef AURORA_DX9RENDERTARGETTEXTURE_H
-#define AURORA_DX9RENDERTARGETTEXTURE_H
+#ifndef MINI3D_DX9RENDERTARGETTEXTURE_H
+#define MINI3D_DX9RENDERTARGETTEXTURE_H
 
 #include "../IRenderTargetTexture.h"
 #include "DX9GraphicsService.h"

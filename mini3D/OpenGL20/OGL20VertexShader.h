@@ -4,8 +4,8 @@
 // It is distributed under the MIT Software License <www.mini3d.org/license>
 
 
-#ifndef AURORA_OGL20VERTEXSHADER_H
-#define AURORA_OGL20VERTEXSHADER_H
+#ifndef MINI3D_OGL20VERTEXSHADER_H
+#define MINI3D_OGL20VERTEXSHADER_H
 
 #include "../IVertexShader.h"
 #include "OGL20GraphicsService.h"

@@ -4,8 +4,8 @@
 // It is distributed under the MIT Software License <www.mini3d.org/license>
 
 
-#ifndef AURORA_ITEXTURE_H
-#define AURORA_ITEXTURE_H
+#ifndef MINI3D_ITEXTURE_H
+#define MINI3D_ITEXTURE_H
 
 namespace mini3d
 {

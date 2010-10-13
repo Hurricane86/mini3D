@@ -4,8 +4,8 @@
 // It is distributed under the MIT Software License <www.mini3d.org/license>
 
 
-#ifndef AURORA_OGL20TEXTURE_H
-#define AURORA_OGL20TEXTURE_H
+#ifndef MINI3D_OGL20TEXTURE_H
+#define MINI3D_OGL20TEXTURE_H
 
 #include "../../internal/ITexture.h"
 #include "Windows.h"

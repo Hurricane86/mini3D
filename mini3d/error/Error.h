@@ -4,8 +4,8 @@
 // It is distributed under the MIT Software License <www.mini3d.org/license>
 
 
-#ifndef AURORA_ERROR_H
-#define AURORA_ERROR_H
+#ifndef MINI3D_ERROR_H
+#define MINI3D_ERROR_H
 
 namespace mini3d
 {

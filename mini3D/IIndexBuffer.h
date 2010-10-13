@@ -3,8 +3,8 @@
 // This file is part of mini3d <www.mini3d.org>
 // It is distributed under the MIT Software License <www.mini3d.org/license>
 
-#ifndef AURORA_IINDEXBUFFER_H
-#define AURORA_IINDEXBUFFER_H
+#ifndef MINI3D_IINDEXBUFFER_H
+#define MINI3D_IINDEXBUFFER_H
 
 namespace mini3d
 {

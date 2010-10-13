@@ -4,8 +4,8 @@
 // It is distributed under the MIT Software License <www.mini3d.org/license>
 
 
-#ifndef AURORA_IPIXELSHADER_H
-#define AURORA_IPIXELSHADER_H
+#ifndef MINI3D_IPIXELSHADER_H
+#define MINI3D_IPIXELSHADER_H
 
 namespace mini3d
 {

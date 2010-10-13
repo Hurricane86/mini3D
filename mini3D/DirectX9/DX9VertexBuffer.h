@@ -4,8 +4,8 @@
 // It is distributed under the MIT Software License <www.mini3d.org/license>
 
 
-#ifndef AURORA_DX9VERTEXBUFFER_H
-#define AURORA_DX9VERTEXBUFFER_H
+#ifndef MINI3D_DX9VERTEXBUFFER_H
+#define MINI3D_DX9VERTEXBUFFER_H
 
 #include "../IVertexBuffer.h"
 #include "DX9GraphicsService.h"

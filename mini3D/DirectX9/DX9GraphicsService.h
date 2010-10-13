@@ -4,8 +4,8 @@
 // It is distributed under the MIT Software License <www.mini3d.org/license>
 
 
-#ifndef AURORA_DX9GRAPHICSSERVICE_H
-#define AURORA_DX9GRAPHICSSERVICE_H
+#ifndef MINI3D_DX9GRAPHICSSERVICE_H
+#define MINI3D_DX9GRAPHICSSERVICE_H
 
 #include <d3d9.h>
 #include <set>

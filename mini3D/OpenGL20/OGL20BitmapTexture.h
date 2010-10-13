@@ -4,8 +4,8 @@
 // It is distributed under the MIT Software License <www.mini3d.org/license>
 
 
-#ifndef AURORA_OGL20BITMAPTEXTURE_H
-#define AURORA_OGL20BITMAPTEXTURE_H
+#ifndef MINI3D_OGL20BITMAPTEXTURE_H
+#define MINI3D_OGL20BITMAPTEXTURE_H
 
 #include "../IBitmapTexture.h"
 #include "internal/IOGL20Texture.h"

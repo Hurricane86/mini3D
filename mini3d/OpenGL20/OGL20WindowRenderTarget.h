@@ -4,8 +4,8 @@
 // It is distributed under the MIT Software License <www.mini3d.org/license>
 
 
-#ifndef AURORA_IOGL20WINDOWRENDERTARGET_H
-#define AURORA_IOGL20WINDOWRENDERTARGET_H
+#ifndef MINI3D_IOGL20WINDOWRENDERTARGET_H
+#define MINI3D_IOGL20WINDOWRENDERTARGET_H
 
 #include "../IWindowRenderTarget.h"
 #include "internal/IOGL20Resource.h"

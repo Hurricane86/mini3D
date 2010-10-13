@@ -4,8 +4,8 @@
 // It is distributed under the MIT Software License <www.mini3d.org/license>
 
 
-#ifndef AURORA_OSWINDOWS_H
-#define AURORA_OSWINDOWS_H
+#ifndef MINI3D_OSWINDOWS_H
+#define MINI3D_OSWINDOWS_H
 
 #include "../IOS.h"
 #include <GL/gl.h>

@@ -4,8 +4,8 @@
 // It is distributed under the MIT Software License <www.mini3d.org/license>
 
 
-#ifndef AURORA_IRENDERTARGETTEXTURE_H
-#define AURORA_IRENDERTARGETTEXTURE_H
+#ifndef MINI3D_IRENDERTARGETTEXTURE_H
+#define MINI3D_IRENDERTARGETTEXTURE_H
 
 #include "internal/ITexture.h"
 #include "internal/IRenderTarget.h"

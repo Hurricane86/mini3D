@@ -4,8 +4,8 @@
 // It is distributed under the MIT Software License <www.mini3d.org/license>
 
 
-#ifndef AURORA_IOS_H
-#define AURORA_IOS_H
+#ifndef MINI3D_IOS_H
+#define MINI3D_IOS_H
 
 #ifndef GL_GLEXT_PROTOTYPES
 	#define GL_GLEXT_PROTOTYPES

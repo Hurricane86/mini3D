@@ -4,8 +4,8 @@
 // It is distributed under the MIT Software License <www.mini3d.org/license>
 
 
-#ifndef AURORA_DX9PIXELSHADER_H
-#define AURORA_DX9PIXELSHADER_H
+#ifndef MINI3D_DX9PIXELSHADER_H
+#define MINI3D_DX9PIXELSHADER_H
 
 #include "../IPixelShader.h"
 #include <vector>

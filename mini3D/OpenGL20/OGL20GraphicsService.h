@@ -4,8 +4,8 @@
 // It is distributed under the MIT Software License <www.mini3d.org/license>
 
 
-#ifndef AURORA_OGL20GRAPHICSSERVICE_H
-#define AURORA_OGL20GRAPHICSSERVICE_H
+#ifndef MINI3D_OGL20GRAPHICSSERVICE_H
+#define MINI3D_OGL20GRAPHICSSERVICE_H
 
 #include <windows.h>
 #include <GL/gl.h>

@@ -4,8 +4,8 @@
 // It is distributed under the MIT Software License <www.mini3d.org/license>
 
 
-#ifndef AURORA_IGRAPHICSSERVICE_H
-#define AURORA_IGRAPHICSSERVICE_H
+#ifndef MINI3D_IGRAPHICSSERVICE_H
+#define MINI3D_IGRAPHICSSERVICE_H
 
 
 #include "IPixelShader.h"

@@ -4,8 +4,8 @@
 // It is distributed under the MIT Software License <www.mini3d.org/license>
 
 
-#ifndef AURORA_IBITMAPTEXTURE_H
-#define AURORA_IBITMAPTEXTURE_H
+#ifndef MINI3D_IBITMAPTEXTURE_H
+#define MINI3D_IBITMAPTEXTURE_H
 
 #include "internal/ITexture.h"
 

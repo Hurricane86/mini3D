@@ -4,8 +4,8 @@
 // It is distributed under the MIT Software License <www.mini3d.org/license>
 
 
-#ifndef AURORA_IOGL20RESOURCE_H
-#define AURORA_IOGL20RESOURCE_H
+#ifndef MINI3D_IOGL20RESOURCE_H
+#define MINI3D_IOGL20RESOURCE_H
 
 namespace mini3d
 {

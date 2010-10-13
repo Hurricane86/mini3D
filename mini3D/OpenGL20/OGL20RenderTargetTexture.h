@@ -4,8 +4,8 @@
 // It is distributed under the MIT Software License <www.mini3d.org/license>
 
 
-#ifndef AURORA_OGL20RENDERTARGETTEXTURE_H
-#define AURORA_OGL20RENDERTARGETTEXTURE_H
+#ifndef MINI3D_OGL20RENDERTARGETTEXTURE_H
+#define MINI3D_OGL20RENDERTARGETTEXTURE_H
 
 #include "../IRenderTargetTexture.h"
 #include "OGL20GraphicsService.h"

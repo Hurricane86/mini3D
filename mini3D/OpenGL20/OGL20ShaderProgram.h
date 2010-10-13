@@ -4,8 +4,8 @@
 // It is distributed under the MIT Software License <www.mini3d.org/license>
 
 
-#ifndef AURORA_OGL20SHADERPROGRAM_H
-#define AURORA_OGL20SHADERPROGRAM_H
+#ifndef MINI3D_OGL20SHADERPROGRAM_H
+#define MINI3D_OGL20SHADERPROGRAM_H
 
 #include "../IPixelShader.h"
 #include "../IVertexShader.h"
