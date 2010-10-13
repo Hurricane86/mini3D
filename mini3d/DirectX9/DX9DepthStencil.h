@@ -7,13 +7,12 @@
 #ifndef MINI3D_DX9DEPTHSTENCIL_H
 #define MINI3D_DX9DEPTHSTENCIL_H
 
-#include "../internal/IDepthStencil.h"
 #include "DX9GraphicsService.h"
 #include "internal/IDX9Resource.h"
 
 namespace mini3d
 {
-class DX9DepthStencil : public IDepthStencil, public IDX9Resource
+class DX9DepthStencil : public IDX9Resource
 {
 
 public:

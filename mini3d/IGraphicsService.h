@@ -14,7 +14,6 @@
 #include "IBitmapTexture.h"
 #include "internal/IRenderTarget.h"
 #include "IRenderTargetTexture.h"
-#include "internal/IDepthStencil.h"
 #include "IVertexBuffer.h"
 #include "IIndexBuffer.h"
 #include "IWindowRenderTarget.h"

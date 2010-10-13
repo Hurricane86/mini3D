@@ -59,7 +59,7 @@ public:
 	virtual bool GetWindowedCompatible(void) const { return true; };
 	
 	IDirect3DSurface9*  GetRenderTargetBuffer(void) const { return pRenderTargetSurface; }
-	virtual IDepthStencil* GetDepthStencil(void) const { return pDepthStencil; }
+	virtual DX9DepthStencil* GetDepthStencil(void) const { return pDepthStencil; }
 
 
 public:
@@ -84,7 +84,7 @@ private:
 
 	DX9GraphicsService* pGraphicsService;
 	IDirect3DSwapChain9* pScreenRenderTarget;
-	IDepthStencil* pDepthStencil;
+	DX9DepthStencil* pDepthStencil;
 
 	IDirect3DSurface9* pRenderTargetSurface;
 

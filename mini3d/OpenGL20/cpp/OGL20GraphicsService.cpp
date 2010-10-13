@@ -16,7 +16,7 @@
 
 mini3d::OGL20GraphicsService::OGL20GraphicsService() :
 	isFullscreen(isFullscreen),
-	pCurrentDepthStencil(0), isDrawingScene(false), deviceLost(true), lostDeviceCurrentITextures(0), currentITextures(0), pCurrentShaderProgram(0), pCurrentWindowRenderTarget(0)
+	isDrawingScene(false), deviceLost(true), lostDeviceCurrentITextures(0), currentITextures(0), pCurrentShaderProgram(0), pCurrentWindowRenderTarget(0)
 {
 	pOS = new OSWindows();
 	CreateInternalWindow();
@@ -402,19 +402,6 @@ void mini3d::OGL20GraphicsService::SetRenderTarget(IRenderTarget* pRenderTarget)
 		return;
 	}
 
-}
-
-// DepthStencil
-mini3d::IDepthStencil* mini3d::OGL20GraphicsService::GetDepthStencil() const
-{
-	return pCurrentDepthStencil;
-}
-void mini3d::OGL20GraphicsService::SetDepthStencil(IDepthStencil* pDepthStencil)
-{
-	if (pDepthStencil == pCurrentDepthStencil)
-		return;
-	
-	pCurrentDepthStencil = pDepthStencil;
 }
 
 // Index Buffer

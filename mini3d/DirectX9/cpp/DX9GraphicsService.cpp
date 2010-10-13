@@ -770,7 +770,7 @@ void mini3d::DX9GraphicsService::SetRenderTarget(IRenderTarget* pRenderTarget)
 	// Set the depth stencil if we have one
 	if (pRenderTarget->GetDepthTestEnabled() == true)
 	{
-		IDepthStencil* pDepthStencil = pDX9RenderTarget->GetDepthStencil();
+		DX9DepthStencil* pDepthStencil = pDX9RenderTarget->GetDepthStencil();
 		SetDepthStencil(pDepthStencil);
 	}
 	else if (pCurrentDepthStencil != 0)
@@ -780,11 +780,11 @@ void mini3d::DX9GraphicsService::SetRenderTarget(IRenderTarget* pRenderTarget)
 }
 
 // DepthStencil
-mini3d::IDepthStencil* mini3d::DX9GraphicsService::GetDepthStencil(void) const
+mini3d::DX9DepthStencil* mini3d::DX9GraphicsService::GetDepthStencil(void) const
 {
 	return pCurrentDepthStencil;
 }
-void mini3d::DX9GraphicsService::SetDepthStencil(IDepthStencil* pDepthStencil)
+void mini3d::DX9GraphicsService::SetDepthStencil(DX9DepthStencil* pDepthStencil)
 {
 	if (pDepthStencil == pCurrentDepthStencil)
 		return;

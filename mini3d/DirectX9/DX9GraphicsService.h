@@ -90,7 +90,7 @@ private:
 	
 	// currently loaded resources
 	IRenderTarget* pCurrentRenderTarget;
-	IDepthStencil* pCurrentDepthStencil;
+	DX9DepthStencil* pCurrentDepthStencil;
 	IVertexBuffer* pCurrentVertexBuffer;
 	IIndexBuffer* pCurrentIndexBuffer;
 	IPixelShader* pCurrentPixelShader;
@@ -100,7 +100,7 @@ private:
 
 	// Device lost graphics state
 	IRenderTarget* pLostDeviceRenderTarget;
-	IDepthStencil* pLostDeviceDepthStencil;
+	DX9DepthStencil* pLostDeviceDepthStencil;
 	IVertexBuffer* pLostDeviceVertexBuffer;
 	IIndexBuffer* pLostDeviceIndexBuffer;
 	IPixelShader* pLostDevicePixelShader;
@@ -179,8 +179,8 @@ public:
 	virtual IRenderTarget* GetRenderTarget() const;
 	virtual void SetRenderTarget(IRenderTarget* pRenderTarget);
 	
-	virtual IDepthStencil* GetDepthStencil() const;
-	virtual void SetDepthStencil(IDepthStencil* pDepthStencil);
+	virtual DX9DepthStencil* GetDepthStencil() const;
+	virtual void SetDepthStencil(DX9DepthStencil* pDepthStencil);
 
 	// Shader Parameters
 	virtual void SetShaderParameterFloat(const unsigned int& index, const float* pData, const unsigned int& count);

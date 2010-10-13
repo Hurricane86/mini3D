@@ -11,8 +11,12 @@
 
 namespace mini3d
 {
+class DX9DepthStencil;
+
 class IDX9RenderTarget: public virtual IRenderTarget
 {
+
+
 public:
 	virtual ~IDX9RenderTarget(void) {};
 
@@ -23,7 +27,7 @@ public:
 	virtual bool GetFullscreenCompatible() const = 0;
 	virtual bool GetWindowedCompatible() const = 0;
 
-	virtual IDepthStencil* GetDepthStencil() const = 0;
+	virtual DX9DepthStencil* GetDepthStencil() const = 0;
 
 	virtual IDirect3DSurface9* GetRenderTargetBuffer() const = 0;
 };

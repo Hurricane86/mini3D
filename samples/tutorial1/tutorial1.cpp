@@ -122,8 +122,8 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 
 	// ----- CREATE GRAPHICS SERVICE ------------------------------------------
 	
-	//graphics = new mini3d::DX9GraphicsService();
-	graphics = new mini3d::OGL20GraphicsService();
+	graphics = new mini3d::DX9GraphicsService();
+	//graphics = new mini3d::OGL20GraphicsService();
 
 	// ----- CREATE GRAPHICS RESOURCES ----------------------------------------
 
@@ -145,12 +145,12 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	unsigned int sizeInBytes;
 	
 	// create vertex shader
-	char* shaderBytes = mini3d::utilites::BinaryFileReader::ReadBytesFromFile(L"shaders/glsl/vertexshader.glsl", sizeInBytes); // shaders/hlsl/vertexshader.hlsl
+	char* shaderBytes = mini3d::utilites::BinaryFileReader::ReadBytesFromFile(L"shaders/hlsl/vertexshader.hlsl", sizeInBytes); // shaders/hlsl/vertexshader.hlsl
 	pVertexShader = graphics->CreateVertexShader(shaderBytes, sizeInBytes, vertexDeclaration, 3);
 	delete shaderBytes;
 
 	// create pixel shader
-	char* shaderBytes2 = mini3d::utilites::BinaryFileReader::ReadBytesFromFile(L"shaders/glsl/pixelshader.glsl", sizeInBytes); // shaders/hlsl/pixelshader.hlsl
+	char* shaderBytes2 = mini3d::utilites::BinaryFileReader::ReadBytesFromFile(L"shaders/hlsl/pixelshader.hlsl", sizeInBytes); // shaders/hlsl/pixelshader.hlsl
 	pPixelShader = graphics->CreatePixelShader(shaderBytes2, sizeInBytes);
 	delete shaderBytes2;
 

@@ -54,7 +54,6 @@ private:
 	// currently loaded resources
 	IRenderTarget* pCurrentRenderTarget;
 	IWindowRenderTarget* pCurrentWindowRenderTarget; // Keeps track of the windowrendertarget containing the current bound devicecontext (this is OpenGL specific)
-	IDepthStencil* pCurrentDepthStencil;
 	IVertexBuffer* pCurrentVertexBuffer;
 	IIndexBuffer* pCurrentIndexBuffer;
 	IShaderProgram* pCurrentShaderProgram;
@@ -62,7 +61,6 @@ private:
 
 	// Device lost graphics state
 	IRenderTarget* pLostDeviceRenderTarget;
-	IDepthStencil* pLostDeviceDepthStencil;
 	IVertexBuffer* pLostDeviceVertexBuffer;
 	IIndexBuffer* pLostDeviceIndexBuffer;
 	IPixelShader* pLostDevicePixelShader;
@@ -138,9 +136,6 @@ public:
 	// get the windowrendertarget containing the current bound devicecontext (this is OpenGL specific)
 	inline IWindowRenderTarget* GetWindowRenderTarget() const {return pCurrentWindowRenderTarget;}
 	
-	virtual IDepthStencil* GetDepthStencil() const;
-	virtual void SetDepthStencil(IDepthStencil* pDepthStencil);
-
 	// Shader Parameters
 	virtual void SetShaderParameterFloat(const unsigned int& index, const float* pData, const unsigned int& count);
 	virtual void SetShaderParameterInt(const unsigned int& index, const int* pData, const unsigned int& count);

@@ -48,7 +48,7 @@ public:
 	// ::::: IDX9RenderTarget :::::::::::::::::::::::::::::::::::::::::::::::::
 
 	virtual IDirect3DSurface9* GetRenderTargetBuffer() const { return pRenderTargetSurface; };
-	virtual IDepthStencil* GetDepthStencil() const { return pDepthStencil; };
+	virtual DX9DepthStencil* GetDepthStencil() const { return pDepthStencil; };
 	virtual bool GetFullscreenCompatible() const { return true; };
 	virtual bool GetWindowedCompatible() const { return true; };
 
@@ -73,7 +73,7 @@ private:
 	unsigned int bufferWidth;
 	unsigned int bufferHeight;
 	IDirect3DTexture9* pRenderTarget;
-	IDepthStencil* pDepthStencil;
+	DX9DepthStencil* pDepthStencil;
 	IDirect3DSurface9* pRenderTargetSurface;
 	
 
