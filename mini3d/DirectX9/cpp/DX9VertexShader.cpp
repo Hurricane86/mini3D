@@ -6,7 +6,7 @@
 
 #include "../DX9VertexBuffer.h"
 #include <d3d9.h>
-
+#include <d3dx9.h>
 
 mini3d::DX9VertexShader::DX9VertexShader(DX9GraphicsService* pGraphicsService, const void* pShaderBytes, const unsigned int& sizeInBytes, const IVertexShader::VertexDataType vertexDeclaration[], const unsigned int& vertexDataCount) :
 	pGraphicsService(pGraphicsService), pShaderBuffer(0)
@@ -59,12 +59,17 @@ void mini3d::DX9VertexShader::LoadResource(void)
 		UnloadResource();
 	}
 
-	if( FAILED( pDevice->CreateVertexShader((DWORD*)pShaderBytes, &pShaderBuffer)))
+	// compile the shader source
+	ID3DXBuffer* buffer;
+	D3DXCompileShader((LPCSTR)pShaderBytes, sizeInBytes, 0, 0, "main", "vs_2_0", 0, &buffer, 0, 0);
+
+	if( FAILED( pDevice->CreateVertexShader((DWORD*)buffer->GetBufferPointer(), &pShaderBuffer)))
 	{
 		isDirty = true;
 		return;
 	}
 
+	buffer->Release();
 	isDirty = false;
 
 	// load the vertex declaration into the pool

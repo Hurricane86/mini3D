@@ -7,6 +7,7 @@
 #include "../DX9VertexBuffer.h"
 #include "../DX9GraphicsService.h"
 #include <d3d9.h>
+#include <d3dx9.h>
 
 mini3d::DX9PixelShader::DX9PixelShader(DX9GraphicsService* pGraphicsService, const void* pShaderBytes, const unsigned int& sizeInBytes) :
 	pGraphicsService(pGraphicsService), pShaderBuffer(0), sizeInBytes(sizeInBytes)
@@ -38,11 +39,17 @@ void mini3d::DX9PixelShader::LoadResource(void)
 		UnloadResource();
 	}
 
+	// compile the shader source
+	ID3DXBuffer* buffer;
+	D3DXCompileShader((LPCSTR)pShaderBytes, sizeInBytes, 0, 0, "main", "ps_2_0", 0, &buffer, 0, 0);
+
 	if( FAILED( pDevice->CreatePixelShader((DWORD*)pShaderBytes, &pShaderBuffer)))
 	{
 		isDirty = true;
 		return;
 	}
+
+	buffer->Release();
 
 	isDirty = false;
 }

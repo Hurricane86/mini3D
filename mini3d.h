@@ -4,8 +4,6 @@
 // It is distributed under the MIT Software License <www.mini3d.org/license>
 
 
-#include "mini3d/utilities/PNGReader.h"
-
 #define NOMINMAX
 #include "mini3d/OpenGL20/OGL20GraphicsService.h"
 #include "mini3d/DirectX9/DX9GraphicsService.h"
