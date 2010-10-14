@@ -6,14 +6,14 @@
 
 #include <math.h>
 
-#include "..\..\mini3d.h"
+#include "../../mini3d.h"
 
 #include <Windows.h>
 
 // ----- FORWARD DECLARATIONS -------------------------------------------------
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 void UpdateViewProjectionMatrix();
-
+UINT32* CreateNiceBitmap(unsigned int width, unsigned int height);
 
 // ----- GEOMETRY DATA --------------------------------------------------------
 
@@ -132,14 +132,14 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 
 	// create index buffer
 	iBuffer = graphics->CreateIndexBuffer(indices, 36);
-
+	
 	// create vertex buffer
 	vBuffer = graphics->CreateVertexBuffer(vertices, 24, sizeof(VertexPCT));
 	
 	// create texture
-	unsigned int bitmapWidth, bitmapHeight;
-	void* pBitmap = mini3d::utilites::PNGReader::LoadPNGFromFile(L"textures/box.png", bitmapWidth, bitmapHeight);
-	pTexture = graphics->CreateBitmapTexture(pBitmap, bitmapWidth, bitmapHeight); 
+	void* pBitmap = (void *)CreateNiceBitmap(128, 64);
+	// create a nice 32bpp texture
+	pTexture = graphics->CreateBitmapTexture(pBitmap, 128, 64); 
 	delete pBitmap;
 
 	unsigned int sizeInBytes;
@@ -309,4 +309,22 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			break;
 	}
 	return DefWindowProc(hwnd, msg, wParam, lParam);
+}
+
+UINT32* CreateNiceBitmap(unsigned int width, unsigned int height)
+{
+	float pi = 3.1416f;
+	UINT32* pBitmap = new UINT32[width * height];
+	for (unsigned int x = 0; x < width; x++)
+	{
+		for (unsigned int y = 0; y < height; y++)
+		{
+			// set RGBA for pixel
+			pBitmap[x + y * 128] =  (unsigned int(64 * abs(cos(x * 2 * pi / (float)width) + cos(y * 2 * pi / (float)height))) << 24) + 
+									((2 * (x % (width / 4)) + 128) << 16) + 
+									((2 * (y % (height / 2)) + 192) << 8) + 
+									255; 
+		}
+	}
+	return pBitmap;
 }

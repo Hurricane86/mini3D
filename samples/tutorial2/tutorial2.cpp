@@ -5,7 +5,7 @@
 
 
 #include <math.h>
-#include "..\..\mini3d.h"
+#include "../../mini3d.h"
 #include <Windows.h>
 
 // ----- FORWARD DECLARATIONS -------------------------------------------------
