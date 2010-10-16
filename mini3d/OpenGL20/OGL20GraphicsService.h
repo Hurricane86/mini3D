@@ -30,7 +30,7 @@
 #include "OGL20IndexBuffer.h"
 #include "OGL20RenderTargetTexture.h"
 #include "OGL20WindowRenderTarget.h"
-#include "os/IOS.h"
+#include "os/OSFunctionSelector.h"
 
 namespace mini3d
 {
@@ -47,7 +47,7 @@ private:
 	// Member variables
 	
 	// Operating system functions
-	IOS* pOS;
+	OSFunctions* pOS;
 
 	// currently loaded resources
 	IRenderTarget* pCurrentRenderTarget;
@@ -158,7 +158,7 @@ public:
 
 	// PUBLIC MEMBER FUNCTIONS ------------------------------------------------
 
-	IOS* GetOS() { return pOS; };
+	OSFunctions* GetOS() { return pOS; };
 
 	IWindowRenderTarget* GetScreenRenderTarget() { return pCurrentWindowRenderTarget; };
 

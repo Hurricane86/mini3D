@@ -5,7 +5,7 @@
 
 
 #include "../OGL20GraphicsService.h"
-#include "../os/windows/OSWindows.h"
+#include "../os/windows/OSFunctions.h"
 #include "../../error/Error.h"
 #include <GL/glext.h>
 #include <GL/glu.h>
@@ -18,7 +18,8 @@ mini3d::OGL20GraphicsService::OGL20GraphicsService() :
 	isFullscreen(isFullscreen),
 	isDrawingScene(false), deviceLost(true), lostDeviceCurrentITextures(0), currentITextures(0), pCurrentShaderProgram(0), pCurrentWindowRenderTarget(0)
 {
-	pOS = new OSWindows();
+
+	pOS = new OSFunctions();
 	//CreateInternalWindow();
 
 	//// Get the device context for the window
@@ -170,13 +171,6 @@ unsigned int mini3d::OGL20GraphicsService::GetVertexShaderVersion() const
 
 void mini3d::OGL20GraphicsService::printLog(GLuint obj)
 {
-//	PFNGLISSHADERPROC glIsShader = (PFNGLISSHADERPROC)wglGetProcAddress("glIsShader");
-
-//	PFNGLGETSHADERIVPROC glGetShaderiv = (PFNGLGETSHADERIVPROC)wglGetProcAddress("glGetShaderiv");
-//	PFNGLGETPROGRAMIVNVPROC glGetProgramiv = (PFNGLGETPROGRAMIVNVPROC)wglGetProcAddress("glGetProgramiv");
-//	PFNGLGETSHADERINFOLOGPROC glGetShaderInfoLog = (PFNGLGETSHADERINFOLOGPROC)wglGetProcAddress("glGetShaderInfoLog");
-//	PFNGLGETPROGRAMINFOLOGPROC glGetProgramInfoLog = (PFNGLGETPROGRAMINFOLOGPROC)wglGetProcAddress("glGetProgramInfoLog");
-	
 	int infologLength = 0;
 	int maxLength;
 	
@@ -211,8 +205,6 @@ void mini3d::OGL20GraphicsService::SetShaderProgram(IShaderProgram* pShaderProgr
 	if (pCurrentShaderProgram == pShaderProgram)
 		return;
 
-	//PFNGLUSEPROGRAMPROC glUseProgram = (PFNGLUSEPROGRAMPROC)wglGetProcAddress("glUseProgram");
-
 	if (pShaderProgram == 0)
 	{
 		pOS->GLUseProgram(0);
@@ -222,9 +214,6 @@ void mini3d::OGL20GraphicsService::SetShaderProgram(IShaderProgram* pShaderProgr
 		OGL20ShaderProgram* pOLG20ShaderProgram = (OGL20ShaderProgram*)pShaderProgram;
 		pOS->GLUseProgram(pOLG20ShaderProgram->GetProgram());
 	
-//		PFNGLENABLEVERTEXATTRIBARRAYPROC glEnableVertexAttribArray = (PFNGLENABLEVERTEXATTRIBARRAYPROC)wglGetProcAddress("glEnableVertexAttribArray");
-//		PFNGLVERTEXATTRIBPOINTERPROC glVertexAttribPointer = (PFNGLVERTEXATTRIBPOINTERPROC)wglGetProcAddress("glVertexAttribPointer");
-
 		// Set the vertexattributes
 		unsigned int vertexAttributeCount;
 		OGL20VertexAttribute* vA = ((OGL20VertexShader*)(pOLG20ShaderProgram->GetVertexShader()))->GetVertexAttributes(vertexAttributeCount);
@@ -259,8 +248,6 @@ void mini3d::OGL20GraphicsService::SetTexture(ITexture* pTexture, const unsigned
 	{
 		throw Error::MINI3D_ERROR_TEXTURE_INDEX_OUTSIDE_VALID_RANGE;
 	}
-
-	//PFNGLACTIVETEXTUREPROC glActiveTexture = (PFNGLACTIVETEXTUREPROC)wglGetProcAddress("glActiveTexture");
 
 	// if texture already assigned, then there is no need to re-assign it
 	//if (pTexture == currentITextures[index])
@@ -308,8 +295,6 @@ void mini3d::OGL20GraphicsService::SetTexture(ITexture* pTexture, const unsigned
 // Render Target
 void mini3d::OGL20GraphicsService::SetRenderTarget(IRenderTarget* pRenderTarget)
 {
-
-	//PFNGLBINDFRAMEBUFFERPROC glBindFramebuffer = (PFNGLBINDFRAMEBUFFERPROC)wglGetProcAddress("glBindFramebuffer");
 
 	if (pRenderTarget == 0)
 	{
@@ -387,7 +372,6 @@ mini3d::IIndexBuffer* mini3d::OGL20GraphicsService::GetIndexBuffer() const
 }
 void mini3d::OGL20GraphicsService::SetIndexBuffer(IIndexBuffer* pIndexBuffer)
 {
-	//PFNGLBINDBUFFERPROC glBindBuffer = (PFNGLBINDBUFFERPROC)wglGetProcAddress("glBindBuffer");
 
 	if (pCurrentIndexBuffer == pIndexBuffer)
 		return;
@@ -412,8 +396,6 @@ mini3d::IVertexBuffer* mini3d::OGL20GraphicsService::GetVertexBuffer() const
 }
 void mini3d::OGL20GraphicsService::SetVertexBuffer(IVertexBuffer* pVertexBuffer)
 {
-	//PFNGLBINDBUFFERPROC glBindBuffer = (PFNGLBINDBUFFERPROC)wglGetProcAddress("glBindBuffer");
-
 	if (pCurrentVertexBuffer == pVertexBuffer)
 		return;
 
@@ -433,18 +415,11 @@ void mini3d::OGL20GraphicsService::SetVertexBuffer(IVertexBuffer* pVertexBuffer)
 // Shader Parameters
 void mini3d::OGL20GraphicsService::SetShaderParameterMatrix(const unsigned int& index, const float* pData, const unsigned int& rows, const unsigned int& columns)
 {
-	//PFNGLUNIFORMMATRIX4FVPROC glUniformMatrix4fv = (PFNGLUNIFORMMATRIX4FVPROC)wglGetProcAddress("glUniformMatrix4fv");
-
 	if (rows == 4 && columns == 4)
 		pOS->GLUniformMatrix4fv(index, 1, GL_FALSE, pData);
 }
 void mini3d::OGL20GraphicsService::SetShaderParameterFloat(const unsigned int& index, const float* pData, const unsigned int& count)
 {
-	//PFNGLUNIFORM1FPROC glUniform1f = (PFNGLUNIFORM1FPROC)wglGetProcAddress("glUniform1f");
-	//PFNGLUNIFORM2FPROC glUniform2f = (PFNGLUNIFORM2FPROC)wglGetProcAddress("glUniform2f");
-	//PFNGLUNIFORM3FPROC glUniform3f = (PFNGLUNIFORM3FPROC)wglGetProcAddress("glUniform3f");
-	//PFNGLUNIFORM4FPROC glUniform4f = (PFNGLUNIFORM4FPROC)wglGetProcAddress("glUniform4f");
-
 	if (count == 1)
 		pOS->GLUniform1f(index, *pData);
 	else if (count == 2)
@@ -456,11 +431,6 @@ void mini3d::OGL20GraphicsService::SetShaderParameterFloat(const unsigned int& i
 }
 void mini3d::OGL20GraphicsService::SetShaderParameterInt(const unsigned int& index, const int* pData, const unsigned int& count)
 {
-	//PFNGLUNIFORM1IPROC glUniform1i = (PFNGLUNIFORM1IPROC)wglGetProcAddress("glUniform1i");
-	//PFNGLUNIFORM2IPROC glUniform2i = (PFNGLUNIFORM2IPROC)wglGetProcAddress("glUniform2i");
-	//PFNGLUNIFORM3IPROC glUniform3i = (PFNGLUNIFORM3IPROC)wglGetProcAddress("glUniform3i");
-	//PFNGLUNIFORM4IPROC glUniform4i = (PFNGLUNIFORM4IPROC)wglGetProcAddress("glUniform4i");
-
 	if (count == 1)
 		pOS->GLUniform1i(index, *pData);
 	else if (count == 2)
@@ -485,8 +455,6 @@ void mini3d::OGL20GraphicsService::Draw()
 }
 void mini3d::OGL20GraphicsService::DrawIndices(const unsigned int& startIndex, const unsigned int& numIndices)
 {
-	//PFNGLDRAWRANGEELEMENTSPROC glDrawRangeElements = (PFNGLDRAWRANGEELEMENTSPROC)wglGetProcAddress("glDrawRangeElements");
-
 	BeginScene();
 	pOS->GLDrawRangeElements(GL_TRIANGLES, startIndex, numIndices + startIndex, numIndices / 3, GL_UNSIGNED_INT, 0);
 }

@@ -1,15 +1,15 @@
-#include "OSWindows.h"
+#include "OSFunctions.h"
 #include <GL/glext.h>
 #include <GL/wglext.h>
 
-mini3d::OSWindows::OSWindows()
+mini3d::OSFunctions::OSFunctions()
 {
 	CreateInternalWindow();
 	CreateDevice();
 	Init();
 }
 
-mini3d::OSWindows::~OSWindows()
+mini3d::OSFunctions::~OSFunctions()
 {
 	// Remove the default device context
 	DeleteDC(hDeviceContext);
@@ -22,7 +22,7 @@ mini3d::OSWindows::~OSWindows()
 }
 
 
-void mini3d::OSWindows::Init()
+void mini3d::OSFunctions::Init()
 {
 	glIsShader = (PFNGLISSHADERPROC)wglGetProcAddress("glIsShader");
 	
@@ -89,7 +89,7 @@ void mini3d::OSWindows::Init()
 	glDrawRangeElements = (PFNGLDRAWRANGEELEMENTSPROC)wglGetProcAddress("glDrawRangeElements");
 }
 
-void mini3d::OSWindows::CreateDevice(void)
+void mini3d::OSFunctions::CreateDevice(void)
 {
 	// get the pixel format for the device context
 	// query desktop video settings
@@ -133,7 +133,7 @@ LRESULT CALLBACK OGL20WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
-void mini3d::OSWindows::CreateInternalWindow(void)
+void mini3d::OSFunctions::CreateInternalWindow(void)
 {
 	HINSTANCE hInstance = GetModuleHandle(NULL);
 
@@ -162,7 +162,7 @@ void mini3d::OSWindows::CreateInternalWindow(void)
 	hDeviceContext = GetDC((HWND)hWindow);
 }
 
-void mini3d::OSWindows::PrepareWindow(const int& hWindow) const
+void mini3d::OSFunctions::PrepareWindow(const int& hWindow) const
 {
 	PIXELFORMATDESCRIPTOR pfd;
 	int iFormat;
@@ -190,7 +190,7 @@ void mini3d::OSWindows::PrepareWindow(const int& hWindow) const
 	SetPixelFormat(hDC, iFormat, &pfd);
 }
 
-void mini3d::OSWindows::SetRenderWindow(const int& hWindow) const
+void mini3d::OSFunctions::SetRenderWindow(const int& hWindow) const
 {
 	if (hWindow == 0)
 	{
@@ -207,7 +207,7 @@ void mini3d::OSWindows::SetRenderWindow(const int& hWindow) const
 	}
 }
 
-void mini3d::OSWindows::SetFullscreenRenderWindow(const int& hWindow, const unsigned int& width, const unsigned int& height) const
+void mini3d::OSFunctions::SetFullscreenRenderWindow(const int& hWindow, const unsigned int& width, const unsigned int& height) const
 {
 	// Set the video resolution to the fullscreen resolution
 
@@ -232,18 +232,18 @@ void mini3d::OSWindows::SetFullscreenRenderWindow(const int& hWindow, const unsi
 	wglMakeCurrent(hDC, hRenderContext);
 }
 
-void mini3d::OSWindows::SetDefaultRenderWindow() const
+void mini3d::OSFunctions::SetDefaultRenderWindow() const
 {
 	wglMakeCurrent(hDeviceContext, hRenderContext);
 }
 
-void mini3d::OSWindows::SwapWindowBuffers(const int& hWindow) const
+void mini3d::OSFunctions::SwapWindowBuffers(const int& hWindow) const
 {
 	HDC hDC = GetWindowDC((HWND)hWindow);
 	SwapBuffers(hDC);
 }
 
-unsigned int mini3d::OSWindows::GetMonitorBitDepth() const
+unsigned int mini3d::OSFunctions::GetMonitorBitDepth() const
 {
 	// read the monitor information from win32
 	DEVMODE devMode;
@@ -265,7 +265,7 @@ unsigned int mini3d::OSWindows::GetMonitorBitDepth() const
 	return 16;
 }
 
-void mini3d::OSWindows::GetClientAreaSize(int windowHandle, unsigned int &width, unsigned int &height) const
+void mini3d::OSFunctions::GetClientAreaSize(int windowHandle, unsigned int &width, unsigned int &height) const
 {
 	// Get the size of the client area of the window 
 
@@ -279,7 +279,7 @@ void mini3d::OSWindows::GetClientAreaSize(int windowHandle, unsigned int &width,
 
 }
 
-void mini3d::OSWindows::Log(char* message) const
+void mini3d::OSFunctions::Log(char* message) const
 {
 	OutputDebugStringA(message);
 }

@@ -6,9 +6,6 @@
 
 #include "../OGL20BitmapTexture.h"
 #include "../../error/error.h"
-#include "../os/IOS.h"
-#include <GL/glext.h>
-//#include <GL/wglext.h>
 
 
 mini3d::OGL20BitmapTexture::OGL20BitmapTexture(OGL20GraphicsService* pGraphicsService, const void* pBitmap, const unsigned int& width, const unsigned int& height, const IBitmapTexture::BitDepth bitDepth, const ITexture::WrapStyle wrapStyle) :

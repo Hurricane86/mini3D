@@ -10,7 +10,7 @@
 #include "../IWindowRenderTarget.h"
 #include "internal/IOGL20Resource.h"
 #include "internal/IOGL20RenderTarget.h"
-#include "os/IOS.h"
+#include "os/OSFunctionSelector.h"
 #include <map>
 
 
@@ -89,7 +89,7 @@ private:
 	// ::::: Private Member Varaibles :::::::::::::::::::::::::::::::::::::::::
 
 	OGL20GraphicsService* pGraphicsService;
-	IOS* pOS;
+	OSFunctions* pOS;
 
 	// This is a link to a windows device context
 	//HGLRC hRenderContext;

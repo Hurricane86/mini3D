@@ -4,20 +4,25 @@
 // It is distributed under the MIT Software License <www.mini3d.org/license>
 
 
-#ifndef MINI3D_OSWINDOWS_H
-#define MINI3D_OSWINDOWS_H
+#ifndef MINI3D_OSFUNCTION_H
+#define MINI3D_OSFUNCTION_H
 
-#include "../IOS.h"
+#include <windows.h>
+#include <GL/gl.h>
+#include <GL/glu.h>
+#include <GL/glext.h>
 #include <GL/wglext.h>
+
+typedef char GLchar;
 
 namespace mini3d
 {
-class OSWindows : public IOS
+class OSFunctions
 {
 public:
 	
-	OSWindows();
-	virtual ~OSWindows();
+	OSFunctions();
+	virtual ~OSFunctions();
 
 	virtual void Init();
 
