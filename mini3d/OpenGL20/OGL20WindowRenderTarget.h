@@ -10,8 +10,7 @@
 #include "../IWindowRenderTarget.h"
 #include "internal/IOGL20Resource.h"
 #include "internal/IOGL20RenderTarget.h"
-#include <Windows.h>
-#include <GL/gl.h>
+#include "os/IOS.h"
 #include <map>
 
 
@@ -60,7 +59,7 @@ public:
 	// ::::: IOGL20RenderTarget :::::::::::::::::::::::::::::::::::::::::::::::
 
 	HDC GetDeviceContext(void) const { return GetDC((HWND)hWindow); }
-	HGLRC GetRenderContext(void) const { return hRenderContext; }
+//	HGLRC GetRenderContext(void) const { return hRenderContext; }
 	GLuint GetDepthStencil(void) const { return pDepthStencil; }
 
 public:
@@ -79,19 +78,21 @@ private:
 	// ::::: Private Methods :::::::::::::::::::::::::::::::::::::::::::::::::::
 
 	virtual void UpdateSize();
+
+#ifdef _WIN32
+	void CaptureWindowProc(const int& windowHandle);
 	static LRESULT CALLBACK HookWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+#endif
 
 private:
 
 	// ::::: Private Member Varaibles :::::::::::::::::::::::::::::::::::::::::
 
 	OGL20GraphicsService* pGraphicsService;
-
-	// The device context for the window
-	HDC hDeviceContext;
+	IOS* pOS;
 
 	// This is a link to a windows device context
-	HGLRC hRenderContext;
+	//HGLRC hRenderContext;
 
 	GLuint pDepthStencil;
 
@@ -108,9 +109,6 @@ private:
 
 	WNDPROC pOrigProc;
 	static std::map<int, OGL20WindowRenderTarget*> windowMap;
-
-	unsigned int bufferWidth;
-	unsigned int bufferHeight;
 	
 	int hBufferWindow;
 	int bufferDepthTestEnabled;

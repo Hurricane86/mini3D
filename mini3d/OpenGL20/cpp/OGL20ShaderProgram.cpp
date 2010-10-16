@@ -11,7 +11,7 @@
 #include <sstream>
 
 mini3d::OGL20ShaderProgram::OGL20ShaderProgram(OGL20GraphicsService* pGraphicsService, IVertexShader* pVertexShader, IPixelShader* pPixelShader) :
-	pGraphicsService(pGraphicsService), pVertexShader(pVertexShader), pPixelShader(pPixelShader), hProgram(0)
+	pGraphicsService(pGraphicsService), pVertexShader(pVertexShader), pPixelShader(pPixelShader), hProgram(0), pOS(pGraphicsService->GetOS())
 {
 	LoadResource();
 	pGraphicsService->AddResource(this);
@@ -32,47 +32,34 @@ void mini3d::OGL20ShaderProgram::LoadResource(void)
 		UnloadResource();
 	}
 
-	PFNGLENABLEVERTEXATTRIBARRAYPROC glEnableVertexAttribArray = (PFNGLENABLEVERTEXATTRIBARRAYPROC)wglGetProcAddress("glEnableVertexAttribArray");
-	PFNGLVERTEXATTRIBPOINTERPROC glVertexAttribPointer = (PFNGLVERTEXATTRIBPOINTERPROC)wglGetProcAddress("glVertexAttribPointer");
-
-	PFNGLCREATEPROGRAMPROC glCreateProgram = (PFNGLCREATEPROGRAMPROC)wglGetProcAddress("glCreateProgram");
-	PFNGLATTACHSHADERPROC glAttachShader = (PFNGLATTACHSHADERPROC)wglGetProcAddress("glAttachShader");
-	PFNGLLINKPROGRAMPROC glLinkProgram = (PFNGLLINKPROGRAMPROC)wglGetProcAddress("glLinkProgram");
-
-	PFNGLUSEPROGRAMPROC glUseProgram = (PFNGLUSEPROGRAMPROC)wglGetProcAddress("glUseProgram");
-
-	hProgram = glCreateProgram();
+	hProgram = pOS->GLCreateProgram();
 
 	// Attach vertex shader
 	if (pVertexShader == 0)
 	{
-		glAttachShader(hProgram, 0);
+		pOS->GLAttachShader(hProgram, 0);
 	}
 	else
 	{
 		OGL20VertexShader* pOLG20VertexShader = (OGL20VertexShader*)pVertexShader;
-		glAttachShader(hProgram, pOLG20VertexShader->GetVertexShaderBuffer());
+		pOS->GLAttachShader(hProgram, pOLG20VertexShader->GetVertexShaderBuffer());
 	}
 
 	// Attach pixel shader
 	if (pPixelShader == 0)
 	{
-		glAttachShader(hProgram, 0);
+		pOS->GLAttachShader(hProgram, 0);
 	}
 	else
 	{
 		OGL20PixelShader* pOLG20PixelShader = (OGL20PixelShader*)pPixelShader;
-		glAttachShader(hProgram, pOLG20PixelShader->GetPixelShaderBuffer());
+		pOS->GLAttachShader(hProgram, pOLG20PixelShader->GetPixelShaderBuffer());
 	}
 
-	glLinkProgram(hProgram);
+	pOS->GLLinkProgram(hProgram);
 	printLog(hProgram);
 	
 	// Get attrib information
-
-	PFNGLGETPROGRAMIVPROC glGetProgramiv = (PFNGLGETPROGRAMIVPROC)wglGetProcAddress("glGetProgramiv");
-	PFNGLGETACTIVEATTRIBPROC glGetActiveAttrib = (PFNGLGETACTIVEATTRIBPROC)wglGetProcAddress("glGetActiveAttrib");
-	PFNGLGETATTRIBLOCATIONPROC glGetAttribLocation = (PFNGLGETATTRIBLOCATIONPROC)wglGetProcAddress("glGetAttribLocation");
 
 	char *name = new char[1024];
 	GLint active_attribs, max_length;
@@ -80,32 +67,28 @@ void mini3d::OGL20ShaderProgram::LoadResource(void)
 	GLint size;
 	GLenum type;
 
-	glGetProgramiv(hProgram, GL_ACTIVE_ATTRIBUTES, &active_attribs);
-	glGetProgramiv(hProgram, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &max_length);
+	pOS->GLGetProgramiv(hProgram, GL_ACTIVE_ATTRIBUTES, &active_attribs);
+	pOS->GLGetProgramiv(hProgram, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &max_length);
 
 	for (int i = 0; i < active_attribs; i++) 
 	{
-		glGetActiveAttrib(hProgram, i, max_length + 1, NULL, &size, &type, name);
+		pOS->GLGetActiveAttrib(hProgram, i, max_length + 1, NULL, &size, &type, name);
 		std::stringstream ss;
-		ss << "Type: " << type << " Name: " << name << " AttribLocation: " << glGetAttribLocation(hProgram, name) << "\n";
+		ss << "Type: " << type << " Name: " << name << " AttribLocation: " << pOS->GLGetAttribLocation(hProgram, name) << "\n";
 		std::string s = ss.str();
-		OutputDebugStringA(s.c_str());
+		pOS->Log((char*)s.c_str());
 	}
 
-
-	PFNGLGETACTIVEUNIFORMPROC glGetActiveUniform = (PFNGLGETACTIVEUNIFORMPROC)wglGetProcAddress("glGetActiveUniform");
-	PFNGLGETUNIFORMLOCATIONPROC glGetUniformLocation = (PFNGLGETUNIFORMLOCATIONPROC)wglGetProcAddress("glGetUniformLocation");
-
-	glGetProgramiv(hProgram, GL_ACTIVE_UNIFORMS, &active_attribs);
-	glGetProgramiv(hProgram, GL_ACTIVE_UNIFORM_MAX_LENGTH, &max_length);
+	pOS->GLGetProgramiv(hProgram, GL_ACTIVE_UNIFORMS, &active_attribs);
+	pOS->GLGetProgramiv(hProgram, GL_ACTIVE_UNIFORM_MAX_LENGTH, &max_length);
 
 	for (int i = 0; i < active_attribs; i++) 
 	{
-		glGetActiveUniform(hProgram, i, max_length + 1, NULL, &size, &type, name);
+		pOS->GLGetActiveUniform(hProgram, i, max_length + 1, NULL, &size, &type, name);
 		std::stringstream ss;
-		ss << "Type: " << type << " Name: " << name << " AttribLocation: " << glGetUniformLocation(hProgram, name) << "\n";
+		ss << "Type: " << type << " Name: " << name << " AttribLocation: " << pOS->GLGetUniformLocation(hProgram, name) << "\n";
 		std::string s = ss.str();
-		OutputDebugStringA(s.c_str());
+		pOS->Log((char*)s.c_str());
 	}
 
 	delete[] name;
@@ -118,14 +101,11 @@ void mini3d::OGL20ShaderProgram::UnloadResource(void)
 {
 	if (hProgram != 0)
 	{
-
-		PFNGLDELETEPROGRAMPROC glDeleteProgram = (PFNGLDELETEPROGRAMPROC)wglGetProcAddress("glDeleteProgram");
-
 		// if this is the currently loaded pixel shader, release it
 		if (pGraphicsService->GetShaderProgram() == this)
 			pGraphicsService->SetShaderProgram(0);
 
-		glDeleteProgram(hProgram);
+		pOS->GLDeleteProgram(hProgram);
 		hProgram  = 0;
 	}
 
@@ -134,33 +114,18 @@ void mini3d::OGL20ShaderProgram::UnloadResource(void)
 
 void mini3d::OGL20ShaderProgram::printLog(GLuint obj)
 {
-	PFNGLISSHADERPROC glIsShader = (PFNGLISSHADERPROC)wglGetProcAddress("glIsShader");
-
-	PFNGLGETSHADERIVPROC glGetShaderiv = (PFNGLGETSHADERIVPROC)wglGetProcAddress("glGetShaderiv");
-	PFNGLGETPROGRAMIVNVPROC glGetProgramiv = (PFNGLGETPROGRAMIVNVPROC)wglGetProcAddress("glGetProgramiv");
-	PFNGLGETSHADERINFOLOGPROC glGetShaderInfoLog = (PFNGLGETSHADERINFOLOGPROC)wglGetProcAddress("glGetShaderInfoLog");
-	PFNGLGETPROGRAMINFOLOGPROC glGetProgramInfoLog = (PFNGLGETPROGRAMINFOLOGPROC)wglGetProcAddress("glGetProgramInfoLog");
-	
-	int infologLength = 0;
 	int maxLength;
-	
-	if(glIsShader(obj))
-		glGetShaderiv(obj,GL_INFO_LOG_LENGTH,&maxLength);
-	else
-		glGetProgramiv(obj,GL_INFO_LOG_LENGTH,&maxLength);
-			
+	pOS->GLGetProgramiv(obj,GL_INFO_LOG_LENGTH,&maxLength);
+
+	int infologLength = 0;
 	char* infoLog = new char[maxLength];
-	LPCWSTR* infoLogW = new LPCWSTR[maxLength];
-
-	if (glIsShader(obj))
-		glGetShaderInfoLog(obj, maxLength, &infologLength, infoLog);
-	else
-		glGetProgramInfoLog(obj, maxLength, &infologLength, infoLog);
+	pOS->GLGetProgramInfoLog(obj, maxLength, &infologLength, infoLog);
  
-	OutputDebugStringA("\nDEBUG INFO ---------\n");
-
 	if (infologLength > 0)
-		OutputDebugStringA(infoLog);
+	{
+		pOS->Log("\nDEBUG INFO ---------\n");
+		pOS->Log(infoLog);
+	}
 
 	delete [] infoLog;
 }

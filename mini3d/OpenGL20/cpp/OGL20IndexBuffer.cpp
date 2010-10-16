@@ -9,7 +9,7 @@
 #include <GL/wglext.h>
 
 mini3d::OGL20IndexBuffer::OGL20IndexBuffer(OGL20GraphicsService* pGraphicsService, const void* pIndices, const unsigned int& count, const DataType& dataType, const CullMode& cullMode) : 
-	pGraphicsService(pGraphicsService), bufferSizeInBytes(0), pIndices(0), pIndexBuffer(0)
+	pGraphicsService(pGraphicsService), bufferSizeInBytes(0), pIndices(0), pIndexBuffer(0), pOS(pGraphicsService->GetOS())
 {
 	SetIndices(pIndices, count, dataType, cullMode);
 	pGraphicsService->AddResource(this);
@@ -88,12 +88,6 @@ void mini3d::OGL20IndexBuffer::LoadResource(void)
         return;
     }
 
-	PFNGLMAPBUFFERPROC glMapBuffer = (PFNGLMAPBUFFERPROC)wglGetProcAddress("glMapBuffer");
-	PFNGLUNMAPBUFFERPROC glUnmapBuffer = (PFNGLUNMAPBUFFERPROC)wglGetProcAddress("glUnmapBuffer");
-	PFNGLBUFFERDATAPROC glBufferData = (PFNGLBUFFERDATAPROC)wglGetProcAddress("glBufferData");
-	PFNGLGENBUFFERSPROC glGenBuffers = (PFNGLGENBUFFERSPROC)wglGetProcAddress("glGenBuffers");
-	PFNGLBINDBUFFERPROC glBindBuffer = (PFNGLBINDBUFFERPROC)wglGetProcAddress("glBindBuffer");
-
 	// If the buffer exists but is not the correct size, tear it down and recreate it
 	if (pIndexBuffer != 0 && bufferSizeInBytes != sizeInBytes)
 	{
@@ -103,12 +97,12 @@ void mini3d::OGL20IndexBuffer::LoadResource(void)
 	// If it does not exist, create a new one
 	if (pIndexBuffer == 0)
 	{
-		glGenBuffers(1, &pIndexBuffer);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, pIndexBuffer);
+		pOS->GLGenBuffers(1, &pIndexBuffer);
+		pOS->GLBindBuffer(GL_ELEMENT_ARRAY_BUFFER, pIndexBuffer);
 
 		try {
 	
-			glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeInBytes, pIndices, GL_STATIC_DRAW);
+			pOS->GLBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeInBytes, pIndices, GL_STATIC_DRAW);
 		}
 		catch (GLuint error)
 		{
@@ -123,12 +117,12 @@ void mini3d::OGL20IndexBuffer::LoadResource(void)
 	}
 
 	// Lock the buffer to gain access to the vertices 
-	GLvoid* pBufferVertices = glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY);
+	GLvoid* pBufferVertices = pOS->GLMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY);
 	memcpy(pBufferVertices, pIndices, sizeInBytes);
-	glUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
+	pOS->GLUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
 
 	// Clear the bound array
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	pOS->GLBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	bufferSizeInBytes = sizeInBytes;
 	isDirty = false;
@@ -138,14 +132,11 @@ void mini3d::OGL20IndexBuffer::UnloadResource(void)
 {
 	if (pIndexBuffer != 0)
 	{
-
-		PFNGLDELETEBUFFERSPROC glDeleteBuffers = (PFNGLDELETEBUFFERSPROC)wglGetProcAddress("glDeleteBuffers");
-
 		// if this is the currently loaded index buffer, release it
 		if (pGraphicsService->GetIndexBuffer() == this)
 			pGraphicsService->SetIndexBuffer(0);
 
-		glDeleteBuffers(1, &pIndexBuffer); 
+		pOS->GLDeleteBuffers(1, &pIndexBuffer); 
 		pIndexBuffer = 0;
 	}
 

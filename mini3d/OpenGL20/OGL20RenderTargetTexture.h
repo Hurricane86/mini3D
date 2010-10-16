@@ -12,8 +12,7 @@
 #include "internal/IOGL20RenderTarget.h"
 #include "internal/IOGL20Resource.h"
 #include "internal/IOGL20Texture.h"
-#include <Windows.h>
-#include <GL/gl.h>
+#include "os/IOS.h"
 
 namespace mini3d
 {
@@ -67,6 +66,7 @@ private:
 
 	// GraphicsDevice link
 	OGL20GraphicsService* pGraphicsService;
+	IOS* pOS;
 
 	// Bitmap
 	unsigned int width;

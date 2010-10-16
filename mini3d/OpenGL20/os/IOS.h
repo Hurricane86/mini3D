@@ -11,13 +11,14 @@
 	#define GL_GLEXT_PROTOTYPES
 #endif
 
-#include <windows.h>
+#ifdef _WIN32
+	#include <windows.h>
+#endif
 #include <GL/gl.h>
+#include <GL/glu.h>
+#include <GL/glext.h>
 
 typedef char GLchar;
-
-//#include <GL/wglext.h>
-//#include <GL/glext.h>
 
 namespace mini3d
 {
@@ -26,14 +27,22 @@ class IOS
 public:
 	virtual ~IOS() { };
 
-	virtual void Init() = 0;
+	//virtual void Init() = 0;
 
 	// Used by OPENGL for determining setting buffer and depth buffer format
 	virtual unsigned int GetMonitorBitDepth() const = 0;
 	virtual void GetClientAreaSize(int windowHandle, unsigned int &width, unsigned int &height) const = 0;
-	virtual void Log(wchar_t* message) const = 0;
+	virtual void Log(char* message) const = 0;
 
 
+	// ---------- ABSTRACT OPENGL FUNCTIONS --------------------------------------
+	// These functions preform opengl functions but they do not map 1-1 against a specifc opengl function
+	// what they do is platform dependent
+	virtual void PrepareWindow(const int& hWindow) const = 0;
+	virtual void SetRenderWindow(const int& hWindow) const = 0;
+	virtual void SetFullscreenRenderWindow(const int& hWindow, const unsigned int& width, const unsigned int& height) const = 0;
+	virtual void SetDefaultRenderWindow() const = 0;
+	virtual void SwapWindowBuffers(const int& hWindow) const = 0;
 
 	// ---------- OPEN GL FUNCTIONS ----------------------------------------------
 
@@ -53,8 +62,20 @@ public:
 	// TEXTURE
 	virtual void GLActiveTexture(GLenum texture) const = 0;
 	virtual void GLBindTexture(GLenum target, GLuint texture) const = 0;
-	virtual void GLTexParameteri(GLenum target, GLenum pname, GLint params) const = 0;	
+	virtual void GLTexParameteri(GLenum target, GLenum pname, GLint params) const = 0;
 	
+	virtual void GLGenRenderbuffers(GLsizei n, GLuint* renderbuffers) const = 0;
+	virtual void GLBindRenderbuffer(GLenum target, GLuint renderbuffer) const = 0;
+	virtual void GLRenderbufferStorage(GLenum target, GLenum internalformat, GLsizei width, GLsizei height) const = 0;
+
+	virtual void GLDeleteRenderbuffers(GLsizei n, GLuint* renderbuffers) const = 0;
+	virtual void GLDeleteFramebuffers(GLsizei n, GLuint* framebuffers) const = 0;
+
+	virtual void GLGenFramebuffers(GLsizei n, GLuint* ids) const = 0;
+
+	virtual void GLFramebufferTexture2D(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level) const = 0;
+	virtual void GLFramebufferRenderbuffer(GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer) const = 0;
+
 	// SHADER FUNCTIONS
 	virtual void GLUseProgram(GLuint program) const = 0;
 	
@@ -63,10 +84,28 @@ public:
 	virtual void GLVertexAttribPointer(GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid *pointer) const = 0;
 
 	virtual GLboolean GLIsShader(GLuint shader) const = 0;
+	
+	virtual GLuint GLCreateShader(GLenum shaderType) const = 0;
+	virtual void GLShaderSource(GLuint shader, GLsizei count, const GLchar** string, const GLint* length) const = 0;
+	virtual void GLCompileShader(GLuint shader) const = 0;
+	virtual void GLDeleteShader(GLuint shader) const = 0;
+
 	virtual void GLGetShaderiv(GLuint shader, GLenum pname, GLint *params) const = 0;
 	virtual void GLGetProgramiv(GLenum target, GLenum pname, GLint *params) const = 0;
 	virtual void GLGetShaderInfoLog(GLuint shader, GLsizei bufSize, GLsizei *length, GLchar *infoLog) const = 0;
 	virtual void GLGetProgramInfoLog(GLuint program, GLsizei bufSize, GLsizei *length, GLchar *infoLog) const = 0;
+
+	virtual void GLDeleteProgram(GLuint program) const = 0;
+	virtual GLuint GLCreateProgram() const = 0;
+	virtual void GLAttachShader(GLuint program, GLuint shader) const = 0;
+	virtual void GLLinkProgram(GLuint program) const = 0;
+
+	// SHADER PROGRAM FUNCTIONS
+	virtual void GLGetActiveAttrib(GLuint program, GLuint index, GLsizei bufSize, GLsizei* length, GLint* size, GLenum* type, GLchar* name) const = 0;
+	virtual GLint GLGetAttribLocation(GLuint program, const GLchar* name) const = 0;
+
+	virtual void GLGetActiveUniform(GLuint program, GLuint index, GLsizei bufSize, GLsizei* length, GLint* size, GLenum* type, GLchar* name) const = 0;
+	virtual GLint GLGetUniformLocation(GLuint program, const GLchar* name) const = 0;
 
 	// SHADER PARAMETERS
 	virtual void GLUniform1f(GLint location, GLfloat v0) const = 0;
@@ -83,7 +122,12 @@ public:
 
 	// GEOMETRY
 	virtual void GLBindBuffer(GLenum target, GLuint buffer) const = 0;
-	
+	virtual void* GLMapBuffer(GLenum target, GLenum access) const = 0;
+	virtual void GLUnmapBuffer(GLenum  	target) const = 0;
+	virtual void GLBufferData(GLenum target, GLsizeiptr size, const GLvoid* data, GLenum usage) const = 0;
+	virtual void GLGenBuffers(GLsizei n, GLuint* buffers) const = 0;
+	virtual void GLDeleteBuffers(GLsizei n, GLuint* buffers) const = 0;
+
 	// DRAWING
 	virtual void GLEnableClientState(GLenum target) const = 0;
 	virtual void GLDrawElements(GLenum mode, GLsizei count, GLenum type, const GLvoid* indices) const = 0;

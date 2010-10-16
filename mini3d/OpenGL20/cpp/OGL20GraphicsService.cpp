@@ -19,33 +19,33 @@ mini3d::OGL20GraphicsService::OGL20GraphicsService() :
 	isDrawingScene(false), deviceLost(true), lostDeviceCurrentITextures(0), currentITextures(0), pCurrentShaderProgram(0), pCurrentWindowRenderTarget(0)
 {
 	pOS = new OSWindows();
-	CreateInternalWindow();
+	//CreateInternalWindow();
 
-	// Get the device context for the window
-	hDeviceContext = GetDC(hWindow);
+	//// Get the device context for the window
+	//hDeviceContext = GetDC(hWindow);
 
-	// Create the renderContext
-	CreateDevice();
+	//// Create the renderContext
+	//CreateDevice();
 
-	// Should be able to init the pOS connections
-	pOS->Init();
+	//// Should be able to init the pOS connections
+	//pOS->Init();
 }
 
 mini3d::OGL20GraphicsService::~OGL20GraphicsService(void)
 {
 	// Remove the default device context
-	DeleteDC(hDeviceContext);
+	//DeleteDC(hDeviceContext);
 
 	// Clear the device/render context setting
-    wglMakeCurrent(0, 0);
+    //wglMakeCurrent(0, 0);
 
 	// delete the default render context
-	wglDeleteContext(hRenderContext);
+	//wglDeleteContext(hRenderContext);
 
 	delete pOS;
 }
 
-
+/*
 // Private helper methods -----------------------------------------------------
 
 void mini3d::OGL20GraphicsService::CreateDevice(void)
@@ -119,6 +119,7 @@ void mini3d::OGL20GraphicsService::CreateInternalWindow(void)
 
 	hWindow = CreateWindowEx(WS_EX_CLIENTEDGE, L"OGL20InternalWindowClass", L"HiddenWindow", 0, CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, HWND_MESSAGE, 0, hInstance, 0);
 }
+*/
 
 // Locking resources
 void mini3d::OGL20GraphicsService::BeginScene(void)
@@ -318,7 +319,7 @@ void mini3d::OGL20GraphicsService::SetRenderTarget(IRenderTarget* pRenderTarget)
 		
 		// set the frame buffer 0 and the device/render context to the default
 		pOS->GLBindFramebuffer(GL_FRAMEBUFFER, 0);
-		wglMakeCurrent(hDeviceContext, hRenderContext);
+		pOS->SetDefaultRenderWindow();
 		pCurrentRenderTarget = 0;
 		return;
 	}
@@ -356,37 +357,12 @@ void mini3d::OGL20GraphicsService::SetRenderTarget(IRenderTarget* pRenderTarget)
 		if (pOGL20WindowRenderTarget->GetScreenState() == OGL20WindowRenderTarget::SCREEN_STATE_WINDOWED)
 		{
 			// TODO: Restore screen resolution if necessary
-
-			ChangeDisplaySettings(NULL,0);	// Switch back to the desktop default resolution stored in registry
-			ShowCursor(TRUE);	// Show mouse pointer
-			
-			pOS->GLBindFramebuffer(GL_FRAMEBUFFER, 0);
-			wglMakeCurrent(pOGL20WindowRenderTarget->GetDeviceContext(), hRenderContext);
+			pOS->SetRenderWindow(pOGL20WindowRenderTarget->GetWindowHandle());
 			glViewport(0,0,pOGL20WindowRenderTarget->GetWidth(), pOGL20WindowRenderTarget->GetHeight());
 		}
 		else if (pOGL20WindowRenderTarget->GetScreenState() == OGL20WindowRenderTarget::SCREEN_STATE_FULLSCREEN)
 		{
-			
-			// Set the video resolution to the fullscreen resolution
-
-			DEVMODE dmScreenSettings = {0}; // Device Mode initialized to zero
-			dmScreenSettings.dmSize=sizeof(dmScreenSettings); // Size Of The Devmode Structure
-			dmScreenSettings.dmPelsWidth = pOGL20WindowRenderTarget->GetFullscreenWidth(); // Selected Screen Width
-			dmScreenSettings.dmPelsHeight = pOGL20WindowRenderTarget->GetFullscreenHeight();	// Selected Screen Height
-
-			// if the size is zero, use the default desktop size
-			if (dmScreenSettings.dmPelsWidth != 0 && dmScreenSettings.dmPelsWidth != 0)
-			{
-				dmScreenSettings.dmFields |= DM_PELSWIDTH | DM_PELSHEIGHT;
-			}
-
-			if (ChangeDisplaySettings(&dmScreenSettings, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)
-			{
-				return;
-			}
-
-			pOS->GLBindFramebuffer(GL_FRAMEBUFFER, 0);
-			wglMakeCurrent(pOGL20WindowRenderTarget->GetDeviceContext(), hRenderContext);
+			pOS->SetFullscreenRenderWindow(pOGL20WindowRenderTarget->GetWindowHandle(), pOGL20WindowRenderTarget->GetFullscreenWidth(), pOGL20WindowRenderTarget->GetFullscreenHeight());
 			glViewport(0,0,pOGL20WindowRenderTarget->GetFullscreenWidth(), pOGL20WindowRenderTarget->GetFullscreenHeight());
 		}
 

@@ -10,8 +10,7 @@
 #include "../IIndexBuffer.h"
 #include "OGL20GraphicsService.h"
 #include "internal/IOGL20Resource.h"
-#include <Windows.h>
-#include <GL/gl.h>
+#include "os/IOS.h"
 
 namespace mini3d
 {
@@ -65,6 +64,7 @@ private:
 	
 	// GraphicsDevice link
 	OGL20GraphicsService* pGraphicsService;
+	IOS* pOS;
 
 	// Buffer
 	GLuint pIndexBuffer;

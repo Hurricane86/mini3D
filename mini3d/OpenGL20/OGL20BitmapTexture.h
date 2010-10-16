@@ -11,8 +11,6 @@
 #include "internal/IOGL20Texture.h"
 #include "OGL20GraphicsService.h"
 #include "internal/IOGL20Resource.h"
-#include <Windows.h>
-#include <GL/gl.h>
 
 namespace mini3d
 {

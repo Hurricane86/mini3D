@@ -13,7 +13,7 @@
 
 
 mini3d::OGL20VertexShader::OGL20VertexShader(OGL20GraphicsService* pGraphicsService, const void* pShaderBytes, const unsigned int& sizeInBytes, const IVertexShader::VertexDataType vertexDeclaration[], const unsigned int& vertexDataCount) :
-	pGraphicsService(pGraphicsService), pShaderBuffer(0), vertexAttributes(0)
+	pGraphicsService(pGraphicsService), pShaderBuffer(0), vertexAttributes(0), pOS(pGraphicsService->GetOS())
 {
 	// Vertex shader data
 	this->sizeInBytes = sizeInBytes;
@@ -53,19 +53,15 @@ mini3d::OGL20VertexShader::~OGL20VertexShader(void)
 
 void mini3d::OGL20VertexShader::LoadResource(void)
 {
-	PFNGLCREATESHADERPROC glCreateShader = (PFNGLCREATESHADERPROC)wglGetProcAddress("glCreateShader");
-	PFNGLSHADERSOURCEPROC glShaderSource = (PFNGLSHADERSOURCEPROC)wglGetProcAddress("glShaderSource");
-	PFNGLCOMPILESHADERPROC glCompileShader = (PFNGLCOMPILESHADERPROC)wglGetProcAddress("glCompileShader");
-
 	// If the buffer exists tear it down.
 	if (pShaderBuffer != 0)
 	{
 		UnloadResource();
 	}
 
-	pShaderBuffer = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(pShaderBuffer, 1, (const GLchar**)&pShaderBytes, (const GLint*)&sizeInBytes);
-	glCompileShader(pShaderBuffer);
+	pShaderBuffer = pOS->GLCreateShader(GL_VERTEX_SHADER);
+	pOS->GLShaderSource(pShaderBuffer, 1, (const GLchar**)&pShaderBytes, (const GLint*)&sizeInBytes);
+	pOS->GLCompileShader(pShaderBuffer);
 
 	printLog(pShaderBuffer);
 	isDirty = false;
@@ -79,9 +75,7 @@ void mini3d::OGL20VertexShader::UnloadResource(void)
 {
 	if (pShaderBuffer != 0)
 	{
-		PFNGLDELETESHADERPROC glDeleteShader = (PFNGLDELETESHADERPROC)wglGetProcAddress("glDeleteShader");
-
-		glDeleteShader(pShaderBuffer);
+		pOS->GLDeleteShader(pShaderBuffer);
 		pShaderBuffer = 0;
 	}
 
@@ -200,33 +194,18 @@ void mini3d::OGL20VertexShader::CreateOGL20VertexAttributes()
 
 void mini3d::OGL20VertexShader::printLog(GLuint obj)
 {
-	PFNGLISSHADERPROC glIsShader = (PFNGLISSHADERPROC)wglGetProcAddress("glIsShader");
-
-	PFNGLGETSHADERIVPROC glGetShaderiv = (PFNGLGETSHADERIVPROC)wglGetProcAddress("glGetShaderiv");
-	PFNGLGETPROGRAMIVNVPROC glGetProgramiv = (PFNGLGETPROGRAMIVNVPROC)wglGetProcAddress("glGetProgramiv");
-	PFNGLGETSHADERINFOLOGPROC glGetShaderInfoLog = (PFNGLGETSHADERINFOLOGPROC)wglGetProcAddress("glGetShaderInfoLog");
-	PFNGLGETPROGRAMINFOLOGPROC glGetProgramInfoLog = (PFNGLGETPROGRAMINFOLOGPROC)wglGetProcAddress("glGetProgramInfoLog");
-	
-	int infologLength = 0;
 	int maxLength;
-	
-	if(glIsShader(obj))
-		glGetShaderiv(obj,GL_INFO_LOG_LENGTH,&maxLength);
-	else
-		glGetProgramiv(obj,GL_INFO_LOG_LENGTH,&maxLength);
-			
-	char* infoLog = new char[maxLength];
-	LPCWSTR* infoLogW = new LPCWSTR[maxLength];
+	pOS->GLGetShaderiv(obj,GL_INFO_LOG_LENGTH,&maxLength);
 
-	if (glIsShader(obj))
-		glGetShaderInfoLog(obj, maxLength, &infologLength, infoLog);
-	else
-		glGetProgramInfoLog(obj, maxLength, &infologLength, infoLog);
- 
-	OutputDebugStringA("\nDEBUG INFO ---------\n");
+	int infologLength;
+	char* infoLog = new char[maxLength];
+	pOS->GLGetShaderInfoLog(obj, maxLength, &infologLength, infoLog);
 
 	if (infologLength > 0)
-		OutputDebugStringA(infoLog);
+	{
+		pOS->Log("\nDEBUG INFO ---------\n");
+		pOS->Log(infoLog);
+	}
 
 	delete [] infoLog;
 }

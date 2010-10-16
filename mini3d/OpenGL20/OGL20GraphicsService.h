@@ -7,8 +7,6 @@
 #ifndef MINI3D_OGL20GRAPHICSSERVICE_H
 #define MINI3D_OGL20GRAPHICSSERVICE_H
 
-#include <windows.h>
-#include <GL/gl.h>
 #include <set>
 #include <map>
 #include <string>
@@ -32,7 +30,7 @@
 #include "OGL20IndexBuffer.h"
 #include "OGL20RenderTargetTexture.h"
 #include "OGL20WindowRenderTarget.h"
-#include "os\IOS.h"
+#include "os/IOS.h"
 
 namespace mini3d
 {
@@ -72,9 +70,9 @@ private:
 	bool isDrawingScene;
 	
 	// other variables
-	HWND hWindow;
-	HDC hDeviceContext;
-	HGLRC hRenderContext;
+	//HWND hWindow;
+	//HDC hDeviceContext;
+	//HGLRC hRenderContext;
 	GLuint hProgram;
 	ITexture* hCurrentTexture;
 	bool deviceLost;
@@ -98,8 +96,8 @@ public:
 	virtual OGL20WindowRenderTarget::ScreenState GetIsFullScreen() { return isFullscreen; };
 	virtual void SetIsFullScreen(OGL20WindowRenderTarget::ScreenState value) { isFullscreen = value; };
 	
-	virtual HGLRC GetRenderContext() const { return hRenderContext; };
-	virtual void SetRenderContext(HGLRC hRenderContext) { this->hRenderContext = hRenderContext; };	
+//	virtual HGLRC GetRenderContext() const { return hRenderContext; };
+//	virtual void SetRenderContext(HGLRC hRenderContext) { this->hRenderContext = hRenderContext; };	
 
 	// Get Graphics Card Capabilities
 	virtual unsigned int GetMaxTextures() const;

@@ -9,7 +9,7 @@
 #include <GL/wglext.h>
 
 mini3d::OGL20RenderTargetTexture::OGL20RenderTargetTexture(OGL20GraphicsService* pGraphicsService, const unsigned int& width, const unsigned int& height, const bool& depthTestEnabled) : 
-	pGraphicsService(pGraphicsService), pDepthStencil(0)
+	pGraphicsService(pGraphicsService), pDepthStencil(0), pOS(pGraphicsService->GetOS())
 {
 	SetRenderTargetTexture(width, height, depthTestEnabled);
 	pGraphicsService->AddResource(this);
@@ -34,22 +34,22 @@ void mini3d::OGL20RenderTargetTexture::SetRenderTargetTexture(const unsigned int
 void mini3d::OGL20RenderTargetTexture::LoadResource(void)
 {
 
-	PFNGLGENRENDERBUFFERSPROC glGenRenderbuffers = (PFNGLGENRENDERBUFFERSPROC)wglGetProcAddress("glGenRenderbuffers");
-	PFNGLBINDRENDERBUFFERPROC glBindRenderbuffer = (PFNGLBINDRENDERBUFFERPROC)wglGetProcAddress("glBindRenderbuffer");
-	PFNGLRENDERBUFFERSTORAGEPROC glRenderbufferStorage = (PFNGLRENDERBUFFERSTORAGEPROC)wglGetProcAddress("glRenderbufferStorage");
+	//PFNGLGENRENDERBUFFERSPROC glGenRenderbuffers = (PFNGLGENRENDERBUFFERSPROC)wglGetProcAddress("glGenRenderbuffers");
+	//PFNGLBINDRENDERBUFFERPROC glBindRenderbuffer = (PFNGLBINDRENDERBUFFERPROC)wglGetProcAddress("glBindRenderbuffer");
+	//PFNGLRENDERBUFFERSTORAGEPROC glRenderbufferStorage = (PFNGLRENDERBUFFERSTORAGEPROC)wglGetProcAddress("glRenderbufferStorage");
 
-	PFNGLGENFRAMEBUFFERSPROC glGenFramebuffers = (PFNGLGENFRAMEBUFFERSPROC)wglGetProcAddress("glGenFramebuffers");
-	PFNGLBINDFRAMEBUFFERPROC glBindFramebuffer = (PFNGLBINDFRAMEBUFFERPROC)wglGetProcAddress("glBindFramebuffer");
+	//PFNGLGENFRAMEBUFFERSPROC glGenFramebuffers = (PFNGLGENFRAMEBUFFERSPROC)wglGetProcAddress("glGenFramebuffers");
+	//PFNGLBINDFRAMEBUFFERPROC glBindFramebuffer = (PFNGLBINDFRAMEBUFFERPROC)wglGetProcAddress("glBindFramebuffer");
 
-	PFNGLFRAMEBUFFERTEXTURE2DPROC glFramebufferTexture2D = (PFNGLFRAMEBUFFERTEXTURE2DPROC)wglGetProcAddress("glFramebufferTexture2D");
-	PFNGLFRAMEBUFFERRENDERBUFFERPROC glFramebufferRenderbuffer = (PFNGLFRAMEBUFFERRENDERBUFFERPROC)wglGetProcAddress("glFramebufferRenderbuffer");
+	//PFNGLFRAMEBUFFERTEXTURE2DPROC glFramebufferTexture2D = (PFNGLFRAMEBUFFERTEXTURE2DPROC)wglGetProcAddress("glFramebufferTexture2D");
+	//PFNGLFRAMEBUFFERRENDERBUFFERPROC glFramebufferRenderbuffer = (PFNGLFRAMEBUFFERRENDERBUFFERPROC)wglGetProcAddress("glFramebufferRenderbuffer");
 
 	// if it is not unloaded, do so now
 	UnloadResource();
 
 	// create a texture object
 	glGenTextures(1, &pTexture);
-	glBindTexture(GL_TEXTURE_2D, pTexture);
+	pOS->GLBindTexture(GL_TEXTURE_2D, pTexture);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -61,28 +61,28 @@ void mini3d::OGL20RenderTargetTexture::LoadResource(void)
 	if (depthTestEnabled == true)
 	{
 		// create a renderbuffer object to store depth info
-		glGenRenderbuffers(1, &pDepthStencil);
-		glBindRenderbuffer(GL_RENDERBUFFER, pDepthStencil);
-		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
-		glBindRenderbuffer(GL_RENDERBUFFER, 0);
+		pOS->GLGenRenderbuffers(1, &pDepthStencil);
+		pOS->GLBindRenderbuffer(GL_RENDERBUFFER, pDepthStencil);
+		pOS->GLRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
+		pOS->GLBindRenderbuffer(GL_RENDERBUFFER, 0);
 	}
 	
 	
 	// create a framebuffer object
-	glGenFramebuffers(1, &pRenderTarget);
-	glBindFramebuffer(GL_FRAMEBUFFER, pRenderTarget);
+	pOS->GLGenFramebuffers(1, &pRenderTarget);
+	pOS->GLBindFramebuffer(GL_FRAMEBUFFER, pRenderTarget);
 
 	// attach the texture to FBO color attachment point
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pTexture, 0);
+	pOS->GLFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pTexture, 0);
 
 	// attach the renderbuffer to depth attachment point
 	if (depthTestEnabled == true)
 	{
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, pDepthStencil);
+		pOS->GLFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, pDepthStencil);
 	}
 
 	// switch back to window-system-provided framebuffer
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	pOS->GLBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	bufferWidth = width;
 	bufferHeight = height;
@@ -93,11 +93,6 @@ void mini3d::OGL20RenderTargetTexture::UnloadResource(void)
 {
 	if (pRenderTarget != 0)
 	{
-		
-		PFNGLDELETERENDERBUFFERSPROC glDeleteRenderbuffers = (PFNGLDELETERENDERBUFFERSPROC)wglGetProcAddress("glDeleteRenderbuffers");
-		PFNGLDELETEFRAMEBUFFERSPROC glDeleteFramebuffers = (PFNGLDELETEFRAMEBUFFERSPROC)wglGetProcAddress("glDeleteFramebuffers");
-
-
 		// if we are removing the current render target, restore the default render target first
 		if (pGraphicsService->GetRenderTarget() == this)
 			pGraphicsService->SetRenderTarget(0);
@@ -107,14 +102,13 @@ void mini3d::OGL20RenderTargetTexture::UnloadResource(void)
 			if (pGraphicsService->GetTexture(i) == this)
 				pGraphicsService->SetTexture(0, i);
 
-		glDeleteRenderbuffers(1, &pDepthStencil);
+		pOS->GLDeleteRenderbuffers(1, &pDepthStencil);
 		glDeleteTextures(1, &pTexture);
-		glDeleteFramebuffers(1, &pRenderTarget);
+		pOS->GLDeleteFramebuffers(1, &pRenderTarget);
 		
 		pDepthStencil = 0;
 		pTexture = 0;
 		pRenderTarget = 0;
-
 	}
 
 	isDirty = true;

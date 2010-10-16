@@ -8,8 +8,7 @@
 #define MINI3D_OGL20TEXTURE_H
 
 #include "../../internal/ITexture.h"
-#include "Windows.h"
-#include <GL/gl.h>
+#include "os/IOS.h"
 
 namespace mini3d
 {
