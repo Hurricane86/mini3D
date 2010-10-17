@@ -5,11 +5,7 @@
 
 
 #include "../OGL20GraphicsService.h"
-#include "../os/windows/OSFunctions.h"
 #include "../../error/Error.h"
-#include <GL/glext.h>
-#include <GL/glu.h>
-#include <GL/wglext.h>
 
 
 // Constructor Destructor -----------------------------------------------------

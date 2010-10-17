@@ -6,8 +6,6 @@
 
 #include "../OGL20PixelShader.h"
 #include "../OGL20GraphicsService.h"
-#include <GL/glext.h>
-#include <GL/wglext.h>
 
 mini3d::OGL20PixelShader::OGL20PixelShader(OGL20GraphicsService* pGraphicsService, const void* pShaderBytes, const unsigned int& sizeInBytes) :
 	pGraphicsService(pGraphicsService), pShaderBuffer(0), sizeInBytes(sizeInBytes), pOS(pGraphicsService->GetOS())

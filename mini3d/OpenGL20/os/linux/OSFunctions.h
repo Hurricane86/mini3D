@@ -3,16 +3,17 @@
 // This file is part of mini3d <www.mini3d.org>
 // It is distributed under the MIT Software License <www.mini3d.org/license>
 
-#ifdef _WIN32
+
+#ifdef __linux
 
 #ifndef MINI3D_OSFUNCTION_H
 #define MINI3D_OSFUNCTION_H
 
-#include <windows.h>
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
 #include <GL/gl.h>
-#include <GL/glu.h>
+#include <GL/glx.h>
 #include <GL/glext.h>
-#include <GL/wglext.h>
 
 typedef char GLchar;
 
@@ -142,73 +143,13 @@ public:
 
 	// --------- Private variables -----------------------------------------------
 
-	PFNGLISSHADERPROC glIsShader;
-
-	PFNGLCREATESHADERPROC glCreateShader;
-	PFNGLSHADERSOURCEPROC glShaderSource;
-	PFNGLCOMPILESHADERPROC glCompileShader;
-	PFNGLDELETESHADERPROC glDeleteShader;
-
-	PFNGLGETSHADERIVPROC glGetShaderiv;
-	PFNGLGETPROGRAMIVNVPROC glGetProgramiv;
-	PFNGLGETSHADERINFOLOGPROC glGetShaderInfoLog;
-	PFNGLGETPROGRAMINFOLOGPROC glGetProgramInfoLog;
-
-	PFNGLDELETEPROGRAMPROC glDeleteProgram;
-	PFNGLCREATEPROGRAMPROC glCreateProgram;
-	PFNGLATTACHSHADERPROC glAttachShader;
-	PFNGLLINKPROGRAMPROC glLinkProgram;
-
-	PFNGLGETACTIVEATTRIBPROC glGetActiveAttrib;
-	PFNGLGETATTRIBLOCATIONPROC glGetAttribLocation;
-
-	PFNGLGETACTIVEUNIFORMPROC glGetActiveUniform;
-	PFNGLGETUNIFORMLOCATIONPROC glGetUniformLocation;
-
-	PFNGLUSEPROGRAMPROC glUseProgram;
-	PFNGLENABLEVERTEXATTRIBARRAYPROC glEnableVertexAttribArray;
-	PFNGLDISABLEVERTEXATTRIBARRAYPROC glDisableVertexAttribArray;
-	PFNGLVERTEXATTRIBPOINTERPROC glVertexAttribPointer;
-	PFNGLACTIVETEXTUREPROC glActiveTexture;
-	PFNGLBINDFRAMEBUFFERPROC glBindFramebuffer;
-
-	PFNGLGENRENDERBUFFERSPROC glGenRenderbuffers;
-	PFNGLBINDRENDERBUFFERPROC glBindRenderbuffer;
-	PFNGLRENDERBUFFERSTORAGEPROC glRenderbufferStorage;
-
-	PFNGLDELETERENDERBUFFERSPROC glDeleteRenderbuffers;
-	PFNGLDELETEFRAMEBUFFERSPROC glDeleteFramebuffers;
-
-	PFNGLGENFRAMEBUFFERSPROC glGenFramebuffers;
-
-	PFNGLFRAMEBUFFERTEXTURE2DPROC glFramebufferTexture2D;
-	PFNGLFRAMEBUFFERRENDERBUFFERPROC glFramebufferRenderbuffer;
-	
-	PFNGLBINDBUFFERPROC glBindBuffer;
-	PFNGLMAPBUFFERPROC glMapBuffer;
-	PFNGLUNMAPBUFFERPROC glUnmapBuffer;
-	PFNGLBUFFERDATAPROC glBufferData;
-	PFNGLGENBUFFERSPROC glGenBuffers;
-	PFNGLDELETEBUFFERSPROC glDeleteBuffers;
-
-	PFNGLUNIFORM1FPROC glUniform1f;
-	PFNGLUNIFORM2FPROC glUniform2f;
-	PFNGLUNIFORM3FPROC glUniform3f;
-	PFNGLUNIFORM4FPROC glUniform4f;
-
-	PFNGLUNIFORM1IPROC glUniform1i;
-	PFNGLUNIFORM2IPROC glUniform2i;
-	PFNGLUNIFORM3IPROC glUniform3i;
-	PFNGLUNIFORM4IPROC glUniform4i;
-	
-	PFNGLUNIFORMMATRIX4FVPROC glUniformMatrix4fv;
-
-	PFNGLDRAWRANGEELEMENTSPROC glDrawRangeElements;
-
 	// Default window and render context
-	HWND hWindow;
-	HDC hDeviceContext;
-	HGLRC hRenderContext;
+	Display* display; 
+	XVisualInfo* vinfo; 
+	XSetWindowAttributes swattr;
+	Window window;
+	GLXContext renderingContext;    
+
 };
 }
 

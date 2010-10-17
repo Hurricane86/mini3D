@@ -8,11 +8,12 @@
 #define MINI3D_OGL20VERTEXSHADER_H
 
 #include "../IVertexShader.h"
-#include "OGL20GraphicsService.h"
+#include "internal/IOGL20Resource.h"
 #include "os/OSFunctionSelector.h"
 
 namespace mini3d
 {
+class OGL20GraphicsService;
 
 struct OGL20VertexAttribute
 {
@@ -24,10 +25,8 @@ struct OGL20VertexAttribute
 	GLvoid* pointer;
 };
 
-class OGL20VertexShader : IVertexShader, IOGL20Resource
+class OGL20VertexShader : public IVertexShader, IOGL20Resource
 {
-	friend class OGL20GraphicsService;
-
 public:
 	// ::::: Constructor & Destructor :::::::::::::::::::::::::::::::::::::::::
 

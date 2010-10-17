@@ -14,10 +14,8 @@
 namespace mini3d
 {
 class OGL20GraphicsService;
-class OGL20PixelShader : IPixelShader, IOGL20Resource
+class OGL20PixelShader : public IPixelShader, IOGL20Resource
 {
-	friend class OGL20GraphicsService;
-	friend class OGL20ShaderProgram;
 
 public:
 	

@@ -7,9 +7,6 @@
 #include "../OGL20WindowRenderTarget.h"
 #include "../OGL20GraphicsService.h"
 #include "../../error/Error.h"
-#include <GL/glu.h>
-#include <GL/glext.h>
-#include <GL/wglext.h>
 
 std::map<int, mini3d::OGL20WindowRenderTarget*> mini3d::OGL20WindowRenderTarget::windowMap;
 

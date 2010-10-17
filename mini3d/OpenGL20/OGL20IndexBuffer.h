@@ -8,12 +8,13 @@
 #define MINI3D_OGL20INDEXBUFFER_H
 
 #include "../IIndexBuffer.h"
-#include "OGL20GraphicsService.h"
 #include "internal/IOGL20Resource.h"
 #include "os/OSFunctionSelector.h"
 
+
 namespace mini3d
 {
+class OGL20GraphicsService;
 class OGL20IndexBuffer : public IIndexBuffer, public IOGL20Resource
 {
 

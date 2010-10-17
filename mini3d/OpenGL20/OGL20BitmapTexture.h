@@ -9,14 +9,14 @@
 
 #include "../IBitmapTexture.h"
 #include "internal/IOGL20Texture.h"
-#include "OGL20GraphicsService.h"
 #include "internal/IOGL20Resource.h"
 
 namespace mini3d
 {
+class OGL20GraphicsService;
+
 class OGL20BitmapTexture : public IBitmapTexture, public IOGL20Texture, public IOGL20Resource
 {
-friend class OGL20GraphicsService;
 
 public:
 

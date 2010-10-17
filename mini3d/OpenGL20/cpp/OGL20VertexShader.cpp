@@ -5,8 +5,7 @@
 
 
 #include "../OGL20VertexShader.h"
-#include <GL/glext.h>
-#include <GL/wglext.h>
+#include "../OGL20GraphicsService.h"
 #include <iostream>
 #include <iomanip>
 #include <sstream>

@@ -17,6 +17,7 @@
 namespace mini3d
 {
 class OGL20DepthStencil;
+class OGL20GraphicsService;
 class OGL20WindowRenderTarget : public IWindowRenderTarget, public IOGL20RenderTarget, public IOGL20Resource
 {
 
@@ -58,7 +59,7 @@ public:
 	
 	// ::::: IOGL20RenderTarget :::::::::::::::::::::::::::::::::::::::::::::::
 
-	HDC GetDeviceContext(void) const { return GetDC((HWND)hWindow); }
+//	HDC GetDeviceContext(void) const { return GetDC((HWND)hWindow); }
 //	HGLRC GetRenderContext(void) const { return hRenderContext; }
 	GLuint GetDepthStencil(void) const { return pDepthStencil; }
 
@@ -107,9 +108,10 @@ private:
 	bool depthTestEnabled;
 	Quality quality;
 
+#ifdef _WIN32
 	WNDPROC pOrigProc;
 	static std::map<int, OGL20WindowRenderTarget*> windowMap;
-	
+#endif
 	int hBufferWindow;
 	int bufferDepthTestEnabled;
 

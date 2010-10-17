@@ -5,8 +5,7 @@
 
 
 #include "../OGL20IndexBuffer.h"
-#include <GL/glext.h>
-#include <GL/wglext.h>
+#include "../OGL20GraphicsService.h"
 
 mini3d::OGL20IndexBuffer::OGL20IndexBuffer(OGL20GraphicsService* pGraphicsService, const void* pIndices, const unsigned int& count, const DataType& dataType, const CullMode& cullMode) : 
 	pGraphicsService(pGraphicsService), bufferSizeInBytes(0), pIndices(0), pIndexBuffer(0), pOS(pGraphicsService->GetOS())

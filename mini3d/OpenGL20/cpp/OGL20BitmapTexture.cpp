@@ -5,6 +5,7 @@
 
 
 #include "../OGL20BitmapTexture.h"
+#include "../OGL20GraphicsService.h"
 #include "../../error/error.h"
 
 

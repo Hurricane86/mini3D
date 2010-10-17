@@ -8,15 +8,14 @@
 #define MINI3D_OGL20VERTEXBUFFER_H
 
 #include "../IVertexBuffer.h"
-#include "OGL20GraphicsService.h"
 #include "internal/IOGL20Resource.h"
 #include "os/OSFunctionSelector.h"
 
 namespace mini3d
 {
+class OGL20GraphicsService;
 class OGL20VertexBuffer :	public IVertexBuffer, public IOGL20Resource
 {
-friend class OGL20GraphicsService;
 
 public:
 

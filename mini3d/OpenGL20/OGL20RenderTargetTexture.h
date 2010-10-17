@@ -8,7 +8,6 @@
 #define MINI3D_OGL20RENDERTARGETTEXTURE_H
 
 #include "../IRenderTargetTexture.h"
-#include "OGL20GraphicsService.h"
 #include "internal/IOGL20RenderTarget.h"
 #include "internal/IOGL20Resource.h"
 #include "internal/IOGL20Texture.h"
@@ -16,10 +15,9 @@
 
 namespace mini3d
 {
+class OGL20GraphicsService;
 class OGL20RenderTargetTexture : public IRenderTargetTexture, public IOGL20Texture, public IOGL20RenderTarget, public IOGL20Resource
 {
-friend class OGL20GraphicsService;
-
 
 public:
 

@@ -5,8 +5,7 @@
 
 
 #include "../OGL20RenderTargetTexture.h"
-#include <GL/glext.h>
-#include <GL/wglext.h>
+#include "../OGL20GraphicsService.h"
 
 mini3d::OGL20RenderTargetTexture::OGL20RenderTargetTexture(OGL20GraphicsService* pGraphicsService, const unsigned int& width, const unsigned int& height, const bool& depthTestEnabled) : 
 	pGraphicsService(pGraphicsService), pDepthStencil(0), pOS(pGraphicsService->GetOS())

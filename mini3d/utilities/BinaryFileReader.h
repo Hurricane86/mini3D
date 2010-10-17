@@ -18,7 +18,7 @@ namespace utilites
 class BinaryFileReader
 {
 public:
-	static char* ReadBytesFromFile(WCHAR* fileName, unsigned int& sizeInBytes)
+	static char* ReadBytesFromFile(char* fileName, unsigned int& sizeInBytes)
 	{
 		char* data;
 

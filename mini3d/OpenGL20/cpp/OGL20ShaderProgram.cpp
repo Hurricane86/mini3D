@@ -6,8 +6,6 @@
 
 #include "../OGL20ShaderProgram.h"
 #include "../OGL20GraphicsService.h"
-#include <GL/glext.h>
-#include <GL/wglext.h>
 #include <sstream>
 
 mini3d::OGL20ShaderProgram::OGL20ShaderProgram(OGL20GraphicsService* pGraphicsService, IVertexShader* pVertexShader, IPixelShader* pPixelShader) :

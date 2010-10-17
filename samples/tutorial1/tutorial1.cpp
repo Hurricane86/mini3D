@@ -5,15 +5,16 @@
 
 
 #include <math.h>
-
+#include "../../mini3d/utilities/OSWindow.h"
 #include "../../mini3d.h"
 
-#include <Windows.h>
+//#include <Windows.h>
 
 // ----- FORWARD DECLARATIONS -------------------------------------------------
-LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+void WndMessage(mini3d::utilites::OSWindow* window, mini3d::utilites::OSWindow::WindowMessage message);
 void UpdateViewProjectionMatrix();
-UINT32* CreateNiceBitmap(unsigned int width, unsigned int height);
+void Render();
+unsigned int* CreateNiceBitmap(unsigned int width, unsigned int height);
 
 // ----- GEOMETRY DATA --------------------------------------------------------
 
@@ -87,10 +88,6 @@ float distance = 10.0f; // medium distance :)
 int width = 640;
 int height = 480;
 
-// For keeping track of window messages
-MSG Msg;
-
-
 // ----- DECLARE GRAPHICS RESOURCES -------------------------------------------
 
 // Graphics Service
@@ -110,15 +107,20 @@ mini3d::IShaderProgram* pShaderProgram;
 
 
 // Tutorial Application
+#ifdef _WIN32
 INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
+#endif
+#ifdef __linux
+int main()
+#endif
 {
 	
 	// ----- CREATE A WINDOW --------------------------------------------------
 
 	// create a window
-	mini3d::utilites::Window window(WndProc, 640, 480);
-	HWND hWindow = (HWND)window.GetWindowHandle();
-	ShowWindow(hWindow, SW_SHOW);
+	mini3d::utilites::OSWindow window(WndMessage, 640, 480);
+	int hWindow = window.GetWindowHandle();
+	window.Show();
 
 	// ----- CREATE GRAPHICS SERVICE ------------------------------------------
 	
@@ -128,7 +130,7 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	// ----- CREATE GRAPHICS RESOURCES ----------------------------------------
 
 	// create a render target (mini3d does not have a default render target)
-	pWindowRenderTarget = graphics->CreateWindowRenderTarget((int)hWindow, true, mini3d::IWindowRenderTarget::QUALITY_MINIMUM);
+	pWindowRenderTarget = graphics->CreateWindowRenderTarget(hWindow, true, mini3d::IWindowRenderTarget::QUALITY_MINIMUM);
 
 	// create index buffer
 	iBuffer = graphics->CreateIndexBuffer(indices, 36);
@@ -140,17 +142,17 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	void* pBitmap = (void *)CreateNiceBitmap(128, 64);
 	// create a nice 32bpp texture
 	pTexture = graphics->CreateBitmapTexture(pBitmap, 128, 64); 
-	delete pBitmap;
+	operator delete(pBitmap);
 
 	unsigned int sizeInBytes;
 	
 	// create vertex shader
-	char* shaderBytes = mini3d::utilites::BinaryFileReader::ReadBytesFromFile(L"shaders/glsl/vertexshader.glsl", sizeInBytes);
+	char* shaderBytes = mini3d::utilites::BinaryFileReader::ReadBytesFromFile("shaders/glsl/vertexshader.glsl", sizeInBytes);
 	pVertexShader = graphics->CreateVertexShader(shaderBytes, sizeInBytes, vertexDeclaration, 3);
 	delete shaderBytes;
 
 	// create pixel shader
-	char* shaderBytes2 = mini3d::utilites::BinaryFileReader::ReadBytesFromFile(L"shaders/glsl/pixelshader.glsl", sizeInBytes);
+	char* shaderBytes2 = mini3d::utilites::BinaryFileReader::ReadBytesFromFile("shaders/glsl/pixelshader.glsl", sizeInBytes);
 	pPixelShader = graphics->CreatePixelShader(shaderBytes2, sizeInBytes);
 	delete shaderBytes2;
 
@@ -173,44 +175,26 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	// Set the Texture
 	graphics->SetTexture(pTexture, 0);
 
-	// Set the ViewProjection matrix
-	UpdateViewProjectionMatrix();
+	// Render to the Screen
+	Render();
 
-
-	// ----- RENDER LOOP ------------------------------------------------------
+	// ----- MAIN LOOP --------------------------------------------------------
 
 	// loop while the window is not closed
+#ifdef _WIN32
+	MSG Msg;
 	while(GetMessage(&Msg, NULL, 0, 0) > 0)
 	{
-		// set render prarameters
-		graphics->SetIndexBuffer(iBuffer);
-		graphics->SetVertexBuffer(vBuffer);
-		graphics->SetShaderProgram(pShaderProgram);
-
-		graphics->SetRenderTarget(pWindowRenderTarget);
-
-		// Set the Texture
-		graphics->SetTexture(pTexture, 0);
-
-		// Set the ViewProjection matrix
-		UpdateViewProjectionMatrix();
-
-		// clear render target with color
-		graphics->Clear(0.5,0.5,0.5,1.0);
-
-		// draw the scene to the renderTargetTexture
-		graphics->Draw();
-
-		// do a flip
-		pWindowRenderTarget->Display();
-
 		// window message stuff
 		TranslateMessage(&Msg);
 		DispatchMessage(&Msg);
 	}
+#endif
+#ifdef __linux
+	window.WaitForMessage();
+#endif
 
-
-	// ----- DELETE RESOURCES ----------------------------------------------------
+	// ----- DELETE RESOURCES -------------------------------------------------
 
 	delete vBuffer;
 	delete iBuffer;
@@ -221,7 +205,35 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 	delete pWindowRenderTarget;
 	delete graphics;
 
+
+#ifdef _WIN32
 	return Msg.wParam;
+#endif
+}
+
+void Render()
+{
+	// set render prarameters
+	graphics->SetIndexBuffer(iBuffer);
+	graphics->SetVertexBuffer(vBuffer);
+	graphics->SetShaderProgram(pShaderProgram);
+
+	graphics->SetRenderTarget(pWindowRenderTarget);
+
+	// Set the Texture
+	graphics->SetTexture(pTexture, 0);
+
+	// Set the ViewProjection matrix
+	UpdateViewProjectionMatrix();
+
+	// clear render target with color
+	graphics->Clear(0.5,0.5,0.5,1.0);
+
+	// draw the scene to the renderTargetTexture
+	graphics->Draw();
+
+	// do a flip
+	pWindowRenderTarget->Display();
 }
 
 // sets the view, projection matrix as a shader parameter
@@ -240,29 +252,36 @@ void UpdateViewProjectionMatrix()
 	graphics->SetShaderParameterMatrix(0, &viewProjectionMatrixE._00, 4, 4);
 }
 
-// callback for our window, handles window messages
-LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+void WndMessage(mini3d::utilites::OSWindow* window, mini3d::utilites::OSWindow::WindowMessage message)
 {
-	switch(msg)
+
+	switch(message)
 	{
-		case WM_CLOSE:
-			DestroyWindow(hwnd);
+		case mini3d::utilites::OSWindow::PAINT:
+			Render();
 		break;
-		case WM_DESTROY:
-			PostQuitMessage(0);
+		case mini3d::utilites::OSWindow::CLOSED:
+
 		break;
-		case WM_SIZE:
-			width = LOWORD(lParam);
-			height = HIWORD(lParam);
-			UpdateViewProjectionMatrix();
+		case mini3d::utilites::OSWindow::DESTROYED:
+#ifdef _WIN32 
+			PostQuitMessage(0); 
+#endif
+			break;
+		case mini3d::utilites::OSWindow::SIZE:
+			width = window->GetWidth();
+			height = window->GetHeight();
+//			TODO: This causes strange bug
+//			Render();
 		break;
-		case WM_LBUTTONDOWN:
-			mouseX = LOWORD(lParam); 
-			mouseY = HIWORD(lParam);
-			SetCapture(hwnd);
+		case mini3d::utilites::OSWindow::MOUSE_LEFT_DOWN:
+			mouseX = window->GetMouseX();
+			mouseY = window->GetMouseY();
+			Render();
 		break;
-		case WM_KEYDOWN:
-			if ((wParam & VK_F12) == VK_F12)
+		case mini3d::utilites::OSWindow::KEY_DOWN:
+#ifdef _WIN32
+			if ((window->GetKey() & VK_F12) == VK_F12)
 			{
 				fullscreen = !fullscreen;
 
@@ -272,12 +291,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 				else
 					pWindowRenderTarget->SetScreenStateWindowed();
 			}
+			Render();
+#endif
 		break;
-		case WM_MOUSEMOVE:
-			if ((wParam & MK_LBUTTON) == MK_LBUTTON)
+		case mini3d::utilites::OSWindow::MOUSE_MOVE:
+			if (window->GetLeftMouseDown() == true)
 			{
-				int x = LOWORD(lParam); 
-				int y = HIWORD(lParam);
+				int x = window->GetMouseX(); 
+				int y = window->GetMouseY();
 
 				rotX += (x - mouseX) / 100.0f;
 				rotY -= (y - mouseY) / 100.0f;
@@ -289,38 +310,32 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 								
 				mouseX = x;
 				mouseY = y;
-				UpdateViewProjectionMatrix();
+				Render();
 			}
 		break;
-		case WM_LBUTTONUP:
-			ReleaseCapture();
+		case mini3d::utilites::OSWindow::MOUSE_LEFT_UP:
 		break;
-		case WM_MOUSEWHEEL:
+		case mini3d::utilites::OSWindow::MOUSE_WHEEL:
 			{
-				int zWheel = GET_WHEEL_DELTA_WPARAM(wParam);
+				int zWheel = window->GetMouseWheelDelta();
 				float zWheelf = (float)zWheel;
 				distance -=  (float)zWheel * 0.01f;
-				UpdateViewProjectionMatrix();
 			}
+			Render();
 		break;
-		default:
-			// return the window message to the default window process
-			return DefWindowProc(hwnd, msg, wParam, lParam);
-			break;
 	}
-	return DefWindowProc(hwnd, msg, wParam, lParam);
 }
 
-UINT32* CreateNiceBitmap(unsigned int width, unsigned int height)
+unsigned int* CreateNiceBitmap(unsigned int width, unsigned int height)
 {
 	float pi = 3.1416f;
-	UINT32* pBitmap = new UINT32[width * height];
+	unsigned int* pBitmap = new unsigned int[width * height];
 	for (unsigned int x = 0; x < width; x++)
 	{
 		for (unsigned int y = 0; y < height; y++)
 		{
 			// set RGBA for pixel
-			pBitmap[x + y * 128] =  (unsigned int(64 * abs(cos(x * 2 * pi / (float)width) + cos(y * 2 * pi / (float)height))) << 24) + 
+			pBitmap[x + y * 128] =  ((unsigned int)(64 + 63 * (cos(x * 2 * pi / (float)width) + cos(y * 2 * pi / (float)height))) << 24) + 
 									((2 * (x % (width / 4)) + 128) << 16) + 
 									((2 * (y % (height / 2)) + 192) << 8) + 
 									255; 

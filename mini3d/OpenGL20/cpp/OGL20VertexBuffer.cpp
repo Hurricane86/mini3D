@@ -5,8 +5,7 @@
 
 
 #include "../OGL20VertexBuffer.h"
-#include <GL/glext.h>
-#include <GL/wglext.h>
+#include "../OGL20GraphicsService.h"
 
 mini3d::OGL20VertexBuffer::OGL20VertexBuffer(OGL20GraphicsService* pGraphicsService, const void* pVertices, const unsigned int& count, const unsigned int& vertexSizeInBytes) :
 	pGraphicsService(pGraphicsService), bufferSizeInBytes(0), pVertices(0), pVertexBuffer(0), sizeInBytes(0), pOS(pGraphicsService->GetOS())
