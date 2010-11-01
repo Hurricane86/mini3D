@@ -6,6 +6,8 @@
 
 #include "../OGL20IndexBuffer.h"
 #include "../OGL20GraphicsService.h"
+#include <cstdlib>
+#include <cstring>
 
 mini3d::OGL20IndexBuffer::OGL20IndexBuffer(OGL20GraphicsService* pGraphicsService, const void* pIndices, const unsigned int& count, const DataType& dataType, const CullMode& cullMode) : 
 	pGraphicsService(pGraphicsService), bufferSizeInBytes(0), pIndices(0), pIndexBuffer(0), pOS(pGraphicsService->GetOS())
@@ -26,7 +28,7 @@ void* mini3d::OGL20IndexBuffer::GetIndices(unsigned int& sizeInBytes) const
 	sizeInBytes = this->sizeInBytes;
 
 	void* pIndicesCopy = malloc(sizeInBytes);
-	memcpy(pIndicesCopy, pIndices, sizeInBytes);
+	std::memcpy(pIndicesCopy, pIndices, sizeInBytes);
 	
 	return pIndicesCopy;
 }
@@ -38,7 +40,7 @@ void mini3d::OGL20IndexBuffer::SetIndices(const void* pIndices, const unsigned i
 	this->dataType = dataType;
 	this->sizeInBytes = count * GetBytesPerIndex();
 	this->pIndices = malloc(sizeInBytes);
-	memcpy(this->pIndices, pIndices, sizeInBytes);
+	std::memcpy(this->pIndices, pIndices, sizeInBytes);
 
 	this->indexCount = count;
 
@@ -117,7 +119,7 @@ void mini3d::OGL20IndexBuffer::LoadResource(void)
 
 	// Lock the buffer to gain access to the vertices 
 	GLvoid* pBufferVertices = pOS->GLMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY);
-	memcpy(pBufferVertices, pIndices, sizeInBytes);
+	std::memcpy(pBufferVertices, pIndices, sizeInBytes);
 	pOS->GLUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
 
 	// Clear the bound array

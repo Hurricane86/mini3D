@@ -9,7 +9,8 @@
 #include <iostream>
 #include <iomanip>
 #include <sstream>
-
+#include <cstdlib>
+#include <cstring>
 
 mini3d::OGL20VertexShader::OGL20VertexShader(OGL20GraphicsService* pGraphicsService, const void* pShaderBytes, const unsigned int& sizeInBytes, const IVertexShader::VertexDataType vertexDeclaration[], const unsigned int& vertexDataCount) :
 	pGraphicsService(pGraphicsService), pShaderBuffer(0), vertexAttributes(0), pOS(pGraphicsService->GetOS())
@@ -24,7 +25,7 @@ mini3d::OGL20VertexShader::OGL20VertexShader(OGL20GraphicsService* pGraphicsServ
 	this->vertexDataCount = vertexDataCount;
 
 	this->vertexDeclaration = new VertexDataType[vertexDataCount];
-	memcpy(this->vertexDeclaration, vertexDeclaration, vertexDataCount * sizeof(VertexDataType));
+	std::memcpy(this->vertexDeclaration, vertexDeclaration, vertexDataCount * sizeof(VertexDataType));
 
 	LoadResource();
 	pGraphicsService->AddResource(this);
@@ -36,7 +37,7 @@ mini3d::IVertexShader::VertexDataType* mini3d::OGL20VertexShader::GetVertexDecla
 	unsigned int sizeInBytes = this->vertexDataCount * sizeof(VertexDataType);
 
 	VertexDataType* pVertexDeclarationCopy = new IVertexShader::VertexDataType[sizeInBytes]; 
-	memcpy(pVertexDeclarationCopy, vertexDeclaration, sizeInBytes);
+	std::memcpy(pVertexDeclarationCopy, vertexDeclaration, sizeInBytes);
 	
 	return pVertexDeclarationCopy;
 }
@@ -202,7 +203,7 @@ void mini3d::OGL20VertexShader::printLog(GLuint obj)
 
 	if (infologLength > 0)
 	{
-		pOS->Log("\nDEBUG INFO ---------\n");
+		pOS->Log((char*)"\nDEBUG INFO ---------\n");
 		pOS->Log(infoLog);
 	}
 

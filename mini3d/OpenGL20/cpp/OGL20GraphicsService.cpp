@@ -176,17 +176,16 @@ void mini3d::OGL20GraphicsService::printLog(GLuint obj)
 		pOS->GLGetProgramiv(obj,GL_INFO_LOG_LENGTH,&maxLength);
 			
 	char* infoLog = new char[maxLength];
-	LPCWSTR* infoLogW = new LPCWSTR[maxLength];
 
 	if (pOS->GLIsShader(obj))
 		pOS->GLGetShaderInfoLog(obj, maxLength, &infologLength, infoLog);
 	else
 		pOS->GLGetProgramInfoLog(obj, maxLength, &infologLength, infoLog);
  
-	OutputDebugStringA("\nDEBUG INFO ---------\n");
+		pOS->Log((char*)"\nDEBUG INFO ---------\n");
 
 	if (infologLength > 0)
-		OutputDebugStringA(infoLog);
+		pOS->Log(infoLog);
 
 	delete [] infoLog;
 }

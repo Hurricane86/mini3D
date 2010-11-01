@@ -6,6 +6,8 @@
 
 #include "../OGL20VertexBuffer.h"
 #include "../OGL20GraphicsService.h"
+#include <cstdlib>
+#include <cstring>
 
 mini3d::OGL20VertexBuffer::OGL20VertexBuffer(OGL20GraphicsService* pGraphicsService, const void* pVertices, const unsigned int& count, const unsigned int& vertexSizeInBytes) :
 	pGraphicsService(pGraphicsService), bufferSizeInBytes(0), pVertices(0), pVertexBuffer(0), sizeInBytes(0), pOS(pGraphicsService->GetOS())
@@ -26,7 +28,7 @@ void* mini3d::OGL20VertexBuffer::GetVertices(unsigned int& sizeInBytes) const
 	sizeInBytes = this->sizeInBytes;
 
 	void* pVerticesCopy = malloc(sizeInBytes);
-	memcpy (pVerticesCopy, pVertices, sizeInBytes);
+	std::memcpy (pVerticesCopy, pVertices, sizeInBytes);
 	
 	return pVerticesCopy;
 }
@@ -39,7 +41,7 @@ void mini3d::OGL20VertexBuffer::SetVertices(const void* pVertices, const unsigne
 	sizeInBytes = count * vertexSizeInBytes;
 
 	this->pVertices = malloc(sizeInBytes);
-	memcpy(this->pVertices, pVertices, sizeInBytes);
+	std::memcpy(this->pVertices, pVertices, sizeInBytes);
 
 	isDirty = true;
 	LoadResource();
@@ -112,7 +114,7 @@ void mini3d::OGL20VertexBuffer::LoadResource(void)
 
 	// Lock the buffer to gain access to the vertices 
 	GLvoid* pBufferVertices = pOS->GLMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-	memcpy(pBufferVertices, pVertices, sizeInBytes);
+	std::memcpy(pBufferVertices, pVertices, sizeInBytes);
 	pOS->GLUnmapBuffer(GL_ARRAY_BUFFER);
 	
 	// clear the bound buffer

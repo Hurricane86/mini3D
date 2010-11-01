@@ -110,8 +110,9 @@ private:
 
 #ifdef _WIN32
 	WNDPROC pOrigProc;
-	static std::map<int, OGL20WindowRenderTarget*> windowMap;
 #endif
+	static std::map<int, OGL20WindowRenderTarget*> windowMap;
+
 	int hBufferWindow;
 	int bufferDepthTestEnabled;
 

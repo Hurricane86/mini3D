@@ -40,6 +40,7 @@ private:
 	static WINDOWCALLBACK windowCallback;
 	static std::map<int, OSWindow*> windowMap;
 	Window window;
+	Display *dpy;
 
 public:
 
@@ -54,17 +55,15 @@ public:
 	bool GetLeftMouseDown() const { return leftMouseDown; };
 	int GetMouseWheelDelta() const { return mouseWheelDelta; };
 	int GetKey() const { return key; };
-	int GetWindowHandle() const	{ return windowHandle; };
+	int GetWindowHandle() const	{ return window; };
 
 	
 	// ---------- PUBLIC MEMBER FUNCTIONS -------------------------------------
 
 	OSWindow(WINDOWCALLBACK callback, const unsigned int& width, const unsigned int& height)
 	{
+		windowCallback = callback;
 		window = CreateWin(0, width, height);
-
-		Display *dpy = XOpenDisplay(0);
-		XSelectInput(dpy, window, StructureNotifyMask);
 	}
 
 	~OSWindow()
@@ -78,7 +77,6 @@ public:
 
 	void Show()
 	{
-		Display *dpy = XOpenDisplay(0);
 		XMapWindow(dpy, window);
 	}
 
@@ -87,9 +85,15 @@ public:
         for(;;) 
 		{
 			XEvent e;
-			XNextEvent(XOpenDisplay(0), &e);
-			if(e.type == XK_Escape)
-     		  break; //exit(0);
+			XNextEvent(dpy, &e);
+			if(e.type == KeyPress)
+			{
+     		  if (XLookupKeysym(&e.xkey, 0) == XK_Escape)
+			  {
+				break;
+			  }
+			}
+			windowCallback(this, PAINT);
 		}
 	}
 
@@ -99,12 +103,15 @@ private:
 
 	Window CreateWin(void* wndProc, const unsigned int& width, const unsigned int& height)
 	{
-		Display *dpy = XOpenDisplay(0);
+		dpy = XOpenDisplay(0);
 
-		int blackColor = BlackPixel(dpy, DefaultScreen(dpy));
-        int whiteColor = WhitePixel(dpy, DefaultScreen(dpy));
-
-		return XCreateSimpleWindow(dpy, DefaultRootWindow(dpy), 0, 0, width, height, 0, blackColor, whiteColor);
+		int s = DefaultScreen(dpy);
+		int blackColor = BlackPixel(dpy, s);
+        int whiteColor = WhitePixel(dpy, s);
+		Window w = XCreateSimpleWindow(dpy, RootWindow(dpy, s), 0, 0, width, height, 0, blackColor, whiteColor);
+		XFlush(dpy);
+		XSelectInput (dpy, w, ExposureMask | KeyPressMask | ButtonPressMask);
+		return w;
 	}
 };
 }

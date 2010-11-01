@@ -27,6 +27,7 @@ public:
 		{
 			fileStream.seekg(0, std::ios::end);
 			long fileSize = long(fileStream.tellg()); // pretty safe downcast since this is not supposed to be used with files that arae gazillions of bytes long
+			// TODO: But seriously?! you shold fix that at some point!
 			fileStream.seekg(0, std::ios::beg);
 
 			data = new char[fileSize];

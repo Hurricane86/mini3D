@@ -6,12 +6,14 @@
 
 #include "../OGL20PixelShader.h"
 #include "../OGL20GraphicsService.h"
+#include <cstdlib>
+#include <cstring>
 
 mini3d::OGL20PixelShader::OGL20PixelShader(OGL20GraphicsService* pGraphicsService, const void* pShaderBytes, const unsigned int& sizeInBytes) :
 	pGraphicsService(pGraphicsService), pShaderBuffer(0), sizeInBytes(sizeInBytes), pOS(pGraphicsService->GetOS())
 {
 	this->pShaderBytes = malloc(sizeInBytes);
-	memcpy(this->pShaderBytes, pShaderBytes, sizeInBytes);
+	std::memcpy(this->pShaderBytes, pShaderBytes, sizeInBytes);
 
 	LoadResource();
 	pGraphicsService->AddResource(this);
@@ -66,7 +68,7 @@ void mini3d::OGL20PixelShader::printLog(GLuint obj)
 
 	if (infologLength > 0)
 	{
-		pOS->Log("\nDEBUG INFO ---------\n");
+		pOS->Log((char*)"\nDEBUG INFO ---------\n");
 		pOS->Log(infoLog);
 	}
 

@@ -7,6 +7,8 @@
 #include "../OGL20BitmapTexture.h"
 #include "../OGL20GraphicsService.h"
 #include "../../error/error.h"
+#include <cstdlib>
+#include <cstring>
 
 
 mini3d::OGL20BitmapTexture::OGL20BitmapTexture(OGL20GraphicsService* pGraphicsService, const void* pBitmap, const unsigned int& width, const unsigned int& height, const IBitmapTexture::BitDepth bitDepth, const ITexture::WrapStyle wrapStyle) :
@@ -28,7 +30,7 @@ void* mini3d::OGL20BitmapTexture::GetBitmap(unsigned int& sizeInBytes) const
 	sizeInBytes = this->sizeInBytes;
 
 	void* pBitmapCopy = malloc(sizeInBytes);
-	memcpy(pBitmapCopy, pBitmap, sizeInBytes);
+	std::memcpy(pBitmapCopy, pBitmap, sizeInBytes);
 	
 	return pBitmapCopy;
 }
@@ -45,7 +47,7 @@ void mini3d::OGL20BitmapTexture::SetBitmap(const void* pBitmap, const unsigned i
 	this->bitDepth = bitDepth;
 	sizeInBytes = width * height * GetBytesPerPixel();
 	this->pBitmap = malloc(sizeInBytes);
-	memcpy(this->pBitmap, pBitmap, sizeInBytes);
+	std::memcpy(this->pBitmap, pBitmap, sizeInBytes);
 
 	this->width = width;
 	this->height = height;

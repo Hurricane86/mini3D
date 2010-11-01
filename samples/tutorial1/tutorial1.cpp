@@ -147,12 +147,12 @@ int main()
 	unsigned int sizeInBytes;
 	
 	// create vertex shader
-	char* shaderBytes = mini3d::utilites::BinaryFileReader::ReadBytesFromFile("shaders/glsl/vertexshader.glsl", sizeInBytes);
+	char* shaderBytes = mini3d::utilites::BinaryFileReader::ReadBytesFromFile((char *)"shaders/glsl/vertexshader.glsl", sizeInBytes);
 	pVertexShader = graphics->CreateVertexShader(shaderBytes, sizeInBytes, vertexDeclaration, 3);
 	delete shaderBytes;
 
 	// create pixel shader
-	char* shaderBytes2 = mini3d::utilites::BinaryFileReader::ReadBytesFromFile("shaders/glsl/pixelshader.glsl", sizeInBytes);
+	char* shaderBytes2 = mini3d::utilites::BinaryFileReader::ReadBytesFromFile((char *)"shaders/glsl/pixelshader.glsl", sizeInBytes);
 	pPixelShader = graphics->CreatePixelShader(shaderBytes2, sizeInBytes);
 	delete shaderBytes2;
 

@@ -121,7 +121,7 @@ void mini3d::OGL20ShaderProgram::printLog(GLuint obj)
  
 	if (infologLength > 0)
 	{
-		pOS->Log("\nDEBUG INFO ---------\n");
+		pOS->Log((char*)"\nDEBUG INFO ---------\n");
 		pOS->Log(infoLog);
 	}
 
