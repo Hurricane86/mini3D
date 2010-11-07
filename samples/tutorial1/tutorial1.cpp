@@ -271,13 +271,12 @@ void WndMessage(mini3d::utilites::OSWindow* window, mini3d::utilites::OSWindow::
 		case mini3d::utilites::OSWindow::SIZE:
 			width = window->GetWidth();
 			height = window->GetHeight();
-//			TODO: This causes strange bug
-//			Render();
+			pWindowRenderTarget->SetScreenStateWindowed();
+			Render();
 		break;
 		case mini3d::utilites::OSWindow::MOUSE_LEFT_DOWN:
 			mouseX = window->GetMouseX();
 			mouseY = window->GetMouseY();
-			Render();
 		break;
 		case mini3d::utilites::OSWindow::KEY_DOWN:
 #ifdef _WIN32

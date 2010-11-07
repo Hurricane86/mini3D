@@ -52,7 +52,9 @@ void mini3d::OGL20WindowRenderTarget::SetScreenState(ScreenState value)
 
 void mini3d::OGL20WindowRenderTarget::SetScreenStateWindowed()
 {
-	SetScreenState(SCREEN_STATE_WINDOWED);
+	//SetScreenState(SCREEN_STATE_WINDOWED);
+	SetWindowRenderTarget(hWindow, depthTestEnabled, quality);
+	UpdateSize();
 }
 
 void mini3d::OGL20WindowRenderTarget::SetScreenStateFullscreen(const int& fullscreenWidth, const int& fullscreenHeight)
@@ -115,7 +117,8 @@ void mini3d::OGL20WindowRenderTarget::UnloadResource(void)
 
 void mini3d::OGL20WindowRenderTarget::UpdateSize()
 {
-	SetWindowRenderTarget(hWindow, depthTestEnabled, quality);
+	pGraphicsService->GetOS()->GetClientAreaSize(hWindow, width, height);
+	//SetWindowRenderTarget(hWindow, depthTestEnabled, quality);
 	
 	// if the rendertarget is currently set, update the viewport
 	if (pGraphicsService->GetRenderTarget() == this)
