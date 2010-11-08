@@ -6,10 +6,10 @@
 
 #define NOMINMAX
 
-#include "mini3d/OpenGL20/OGL20GraphicsService.h"
+#include "mini3d/ogl20/OGL20GraphicsService.h"
 
 #ifdef _WIN32
-#include "mini3d/DirectX9/DX9GraphicsService.h"
+#include "mini3d/d3d9/D3D9GraphicsService.h"
 #endif
 
 #include "mini3d/utilities/Math3d.h"

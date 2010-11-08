@@ -124,7 +124,7 @@ int main()
 
 	// ----- CREATE GRAPHICS SERVICE ------------------------------------------
 	
-	//graphics = new mini3d::DX9GraphicsService();
+	//graphics = new mini3d::D3D9GraphicsService();
 	graphics = new mini3d::OGL20GraphicsService();
 
 	// ----- CREATE GRAPHICS RESOURCES ----------------------------------------
