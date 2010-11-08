@@ -74,7 +74,7 @@ public:
 			windowMap.erase(iter);
 		}
 
-		UnregisterClass("mini3d", GetModuleHandle(NULL));		
+		UnregisterClass(L"mini3d", GetModuleHandle(NULL));		
 	}
 
 	WindowMessage WaitForMessage()
@@ -114,7 +114,7 @@ private:
 		wc.hCursor       = LoadCursor(NULL, IDC_ARROW);
 		wc.hbrBackground = (HBRUSH)(COLOR_WINDOW+1);
 		wc.lpszMenuName  = NULL;
-		wc.lpszClassName = "mini3D";
+		wc.lpszClassName = L"mini3D";
 		wc.hIconSm       = LoadIcon(NULL, IDI_APPLICATION);
 
 		if(!RegisterClassEx(&wc))
@@ -122,7 +122,7 @@ private:
 			// TODO: Error message
 		}
 
-		HWND hWindow = CreateWindowEx( WS_EX_APPWINDOW | WS_EX_WINDOWEDGE, "mini3D", "Mini3D", WS_OVERLAPPEDWINDOW | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, CW_USEDEFAULT, CW_USEDEFAULT, width, height, 0, 0, hInstance, 0);
+		HWND hWindow = CreateWindowEx( WS_EX_APPWINDOW | WS_EX_WINDOWEDGE, L"mini3D", L"Mini3D", WS_OVERLAPPEDWINDOW | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, CW_USEDEFAULT, CW_USEDEFAULT, width, height, 0, 0, hInstance, 0);
 		windowMap.insert(std::pair<int,OSWindow*>((int)hWindow, this));		
 
 		windowClass = wc;
