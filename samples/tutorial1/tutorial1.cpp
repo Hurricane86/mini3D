@@ -4,10 +4,11 @@
 // It is distributed under the MIT Software License <www.mini3d.org/license>
 
 #include <math.h>
-#include "../../mini3d.h"
+#include "..\..\mini3d.h"
 
 #include "utilities/OSWindow.h"
-#include "utilities/Math3d.h"
+#include "utilities/M3DMatrix.h"
+#include "utilities/M3DVector.h"
 
 #include "shaders.h"
 #include "geometry.h"
@@ -84,8 +85,8 @@ int main()
 	vBuffer = graphics->CreateVertexBuffer(vertices, 24, sizeof(VertexPCT));
 	
 	// create a 32bpp texture
-	unsigned int* pBitmap = CreateTestBitmap(128, 64);
-	pTexture = graphics->CreateBitmapTexture((void *)pBitmap, 128, 64); 
+	unsigned int* pBitmap = CreateTestBitmap(512, 256);
+	pTexture = graphics->CreateBitmapTexture((void *)pBitmap, 512, 256); 
 	delete(pBitmap);
 
 	// Vertex declaration for the vertex shader
@@ -158,17 +159,17 @@ void Render()
 // sets the view, projection matrix as a shader parameter
 void UpdateViewProjectionMatrix()
 {
-	M3DVector eye(distance * cos(rotY) * cos((float)rotX), distance * sin(rotY), distance * cos(rotY) * sin(rotX));
+	M3DVector eye(distance * cos(rotY) * cos(rotX), distance * sin(rotY), distance * cos(rotY) * sin(rotX));
 	M3DVector target(0,0,0);
 	M3DVector up(0,-1,0);
 
 	// update camera
 	M3DMatrix::LookAt(viewMatrixE, eye, target, up);
-	M3DMatrix::PerspectiveProjection(projectionMatrixE, (float)(3.1415f / 4.0f), (float)width/(float)height, 40.0f / 100.0f, 80.0f);
+	M3DMatrix::PerspectiveProjection(projectionMatrixE, (float)(3.1416f / 4.0f), (float)width/(float)height, 40.0f / 100.0f, 80.0f);
 	M3DMatrix viewProjectionMatrixE = viewMatrixE * projectionMatrixE;
 
 	// set a shader parameter
-	graphics->SetShaderParameterMatrix(0, &viewProjectionMatrixE._00, 4, 4);
+	graphics->SetShaderParameterMatrix(0, viewProjectionMatrixE(0,0), 4, 4);
 }
 
 void WndMessage(utilities::OSWindow* window, utilities::OSWindow::WindowMessage message)
@@ -224,20 +225,17 @@ void WndMessage(utilities::OSWindow* window, utilities::OSWindow::WindowMessage 
 	}
 }
 
+// Creates a nice colorful bitmap of the requested size
 unsigned int* CreateTestBitmap(unsigned int width, unsigned int height)
 {
-	float pi = 3.1416f;
 	unsigned int* pBitmap = new unsigned int[width * height];
+
 	for (unsigned int x = 0; x < width; x++)
-	{
 		for (unsigned int y = 0; y < height; y++)
-		{
-			// set RGBA for pixel
-			pBitmap[x + y * 128] =  ((unsigned int)(64 + 63 * (cos(x * 2 * pi / (float)width) + cos(y * 2 * pi / (float)height))) << 24) + 
-									((2 * (x % (width / 4)) + 128) << 16) + 
-									((2 * (y % (height / 2)) + 192) << 8) + 
-									255; 
-		}
-	}
+			pBitmap[x + y * width] =	((x -  2 * y) % 255 << 24) + // RED
+										(((255 - y - x / 2) % 255) << 16) + // GREEN
+										((255 - (x + y)) % 255 << 8) + // BLUE
+										255; // ALPHA
+
 	return pBitmap;
 }
