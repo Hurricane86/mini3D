@@ -6,7 +6,7 @@
 
 #ifdef __linux
 
-#include "OSFunctions.h"
+#include "OSFunctionsLinux.h"
 #include <GL/glext.h>
 
 mini3d::OSFunctions::OSFunctions()

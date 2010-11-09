@@ -11,7 +11,7 @@
 #include "../IVertexShader.h"
 #include "../IShaderProgram.h"
 #include "internal/IOGL20Resource.h"
-#include "os/OSFunctionSelector.h"
+#include "os/OSFunction.h"
 
 namespace mini3d
 {

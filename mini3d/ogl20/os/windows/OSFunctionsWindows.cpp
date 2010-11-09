@@ -5,7 +5,7 @@
 
 #ifdef _WIN32
 
-#include "OSFunctions.h"
+#include "OSFunctionsWindows.h"
 #include <GL/glext.h>
 #include <GL/wglext.h>
 

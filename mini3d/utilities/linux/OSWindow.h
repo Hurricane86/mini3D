@@ -76,7 +76,7 @@ public:
 		XMapWindow(dpy, window);
 	}
 
-	void WaitForMessage()
+	static void WaitForMessage()
 	{
 		Atom wmDeleteMessage = XInternAtom(dpy, "WM_DELETE_WINDOW", False);
 		

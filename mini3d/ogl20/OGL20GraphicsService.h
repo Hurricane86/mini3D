@@ -30,7 +30,7 @@
 #include "OGL20IndexBuffer.h"
 #include "OGL20RenderTargetTexture.h"
 #include "OGL20WindowRenderTarget.h"
-#include "os/OSFunctionSelector.h"
+#include "os/OSFunction.h"
 
 namespace mini3d
 {

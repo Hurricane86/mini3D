@@ -10,7 +10,7 @@
 #include "../IWindowRenderTarget.h"
 #include "internal/IOGL20Resource.h"
 #include "internal/IOGL20RenderTarget.h"
-#include "os/OSFunctionSelector.h"
+#include "os/OSFunction.h"
 #include <map>
 
 

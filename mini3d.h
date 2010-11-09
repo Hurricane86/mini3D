@@ -13,6 +13,5 @@
 #endif
 
 #include "mini3d/utilities/Math3d.h"
-#include "mini3d/utilities/BinaryFileReader.h"
 
 #include "mini3d/IGraphicsService.h"

@@ -3,16 +3,18 @@
 // This file is part of mini3d <www.mini3d.org>
 // It is distributed under the MIT Software License <www.mini3d.org/license>
 
-#ifdef _WIN32
 
-#ifndef MINI3D_OSFUNCTION_H
-#define MINI3D_OSFUNCTION_H
+#ifdef __linux
 
-#include <windows.h>
-#include <GL/gl.h>
-#include <GL/glu.h>
-#include <GL/glext.h>
-#include <GL/wglext.h>
+#ifndef MINI3D_OSFUNCTIONLINUX_H
+#define MINI3D_OSFUNCTIONLINUX_H
+
+#define GL_GLEXT_PROTOTYPES
+#include "../IOSFunction.h"
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <GL/glx.h>
+
 
 typedef char GLchar;
 
@@ -30,6 +32,7 @@ public:
 	// Used by OPENGL for determining setting buffer and depth buffer format
 	virtual unsigned int GetMonitorBitDepth() const;
 	virtual void GetClientAreaSize(int windowHandle, unsigned int &width, unsigned int &height) const;
+	virtual Display* GetDisplayFromWindow(Window window) const;
 	virtual void Log(char* message) const;
 
 	// Device creation
@@ -49,7 +52,6 @@ public:
 
 	// GENERAL
 	virtual void GLSwapBuffers() const {};
-	virtual void GLBindFramebuffer(GLenum target, GLuint framebuffer) const { glBindFramebuffer(target, framebuffer); };
 	//virtual void GLMakeCurrent(const DisplayContext displayContext, const WindowContext windowContext, const GLRenderingContext renderingContext) const {};
 	virtual void GLViewport(const unsigned int width, const unsigned int height) const {};
 
@@ -65,17 +67,18 @@ public:
 	virtual void GLBindTexture(GLenum target, GLuint texture) const { glBindTexture(target, texture); };
 	virtual void GLTexParameteri(GLenum target, GLenum pname, GLint params) const { glTexParameteri(target, pname, params); };	
 
-	virtual void GLGenRenderbuffers(GLsizei n, GLuint* renderbuffers) const { glGenRenderbuffers(n, renderbuffers); };
-	virtual void GLBindRenderbuffer(GLenum target, GLuint renderbuffer) const {glBindRenderbuffer(target, renderbuffer); };
-	virtual void GLRenderbufferStorage(GLenum target, GLenum internalformat, GLsizei width, GLsizei height) const { glRenderbufferStorage(target, internalformat, width, height); };
+	virtual void GLGenRenderbuffers(GLsizei n, GLuint* renderbuffers) const { glGenRenderbuffersEXT(n, renderbuffers); };
+	virtual void GLBindRenderbuffer(GLenum target, GLuint renderbuffer) const {glBindRenderbufferEXT(target, renderbuffer); };
+	virtual void GLBindFramebuffer(GLenum target, GLuint framebuffer) const { glBindFramebufferEXT(target, framebuffer); };
+	virtual void GLRenderbufferStorage(GLenum target, GLenum internalformat, GLsizei width, GLsizei height) const { glRenderbufferStorageEXT(target, internalformat, width, height); };
 
-	virtual void GLDeleteRenderbuffers(GLsizei n, GLuint* renderbuffers) const { glDeleteRenderbuffers(n, renderbuffers); };
-	virtual void GLDeleteFramebuffers(GLsizei n, GLuint* framebuffers) const{ glDeleteFramebuffers(n, framebuffers); };
+	virtual void GLDeleteRenderbuffers(GLsizei n, GLuint* renderbuffers) const { glDeleteRenderbuffersEXT(n, renderbuffers); };
+	virtual void GLDeleteFramebuffers(GLsizei n, GLuint* framebuffers) const{ glDeleteFramebuffersEXT(n, framebuffers); };
 
-	virtual void GLGenFramebuffers(GLsizei n, GLuint* ids) const { glGenFramebuffers(n, ids); };
+	virtual void GLGenFramebuffers(GLsizei n, GLuint* ids) const { glGenFramebuffersEXT(n, ids); };
 
-	virtual void GLFramebufferTexture2D(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level) const { glFramebufferTexture2D(target, attachment, textarget, texture, level); };
-	virtual void GLFramebufferRenderbuffer(GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer) const { glFramebufferRenderbuffer(target, attachment, renderbuffertarget, renderbuffer); };
+	virtual void GLFramebufferTexture2D(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level) const { glFramebufferTexture2DEXT(target, attachment, textarget, texture, level); };
+	virtual void GLFramebufferRenderbuffer(GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer) const { glFramebufferRenderbufferEXT(target, attachment, renderbuffertarget, renderbuffer); };
 
 	// SHADER FUNCTIONS
 	virtual void GLUseProgram(GLuint program) const { glUseProgram(program); }; 
@@ -142,6 +145,14 @@ public:
 
 	// --------- Private variables -----------------------------------------------
 
+	// Default window and render context
+	Display* display; 
+	XVisualInfo* vinfo; 
+	XSetWindowAttributes swattr;
+	Window window;
+	GLXContext renderingContext;
+    
+	
 	PFNGLISSHADERPROC glIsShader;
 
 	PFNGLCREATESHADERPROC glCreateShader;
@@ -170,19 +181,19 @@ public:
 	PFNGLDISABLEVERTEXATTRIBARRAYPROC glDisableVertexAttribArray;
 	PFNGLVERTEXATTRIBPOINTERPROC glVertexAttribPointer;
 	PFNGLACTIVETEXTUREPROC glActiveTexture;
-	PFNGLBINDFRAMEBUFFERPROC glBindFramebuffer;
 
-	PFNGLGENRENDERBUFFERSPROC glGenRenderbuffers;
-	PFNGLBINDRENDERBUFFERPROC glBindRenderbuffer;
-	PFNGLRENDERBUFFERSTORAGEPROC glRenderbufferStorage;
+	PFNGLGENRENDERBUFFERSEXTPROC glGenRenderbuffersEXT;
+	PFNGLBINDRENDERBUFFEREXTPROC glBindRenderbufferEXT;
+	PFNGLBINDFRAMEBUFFERPROC glBindFramebufferEXT;
+	PFNGLRENDERBUFFERSTORAGEEXTPROC glRenderbufferStorageEXT;
 
-	PFNGLDELETERENDERBUFFERSPROC glDeleteRenderbuffers;
-	PFNGLDELETEFRAMEBUFFERSPROC glDeleteFramebuffers;
+	PFNGLDELETERENDERBUFFERSEXTPROC glDeleteRenderbuffersEXT;
+	PFNGLDELETEFRAMEBUFFERSEXTPROC glDeleteFramebuffersEXT;
 
-	PFNGLGENFRAMEBUFFERSPROC glGenFramebuffers;
+	PFNGLGENFRAMEBUFFERSEXTPROC glGenFramebuffersEXT;
 
-	PFNGLFRAMEBUFFERTEXTURE2DPROC glFramebufferTexture2D;
-	PFNGLFRAMEBUFFERRENDERBUFFERPROC glFramebufferRenderbuffer;
+	PFNGLFRAMEBUFFERTEXTURE2DEXTPROC glFramebufferTexture2DEXT;
+	PFNGLFRAMEBUFFERRENDERBUFFEREXTPROC glFramebufferRenderbufferEXT;
 	
 	PFNGLBINDBUFFERPROC glBindBuffer;
 	PFNGLMAPBUFFERPROC glMapBuffer;
@@ -203,12 +214,6 @@ public:
 	
 	PFNGLUNIFORMMATRIX4FVPROC glUniformMatrix4fv;
 
-	PFNGLDRAWRANGEELEMENTSPROC glDrawRangeElements;
-
-	// Default window and render context
-	HWND hWindow;
-	HDC hDeviceContext;
-	HGLRC hRenderContext;
 };
 }
 

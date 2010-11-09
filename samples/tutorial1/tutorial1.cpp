@@ -3,68 +3,19 @@
 // This file is part of mini3d <www.mini3d.org>
 // It is distributed under the MIT Software License <www.mini3d.org/license>
 
-
 #include <math.h>
 #include "../../mini3d/utilities/OSWindow.h"
 #include "../../mini3d.h"
 
-//#include <Windows.h>
+#include "shaders.h"
+#include "geometry.h"
+
 
 // ----- FORWARD DECLARATIONS -------------------------------------------------
 void WndMessage(mini3d::utilites::OSWindow* window, mini3d::utilites::OSWindow::WindowMessage message);
 void UpdateViewProjectionMatrix();
 void Render();
-unsigned int* CreateNiceBitmap(unsigned int width, unsigned int height);
-
-// ----- GEOMETRY DATA --------------------------------------------------------
-
-// Vertex Data Structure
-struct VertexPCT { float x,y,z,w;  float r,g,b,a;  float u,v; };
-
-// Vertex array
-VertexPCT vertices[] = {
-	// Front
-	{-1.0f, -1.0f,  1.0f, 1.0f,  0.9f, 0.9f, 0.9f, 1.0f,  0.5f, 0.0f}, // Corner 0
-	{ 1.0f, -1.0f,  1.0f, 1.0f,  0.9f, 0.9f, 0.9f, 1.0f, 0.75f, 0.0f}, // Corner 1
-	{ 1.0f,  1.0f,  1.0f, 1.0f,  0.6f, 0.6f, 0.6f, 1.0f, 0.75f, 0.5f}, // Corner 2
-	{-1.0f,  1.0f,  1.0f, 1.0f,  0.6f, 0.6f, 0.6f, 1.0f,  0.5f, 0.5f}, // Corner 3
-						
-	// Back
-	{ 1.0f, -1.0f, -1.0f, 1.0f,  0.9f, 0.9f, 0.9f, 1.0f,  0.5f, 0.5f}, // Corner 4
-	{-1.0f, -1.0f, -1.0f, 1.0f,  0.9f, 0.9f, 0.9f, 1.0f, 0.75f, 0.5f}, // Corner 5
-	{-1.0f,  1.0f, -1.0f, 1.0f,  0.6f, 0.6f, 0.6f, 1.0f, 0.75f, 1.0f}, // Corner 6
-	{ 1.0f,  1.0f, -1.0f, 1.0f,  0.6f, 0.6f, 0.6f, 1.0f,  0.5f, 1.0f}, // Corner 7
-
-	// Right
-	{ 1.0f, -1.0f,  1.0f, 1.0f,  0.9f, 0.9f, 0.9f, 1.0f, 0.25f, 0.5f}, // Corner 1
-	{ 1.0f, -1.0f, -1.0f, 1.0f,  0.9f, 0.9f, 0.9f, 1.0f,  0.5f, 0.5f}, // Corner 4
-	{ 1.0f,  1.0f, -1.0f, 1.0f,  0.6f, 0.6f, 0.6f, 1.0f,  0.5f, 1.0f}, // Corner 7
-	{ 1.0f,  1.0f,  1.0f, 1.0f,  0.6f, 0.6f, 0.6f, 1.0f, 0.25f, 1.0f}, // Corner 2
-
-	// Left
-	{-1.0f, -1.0f, -1.0f, 1.0f,  0.9f, 0.9f, 0.9f, 1.0f, 0.25f, 0.0f}, // Corner 5
-	{-1.0f, -1.0f,  1.0f, 1.0f,  0.9f, 0.9f, 0.9f, 1.0f,  0.5f, 0.0f}, // Corner 0
-	{-1.0f,  1.0f,  1.0f, 1.0f,  0.6f, 0.6f, 0.6f, 1.0f,  0.5f, 0.5f}, // Corner 3
-	{-1.0f,  1.0f, -1.0f, 1.0f,  0.6f, 0.6f, 0.6f, 1.0f, 0.25f, 0.5f}, // Corner 6
-
-	// Top
-	{-1.0f, -1.0f, -1.0f, 1.0f,  1.0f, 1.0f, 1.0f, 1.0f,  0.0f, 0.0f}, // Corner 5
-	{ 1.0f, -1.0f, -1.0f, 1.0f,  1.0f, 1.0f, 1.0f, 1.0f, 0.25f, 0.0f}, // Corner 4
-	{ 1.0f, -1.0f,  1.0f, 1.0f,  1.0f, 1.0f, 1.0f, 1.0f, 0.25f, 0.5f}, // Corner 1
-	{-1.0f, -1.0f,  1.0f, 1.0f,  1.0f, 1.0f, 1.0f, 1.0f,  0.0f, 0.5f}, // Corner 0
-
-	//Bottom
-	{ 1.0f,  1.0f, -1.0f, 1.0f,  0.5f, 0.5f, 0.5f, 1.0f,  0.0f, 0.5f}, // Corner 7
-	{-1.0f,  1.0f, -1.0f, 1.0f,  0.5f, 0.5f, 0.5f, 1.0f, 0.25f, 0.5f}, // Corner 6
-	{-1.0f,  1.0f,  1.0f, 1.0f,  0.5f, 0.5f, 0.5f, 1.0f, 0.25f, 1.0f}, // Corner 3
-	{ 1.0f,  1.0f,  1.0f, 1.0f,  0.5f, 0.5f, 0.5f, 1.0f,  0.0f, 1.0f}  // Corner 2
-};
-
-// Index array
-unsigned int indices[] = {0, 1, 2, 0, 2, 3,    4, 5, 6, 4, 6, 7,    8, 9, 10, 8, 10, 11,    12, 13, 14, 12, 14, 15,    16, 17, 18, 16, 18, 19,    20, 21, 22, 20, 22, 23};
-
-// Vertex declaration for the vertex shader
-mini3d::IVertexShader::VertexDataType vertexDeclaration[] = { mini3d::IVertexShader::POSITION_FLOAT4, mini3d::IVertexShader::COLOR_FLOAT4, mini3d::IVertexShader::TEXTURECOORDINATE_FLOAT2 };
+unsigned int* CreateTestBitmap(unsigned int width, unsigned int height);
 
 
 // ----- DECLARE VARIABLES ----------------------------------------------------
@@ -74,8 +25,6 @@ mini3d::utilites::Matrix4 viewMatrixE;
 mini3d::utilites::Matrix4 projectionMatrixE;
 
 // state variables
-bool fullscreen = false;
-
 bool exitApplication = false;
 
 // Keeps track of mouse movement
@@ -97,12 +46,9 @@ mini3d::IGraphicsService* graphics;
 
 // Graphics Resources
 mini3d::IWindowRenderTarget* pWindowRenderTarget;
-
 mini3d::IIndexBuffer* iBuffer;
 mini3d::IVertexBuffer* vBuffer;
-
 mini3d::IBitmapTexture* pTexture;
-
 mini3d::IVertexShader* pVertexShader;
 mini3d::IPixelShader* pPixelShader;
 mini3d::IShaderProgram* pShaderProgram;
@@ -117,21 +63,17 @@ int main()
 #endif
 {
 	
-	// ----- CREATE A WINDOW --------------------------------------------------
-
-	// create a window
-	mini3d::utilites::OSWindow* window = new mini3d::utilites::OSWindow(WndMessage, 640, 480);
-	int hWindow = window->GetWindowHandle();
-
 	// ----- CREATE GRAPHICS SERVICE ------------------------------------------
 	
 	//graphics = new mini3d::D3D9GraphicsService();
 	graphics = new mini3d::OGL20GraphicsService();
 
+
 	// ----- CREATE GRAPHICS RESOURCES ----------------------------------------
 
-	// create a render target (mini3d does not have a default render target)
-	pWindowRenderTarget = graphics->CreateWindowRenderTarget(hWindow, true, mini3d::IWindowRenderTarget::QUALITY_MINIMUM);
+	// create an os window and attach a render target (mini3d does not have a default render target)
+	mini3d::utilites::OSWindow* window = new mini3d::utilites::OSWindow(WndMessage, 640, 480);
+	pWindowRenderTarget = graphics->CreateWindowRenderTarget(window->GetWindowHandle(), true, mini3d::IWindowRenderTarget::QUALITY_MINIMUM);
 
 	// create index buffer
 	iBuffer = graphics->CreateIndexBuffer(indices, 36);
@@ -139,47 +81,29 @@ int main()
 	// create vertex buffer
 	vBuffer = graphics->CreateVertexBuffer(vertices, 24, sizeof(VertexPCT));
 	
-	// create texture
-	void* pBitmap = (void *)CreateNiceBitmap(128, 64);
-	// create a nice 32bpp texture
-	pTexture = graphics->CreateBitmapTexture(pBitmap, 128, 64); 
-	operator delete(pBitmap);
+	// create a 32bpp texture
+	unsigned int* pBitmap = CreateTestBitmap(128, 64);
+	pTexture = graphics->CreateBitmapTexture((void *)pBitmap, 128, 64); 
+	delete(pBitmap);
 
-	unsigned int sizeInBytes;
-	
+	// Vertex declaration for the vertex shader
+	mini3d::IVertexShader::VertexDataType vertexDeclaration[] = { mini3d::IVertexShader::POSITION_FLOAT4, mini3d::IVertexShader::COLOR_FLOAT4, mini3d::IVertexShader::TEXTURECOORDINATE_FLOAT2 };
+
 	// create vertex shader
-	char* shaderBytes = mini3d::utilites::BinaryFileReader::ReadBytesFromFile((char *)"shaders/glsl/vertexshader.glsl", sizeInBytes);
-	pVertexShader = graphics->CreateVertexShader(shaderBytes, sizeInBytes, vertexDeclaration, 3);
-	delete shaderBytes;
+	pVertexShader = graphics->CreateVertexShader(vertexShaderGLSL, strlen(vertexShaderGLSL), vertexDeclaration, 3);
 
 	// create pixel shader
-	char* shaderBytes2 = mini3d::utilites::BinaryFileReader::ReadBytesFromFile((char *)"shaders/glsl/pixelshader.glsl", sizeInBytes);
-	pPixelShader = graphics->CreatePixelShader(shaderBytes2, sizeInBytes);
-	delete shaderBytes2;
+	pPixelShader = graphics->CreatePixelShader(pixelShaderGLSL, strlen(pixelShaderGLSL));
 
-
-	// ----- VARIABLES FOR RENDER LOOP ----------------------------------------
-	
 	// create shader program
 	pShaderProgram = graphics->CreateShaderProgram(pVertexShader, pPixelShader);
 
 
-	// ----- CONFIIGURE GRAPHICS PIPELINE -------------------------------------
-
-	// set render prarameters
-	graphics->SetIndexBuffer(iBuffer);
-	graphics->SetVertexBuffer(vBuffer);
-	graphics->SetShaderProgram(pShaderProgram);
-
-	graphics->SetRenderTarget(pWindowRenderTarget);
-
-	// Set the Texture
-	graphics->SetTexture(pTexture, 0);
+	// ----- SHOW THE WINDOW --------------------------------------------------
 
 	// Show the window
 	window->Show();
 
-//	Render();
 
 	// ----- MAIN LOOP --------------------------------------------------------
 
@@ -188,6 +112,7 @@ int main()
 	{
 		window->WaitForMessage();
 	}
+
 
 	// ----- DELETE RESOURCES -------------------------------------------------
 
@@ -269,19 +194,13 @@ void WndMessage(mini3d::utilites::OSWindow* window, mini3d::utilites::OSWindow::
 			mouseY = window->GetMouseY();
 		break;
 		case mini3d::utilites::OSWindow::KEY_DOWN:
-#ifdef _WIN32
-			if ((window->GetKey() & VK_F12) == VK_F12)
+			if ((window->GetKey() & window->VKC_F12) == window->VKC_F12)
 			{
-				fullscreen = !fullscreen;
-
-				// Set the screenrendertarget to the correct one
-				if (fullscreen == true)
+				if (pWindowRenderTarget->GetScreenState() == mini3d::IWindowRenderTarget::SCREEN_STATE_WINDOWED)
 					pWindowRenderTarget->SetScreenStateFullscreen(0,0);
 				else
 					pWindowRenderTarget->SetScreenStateWindowed();
 			}
-			Render();
-#endif
 		break;
 		case mini3d::utilites::OSWindow::MOUSE_MOVE:
 			if (window->GetLeftMouseDown() == true)
@@ -315,7 +234,7 @@ void WndMessage(mini3d::utilites::OSWindow* window, mini3d::utilites::OSWindow::
 	}
 }
 
-unsigned int* CreateNiceBitmap(unsigned int width, unsigned int height)
+unsigned int* CreateTestBitmap(unsigned int width, unsigned int height)
 {
 	float pi = 3.1416f;
 	unsigned int* pBitmap = new unsigned int[width * height];

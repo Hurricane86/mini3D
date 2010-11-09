@@ -61,7 +61,14 @@ void mini3d::D3D9VertexShader::LoadResource(void)
 
 	// compile the shader source
 	ID3DXBuffer* buffer;
-	D3DXCompileShader((LPCSTR)pShaderBytes, sizeInBytes, 0, 0, "main", "vs_2_0", 0, &buffer, 0, 0);
+
+	LPD3DXBUFFER ppErroMessage;
+	D3DXCompileShader((LPCSTR)pShaderBytes, sizeInBytes, 0, 0, "main", "vs_2_0", 0, &buffer, &ppErroMessage, 0);
+	
+	if (ppErroMessage != 0)
+	{
+		OutputDebugStringA((char*)(ppErroMessage->GetBufferPointer()));
+	}
 
 	if( FAILED( pDevice->CreateVertexShader((DWORD*)buffer->GetBufferPointer(), &pShaderBuffer)))
 	{

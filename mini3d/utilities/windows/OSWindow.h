@@ -19,10 +19,9 @@ class OSWindow
 	// ---------- ENUMS -------------------------------------------------------
 public:
 	enum WindowMessage { SIZE, CLOSED, DESTROYED, MOUSE_MOVE, MOUSE_LEFT_UP, MOUSE_LEFT_DOWN, MOUSE_WHEEL, KEY_DOWN, PAINT };
+	enum VirtualKeyCode { VKC_F12 = 123 };
 
 private:
-	// ---------- FORWARD DECLARATIONS ----------------------------------------
-//	WNDPROC WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 	// ---------- TYPEDEFS ----------------------------------------------------
 	typedef void (*WINDOWCALLBACK)(OSWindow*, WindowMessage);
@@ -71,10 +70,6 @@ public:
 		windowHandle = o.windowHandle;
 	}
 
-	void doCleanup()
-	{
-
-	}
 	~OSWindow()
 	{
 		DestroyWindow((HWND)windowHandle);
@@ -84,7 +79,7 @@ public:
 		UnregisterClass(L"mini3d", GetModuleHandle(NULL));		
 	}
 
-	void WaitForMessage()
+	static void WaitForMessage()
 	{
 		MSG msg;
 		// Wait for a message to happen
@@ -163,7 +158,7 @@ private:
 			case WM_SIZE:
 				width = LOWORD(lParam);
 				height = HIWORD(lParam);
-				//windowCallback(window, SIZE);
+				windowCallback(window, SIZE);
 			break;
 			case WM_LBUTTONDOWN:
 				leftMouseDown = true;
@@ -172,7 +167,7 @@ private:
 			break;
 			case WM_KEYDOWN:
 				key = wParam;
-				windowCallback(window, MOUSE_LEFT_DOWN);
+				windowCallback(window, KEY_DOWN);
 			break;
 			case WM_MOUSEMOVE:
 				mouseX = LOWORD(lParam);
