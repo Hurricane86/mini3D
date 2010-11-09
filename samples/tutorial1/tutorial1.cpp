@@ -205,30 +205,18 @@ void WndMessage(mini3d::utilites::OSWindow* window, mini3d::utilites::OSWindow::
 		case mini3d::utilites::OSWindow::MOUSE_MOVE:
 			if (window->GetLeftMouseDown() == true)
 			{
-				int x = window->GetMouseX(); 
-				int y = window->GetMouseY();
+				rotX += (window->GetMouseX() - mouseX) / 100.0f;
+				rotY -= (window->GetMouseY() - mouseY) / 100.0f;
 
-				rotX += (x - mouseX) / 100.0f;
-				rotY -= (y - mouseY) / 100.0f;
-
-				if (rotY > 3.1415f / 2.0f)
-					rotY = 3.1415f / 2.0f;
-				else if (rotY < -3.1415f / 2.0f)
-					rotY = -3.1415f / 2.0f;
-								
-				mouseX = x;
-				mouseY = y;
+				mouseX = window->GetMouseX();
+				mouseY = window->GetMouseY();
 				Render();
 			}
 		break;
 		case mini3d::utilites::OSWindow::MOUSE_LEFT_UP:
 		break;
 		case mini3d::utilites::OSWindow::MOUSE_WHEEL:
-			{
-				int zWheel = window->GetMouseWheelDelta();
-				float zWheelf = (float)zWheel;
-				distance -=  (float)zWheel * 0.01f;
-			}
+			distance -= (float)window->GetMouseWheelDelta() * 0.01f;
 			Render();
 		break;
 	}
