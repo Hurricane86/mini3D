@@ -39,7 +39,6 @@ private:
 	static int windowHandle;
 	static bool leftMouseDown;
 	static WINDOWCALLBACK windowCallback;
-	static std::map<int, OSWindow*> windowMap;
 	Window window;
 	Display *dpy;
 
@@ -69,11 +68,7 @@ public:
 
 	~OSWindow()
 	{
-		std::map<int, OSWindow*>::iterator iter = windowMap.find((int)windowHandle);
-		if (iter != windowMap.end())
-		{
-			windowMap.erase(iter);
-		}
+		XDestroyWindow(dpy, window);
 	}
 
 	void Show()
@@ -187,10 +182,6 @@ private:
 		return w;
 	}
 	
-	void DestoryWindow()
-	{
-		XDestroyWindow(dpy, window);
-	}
 };
 }
 }
@@ -202,6 +193,5 @@ int mini3d::utilites::OSWindow::key;
 int mini3d::utilites::OSWindow::windowHandle;
 bool mini3d::utilites::OSWindow::leftMouseDown;
 mini3d::utilites::OSWindow::WINDOWCALLBACK mini3d::utilites::OSWindow::windowCallback;
-std::map<int, mini3d::utilites::OSWindow*> mini3d::utilites::OSWindow::windowMap;
 
 #endif

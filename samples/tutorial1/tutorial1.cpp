@@ -76,6 +76,8 @@ mini3d::utilites::Matrix4 projectionMatrixE;
 // state variables
 bool fullscreen = false;
 
+bool exitApplication = false;
+
 // Keeps track of mouse movement
 int mouseX, mouseY;
 
@@ -118,9 +120,8 @@ int main()
 	// ----- CREATE A WINDOW --------------------------------------------------
 
 	// create a window
-	mini3d::utilites::OSWindow window(WndMessage, 640, 480);
-	int hWindow = window.GetWindowHandle();
-	window.Show();
+	mini3d::utilites::OSWindow* window = new mini3d::utilites::OSWindow(WndMessage, 640, 480);
+	int hWindow = window->GetWindowHandle();
 
 	// ----- CREATE GRAPHICS SERVICE ------------------------------------------
 	
@@ -175,24 +176,18 @@ int main()
 	// Set the Texture
 	graphics->SetTexture(pTexture, 0);
 
-	// Render to the Screen
-	Render();
+	// Show the window
+	window->Show();
+
+//	Render();
 
 	// ----- MAIN LOOP --------------------------------------------------------
 
 	// loop while the window is not closed
-#ifdef _WIN32
-	MSG Msg;
-	while(GetMessage(&Msg, NULL, 0, 0) > 0)
+	while(exitApplication == false)
 	{
-		// window message stuff
-		TranslateMessage(&Msg);
-		DispatchMessage(&Msg);
+		window->WaitForMessage();
 	}
-#endif
-#ifdef __linux
-	window.WaitForMessage();
-#endif
 
 	// ----- DELETE RESOURCES -------------------------------------------------
 
@@ -205,10 +200,7 @@ int main()
 	delete pWindowRenderTarget;
 	delete graphics;
 
-
-#ifdef _WIN32
-	return Msg.wParam;
-#endif
+	delete window;
 }
 
 void Render()
@@ -261,13 +253,11 @@ void WndMessage(mini3d::utilites::OSWindow* window, mini3d::utilites::OSWindow::
 			Render();
 		break;
 		case mini3d::utilites::OSWindow::CLOSED:
-
+			exitApplication = true;
 		break;
 		case mini3d::utilites::OSWindow::DESTROYED:
-#ifdef _WIN32 
-			PostQuitMessage(0); 
-#endif
-			break;
+			exitApplication = true;
+		break;
 		case mini3d::utilites::OSWindow::SIZE:
 			width = window->GetWidth();
 			height = window->GetHeight();

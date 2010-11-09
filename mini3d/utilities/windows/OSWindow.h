@@ -66,26 +66,33 @@ public:
 		defaultWindow = this;
 	}
 
+	OSWindow(const OSWindow& o) 
+	{
+		windowHandle = o.windowHandle;
+	}
+
+	void doCleanup()
+	{
+
+	}
 	~OSWindow()
 	{
-		std::map<int, OSWindow*>::iterator iter = windowMap.find((int)windowHandle);
-		if (iter != windowMap.end())
-		{
-			windowMap.erase(iter);
-		}
+		DestroyWindow((HWND)windowHandle);
+
+		windowMap.erase(windowHandle);
 
 		UnregisterClass(L"mini3d", GetModuleHandle(NULL));		
 	}
 
-	WindowMessage WaitForMessage()
+	void WaitForMessage()
 	{
 		MSG msg;
-		while(GetMessage(&msg, NULL, 0, 0) > 0)
-		{
-			// window message stuff
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);		
-		}
+		// Wait for a message to happen
+		GetMessage(&msg, NULL, 0, 0);
+
+		// Send the message onwards		
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);		
 	}
 
 	void Show()
@@ -123,7 +130,7 @@ private:
 		}
 
 		HWND hWindow = CreateWindowEx( WS_EX_APPWINDOW | WS_EX_WINDOWEDGE, L"mini3D", L"Mini3D", WS_OVERLAPPEDWINDOW | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, CW_USEDEFAULT, CW_USEDEFAULT, width, height, 0, 0, hInstance, 0);
-		windowMap.insert(std::pair<int,OSWindow*>((int)hWindow, this));		
+		windowMap[(int)hWindow] = this;
 
 		windowClass = wc;
 
@@ -134,7 +141,7 @@ private:
 	static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
 		
-		std::map<int, OSWindow*>::iterator iter = windowMap.find((int)hwnd);
+		std::map<int, OSWindow*>::const_iterator iter = windowMap.find((int)hwnd);
 		if (iter == windowMap.end())
 		{
 			return DefWindowProc(hwnd, msg, wParam, lParam);
@@ -148,7 +155,6 @@ private:
 				windowCallback(window, PAINT);
 			break;
 			case WM_CLOSE:
-				DestroyWindow(hwnd);				
 				windowCallback(window, CLOSED);
 			break;
 			case WM_DESTROY:
@@ -157,7 +163,7 @@ private:
 			case WM_SIZE:
 				width = LOWORD(lParam);
 				height = HIWORD(lParam);
-				windowCallback(window, SIZE);
+				//windowCallback(window, SIZE);
 			break;
 			case WM_LBUTTONDOWN:
 				leftMouseDown = true;
@@ -190,6 +196,7 @@ private:
 }
 }
 
+std::map<int, mini3d::utilites::OSWindow*> mini3d::utilites::OSWindow::windowMap;
 int mini3d::utilites::OSWindow::width, mini3d::utilites::OSWindow::height;
 int mini3d::utilites::OSWindow::x, mini3d::utilites::OSWindow::y;
 int mini3d::utilites::OSWindow::mouseX, mini3d::utilites::OSWindow::mouseY, mini3d::utilites::OSWindow::mouseWheelDelta;
@@ -198,7 +205,6 @@ int mini3d::utilites::OSWindow::windowHandle;
 bool mini3d::utilites::OSWindow::leftMouseDown;
 WNDCLASSEX mini3d::utilites::OSWindow::windowClass;
 mini3d::utilites::OSWindow::WINDOWCALLBACK mini3d::utilites::OSWindow::windowCallback;
-std::map<int, mini3d::utilites::OSWindow*> mini3d::utilites::OSWindow::windowMap;
 mini3d::utilites::OSWindow* mini3d::utilites::OSWindow::defaultWindow;
 
 #endif
