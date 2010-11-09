@@ -9,9 +9,7 @@
 #include "windows.h"
 #include <map>
 
-namespace mini3d
-{
-namespace utilites
+namespace utilities
 {
 class OSWindow
 {
@@ -61,7 +59,7 @@ public:
 		ZeroMemory(&windowClass, sizeof(WNDCLASSEX));
 		windowCallback = callback;
 		leftMouseDown = false;
-		windowHandle = (int)CreateWindowsWindow(&mini3d::utilites::OSWindow::WndProc, width, height);
+		windowHandle = (int)CreateWindowsWindow(&utilities::OSWindow::WndProc, width, height);
 		defaultWindow = this;
 	}
 
@@ -189,17 +187,16 @@ private:
 
 };
 }
-}
 
-std::map<int, mini3d::utilites::OSWindow*> mini3d::utilites::OSWindow::windowMap;
-int mini3d::utilites::OSWindow::width, mini3d::utilites::OSWindow::height;
-int mini3d::utilites::OSWindow::x, mini3d::utilites::OSWindow::y;
-int mini3d::utilites::OSWindow::mouseX, mini3d::utilites::OSWindow::mouseY, mini3d::utilites::OSWindow::mouseWheelDelta;
-int mini3d::utilites::OSWindow::key;	
-int mini3d::utilites::OSWindow::windowHandle;
-bool mini3d::utilites::OSWindow::leftMouseDown;
-WNDCLASSEX mini3d::utilites::OSWindow::windowClass;
-mini3d::utilites::OSWindow::WINDOWCALLBACK mini3d::utilites::OSWindow::windowCallback;
-mini3d::utilites::OSWindow* mini3d::utilites::OSWindow::defaultWindow;
+std::map<int, utilities::OSWindow*> utilities::OSWindow::windowMap;
+int utilities::OSWindow::width, utilities::OSWindow::height;
+int utilities::OSWindow::x, utilities::OSWindow::y;
+int utilities::OSWindow::mouseX, utilities::OSWindow::mouseY, utilities::OSWindow::mouseWheelDelta;
+int utilities::OSWindow::key;	
+int utilities::OSWindow::windowHandle;
+bool utilities::OSWindow::leftMouseDown;
+WNDCLASSEX utilities::OSWindow::windowClass;
+utilities::OSWindow::WINDOWCALLBACK utilities::OSWindow::windowCallback;
+utilities::OSWindow* utilities::OSWindow::defaultWindow;
 
 #endif

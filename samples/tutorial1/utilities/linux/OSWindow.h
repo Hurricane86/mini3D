@@ -13,8 +13,6 @@
 #include <map>
 #include <math.h>
 
-namespace mini3d
-{
 namespace utilites
 {
 class OSWindow
@@ -183,7 +181,6 @@ private:
 	}
 	
 };
-}
 }
 
 int mini3d::utilites::OSWindow::width, mini3d::utilites::OSWindow::height;

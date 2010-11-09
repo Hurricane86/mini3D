@@ -4,12 +4,17 @@
 // It is distributed under the MIT Software License <www.mini3d.org/license>
 
 
-#define NOMINMAX
+#ifndef MINI3D_MATH3D_H
+#define MINI3D_MATH3D_H
 
-#include "mini3d/ogl20/OGL20GraphicsService.h"
+#include "M3DMatrix.h"
+#include "M3DVector.h"
+#include <math.h>
 
-#ifdef _WIN32
-#include "mini3d/d3d9/D3D9GraphicsService.h"
+class Math3d
+{
+public:
+
+};
+
 #endif
-
-#include "mini3d/IGraphicsService.h"

@@ -4,15 +4,17 @@
 // It is distributed under the MIT Software License <www.mini3d.org/license>
 
 #include <math.h>
-#include "../../mini3d/utilities/OSWindow.h"
 #include "../../mini3d.h"
+
+#include "utilities/OSWindow.h"
+#include "utilities/Math3d.h"
 
 #include "shaders.h"
 #include "geometry.h"
 
 
 // ----- FORWARD DECLARATIONS -------------------------------------------------
-void WndMessage(mini3d::utilites::OSWindow* window, mini3d::utilites::OSWindow::WindowMessage message);
+void WndMessage(utilities::OSWindow* window, utilities::OSWindow::WindowMessage message);
 void UpdateViewProjectionMatrix();
 void Render();
 unsigned int* CreateTestBitmap(unsigned int width, unsigned int height);
@@ -21,8 +23,8 @@ unsigned int* CreateTestBitmap(unsigned int width, unsigned int height);
 // ----- DECLARE VARIABLES ----------------------------------------------------
 
 // View and projection matrices for setting up camera view
-mini3d::utilites::Matrix4 viewMatrixE;
-mini3d::utilites::Matrix4 projectionMatrixE;
+M3DMatrix viewMatrixE;
+M3DMatrix projectionMatrixE;
 
 // state variables
 bool exitApplication = false;
@@ -72,7 +74,7 @@ int main()
 	// ----- CREATE GRAPHICS RESOURCES ----------------------------------------
 
 	// create an os window and attach a render target (mini3d does not have a default render target)
-	mini3d::utilites::OSWindow* window = new mini3d::utilites::OSWindow(WndMessage, 640, 480);
+	utilities::OSWindow* window = new utilities::OSWindow(WndMessage, 640, 480);
 	pWindowRenderTarget = graphics->CreateWindowRenderTarget(window->GetWindowHandle(), true, mini3d::IWindowRenderTarget::QUALITY_MINIMUM);
 
 	// create index buffer
@@ -156,44 +158,44 @@ void Render()
 // sets the view, projection matrix as a shader parameter
 void UpdateViewProjectionMatrix()
 {
-	mini3d::utilites::Vector3 eye(distance * cos(rotY) * cos((float)rotX), distance * sin(rotY), distance * cos(rotY) * sin(rotX));
-	mini3d::utilites::Vector3 target(0,0,0);
-	mini3d::utilites::Vector3 up(0,-1,0);
+	M3DVector eye(distance * cos(rotY) * cos((float)rotX), distance * sin(rotY), distance * cos(rotY) * sin(rotX));
+	M3DVector target(0,0,0);
+	M3DVector up(0,-1,0);
 
 	// update camera
-	mini3d::utilites::math3d::setuplookat(&viewMatrixE._00, (float*)&eye, (float*)&target, (float*)&up);
-	mini3d::utilites::math3d::BuildPerspProjMat(&projectionMatrixE._00, (float)(3.1415f / 4.0f), (float)width/(float)height, 40.0f / 100.0f, 80.0f);
-	mini3d::utilites::Matrix4 viewProjectionMatrixE = viewMatrixE * projectionMatrixE;
+	M3DMatrix::LookAt(viewMatrixE, eye, target, up);
+	M3DMatrix::PerspectiveProjection(projectionMatrixE, (float)(3.1415f / 4.0f), (float)width/(float)height, 40.0f / 100.0f, 80.0f);
+	M3DMatrix viewProjectionMatrixE = viewMatrixE * projectionMatrixE;
 
 	// set a shader parameter
 	graphics->SetShaderParameterMatrix(0, &viewProjectionMatrixE._00, 4, 4);
 }
 
-void WndMessage(mini3d::utilites::OSWindow* window, mini3d::utilites::OSWindow::WindowMessage message)
+void WndMessage(utilities::OSWindow* window, utilities::OSWindow::WindowMessage message)
 {
 
 	switch(message)
 	{
-		case mini3d::utilites::OSWindow::PAINT:
+		case utilities::OSWindow::PAINT:
 			Render();
 		break;
-		case mini3d::utilites::OSWindow::CLOSED:
+		case utilities::OSWindow::CLOSED:
 			exitApplication = true;
 		break;
-		case mini3d::utilites::OSWindow::DESTROYED:
+		case utilities::OSWindow::DESTROYED:
 			exitApplication = true;
 		break;
-		case mini3d::utilites::OSWindow::SIZE:
+		case utilities::OSWindow::SIZE:
 			width = window->GetWidth();
 			height = window->GetHeight();
 			pWindowRenderTarget->SetScreenStateWindowed();
 			Render();
 		break;
-		case mini3d::utilites::OSWindow::MOUSE_LEFT_DOWN:
+		case utilities::OSWindow::MOUSE_LEFT_DOWN:
 			mouseX = window->GetMouseX();
 			mouseY = window->GetMouseY();
 		break;
-		case mini3d::utilites::OSWindow::KEY_DOWN:
+		case utilities::OSWindow::KEY_DOWN:
 			if ((window->GetKey() & window->VKC_F12) == window->VKC_F12)
 			{
 				if (pWindowRenderTarget->GetScreenState() == mini3d::IWindowRenderTarget::SCREEN_STATE_WINDOWED)
@@ -202,7 +204,7 @@ void WndMessage(mini3d::utilites::OSWindow* window, mini3d::utilites::OSWindow::
 					pWindowRenderTarget->SetScreenStateWindowed();
 			}
 		break;
-		case mini3d::utilites::OSWindow::MOUSE_MOVE:
+		case utilities::OSWindow::MOUSE_MOVE:
 			if (window->GetLeftMouseDown() == true)
 			{
 				rotX += (window->GetMouseX() - mouseX) / 100.0f;
@@ -213,9 +215,9 @@ void WndMessage(mini3d::utilites::OSWindow* window, mini3d::utilites::OSWindow::
 				Render();
 			}
 		break;
-		case mini3d::utilites::OSWindow::MOUSE_LEFT_UP:
+		case utilities::OSWindow::MOUSE_LEFT_UP:
 		break;
-		case mini3d::utilites::OSWindow::MOUSE_WHEEL:
+		case utilities::OSWindow::MOUSE_WHEEL:
 			distance -= (float)window->GetMouseWheelDelta() * 0.01f;
 			Render();
 		break;
