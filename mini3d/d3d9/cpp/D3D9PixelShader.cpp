@@ -49,7 +49,7 @@ void mini3d::D3D9PixelShader::LoadResource(void)
 		OutputDebugStringA((char*)(ppErroMessage->GetBufferPointer()));
 	}
 
-	if( FAILED( pDevice->CreatePixelShader((DWORD*)pShaderBytes, &pShaderBuffer)))
+	if( FAILED( pDevice->CreatePixelShader((DWORD*)buffer->GetBufferPointer(), &pShaderBuffer)))
 	{
 		isDirty = true;
 		return;
