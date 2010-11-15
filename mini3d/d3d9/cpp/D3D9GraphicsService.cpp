@@ -737,14 +737,11 @@ void mini3d::D3D9GraphicsService::SetRenderTarget(IRenderTarget* pRenderTarget)
 			// Set the current rendertarget to the new screen render target so it gets set when we restore the device
 			pCurrentRenderTarget = pD3D9WindowRenderTarget;
 
-			//pD3D9FullcreenRenderTarget is not the pDefaultSwapChain because that was checked above. so release the device
-			ReleaseDevice();
-
 			// Set the pDefualtSwapChain depending on screen state
 			pDefaultSwapChain = isFullscreen ? pD3D9WindowRenderTarget : 0;
 
-			// Restore the device pD3D9FullscreenRenderTarget as the default swapchain
-			RestoreDevice();
+			// Reset the device with the new fullscreen or windowed setup
+			ResetDevice();
 
 			// done
 			return;
@@ -934,7 +931,7 @@ void mini3d::D3D9GraphicsService::Clear(const float& r, const float& g, const fl
 	DWORD flags = D3DCLEAR_TARGET;
 	
 	// if we have a depthstencil we need to clear that too
-	if (pCurrentDepthStencil != 0)
+	if (pCurrentRenderTarget->GetDepthTestEnabled() == true)
 	{
 		flags |= D3DCLEAR_ZBUFFER;
 	}

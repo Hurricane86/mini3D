@@ -75,7 +75,7 @@ int main()
 	// ----- CREATE GRAPHICS RESOURCES ----------------------------------------
 
 	// create an os window and attach a render target (mini3d does not have a default render target)
-	utilities::OSWindow* window = new utilities::OSWindow(WndMessage, 640, 480);
+	utilities::OSWindow* window = new utilities::OSWindow(WndMessage, 800, 600);
 	pWindowRenderTarget = graphics->CreateWindowRenderTarget(window->GetWindowHandle(), true, mini3d::IWindowRenderTarget::QUALITY_MINIMUM);
 
 	// create index buffer
@@ -200,9 +200,15 @@ void WndMessage(utilities::OSWindow* window, utilities::OSWindow::WindowMessage 
 			if ((window->GetKey() & window->VKC_F12) == window->VKC_F12)
 			{
 				if (pWindowRenderTarget->GetScreenState() == mini3d::IWindowRenderTarget::SCREEN_STATE_WINDOWED)
-					pWindowRenderTarget->SetScreenStateFullscreen(800,600);
+				{
+					pWindowRenderTarget->SetScreenStateFullscreen(1280,800);
+				}
 				else
+				{
 					pWindowRenderTarget->SetScreenStateWindowed();
+				}
+				// Refresh the screen
+				Render();
 			}
 		break;
 		case utilities::OSWindow::MOUSE_MOVE:

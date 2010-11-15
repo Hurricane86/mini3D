@@ -137,7 +137,7 @@ void mini3d::D3D9WindowRenderTarget::SetWindowRenderTarget(const int& windowHand
 }
 void mini3d::D3D9WindowRenderTarget::Display(void)
 {
-	if (pScreenRenderTarget == 0)
+	if (pScreenRenderTarget == 0 && screenState != SCREEN_STATE_FULLSCREEN)
 		return;
 
 	/// Make sure we do an endScene before we present (DirectX9 specific).
