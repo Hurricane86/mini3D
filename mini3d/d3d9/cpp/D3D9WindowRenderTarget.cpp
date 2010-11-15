@@ -144,7 +144,10 @@ void mini3d::D3D9WindowRenderTarget::Display(void)
 	if (pGraphicsService->isDrawingScene == true)
 		pGraphicsService->EndScene();
 
-	pScreenRenderTarget->Present(0,0,0,0,0);
+	if (screenState == SCREEN_STATE_FULLSCREEN)
+		pGraphicsService->GetDevice()->Present(0,0,0,0);
+	else
+		pScreenRenderTarget->Present(0,0,0,0,0);
 }
 void mini3d::D3D9WindowRenderTarget::LoadResource(void)
 {
