@@ -81,7 +81,7 @@ struct v2p													\
 															\
 void main( in v2p PS, out float4 pixel_color : COLOR0 )		\
 {															\
-	pixel_color =  PS.color * tex2D(texture0, IN.tex0);		\
+	pixel_color =  PS.color * tex2D(texture0, PS.tex0);		\
 }															\
 ";
 

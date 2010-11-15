@@ -68,8 +68,8 @@ int main()
 	
 	// ----- CREATE GRAPHICS SERVICE ------------------------------------------
 	
-	//graphics = new mini3d::D3D9GraphicsService();
-	graphics = new mini3d::OGL20GraphicsService();
+	graphics = new mini3d::D3D9GraphicsService();
+	//graphics = new mini3d::OGL20GraphicsService();
 
 
 	// ----- CREATE GRAPHICS RESOURCES ----------------------------------------
@@ -93,10 +93,10 @@ int main()
 	mini3d::IVertexShader::VertexDataType vertexDeclaration[] = { mini3d::IVertexShader::POSITION_FLOAT4, mini3d::IVertexShader::COLOR_FLOAT4, mini3d::IVertexShader::TEXTURECOORDINATE_FLOAT2 };
 
 	// create vertex shader
-	pVertexShader = graphics->CreateVertexShader(vertexShaderGLSL, strlen(vertexShaderGLSL), vertexDeclaration, 3);
+	pVertexShader = graphics->CreateVertexShader(vertexShaderHLSL, strlen(vertexShaderHLSL), vertexDeclaration, 3);
 
 	// create pixel shader
-	pPixelShader = graphics->CreatePixelShader(pixelShaderGLSL, strlen(pixelShaderGLSL));
+	pPixelShader = graphics->CreatePixelShader(pixelShaderHLSL, strlen(pixelShaderHLSL));
 
 	// create shader program
 	pShaderProgram = graphics->CreateShaderProgram(pVertexShader, pPixelShader);
@@ -200,7 +200,7 @@ void WndMessage(utilities::OSWindow* window, utilities::OSWindow::WindowMessage 
 			if ((window->GetKey() & window->VKC_F12) == window->VKC_F12)
 			{
 				if (pWindowRenderTarget->GetScreenState() == mini3d::IWindowRenderTarget::SCREEN_STATE_WINDOWED)
-					pWindowRenderTarget->SetScreenStateFullscreen(0,0);
+					pWindowRenderTarget->SetScreenStateFullscreen(800,600);
 				else
 					pWindowRenderTarget->SetScreenStateWindowed();
 			}
