@@ -17,7 +17,7 @@ class OSWindow
 	// ---------- ENUMS -------------------------------------------------------
 public:
 	enum WindowMessage { SIZE, CLOSED, DESTROYED, MOUSE_MOVE, MOUSE_LEFT_UP, MOUSE_LEFT_DOWN, MOUSE_WHEEL, KEY_DOWN, PAINT };
-	enum VirtualKeyCode { VKC_F12 = 123 };
+	enum VirtualKeyCode { VKC_F12 = 0x71 };
 
 private:
 

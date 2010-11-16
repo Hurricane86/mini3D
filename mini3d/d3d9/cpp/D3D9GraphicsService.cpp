@@ -12,7 +12,7 @@
 // Constructor Destructor -----------------------------------------------------
 
 mini3d::D3D9GraphicsService::D3D9GraphicsService() :
-pD3D(0), pDevice(0), pCurrentDepthStencil(0), isDrawingScene(false), deviceLost(true), lostDeviceCurrentITextures(0), currentITextures(0), isFullscreen(false), pCurrentRenderTarget(0), pDefaultSwapChain(0) 
+pD3D(0), pDevice(0), isDrawingScene(false), deviceLost(true), lostDeviceCurrentITextures(0), currentITextures(0), isFullscreen(false), pCurrentRenderTarget(0), pDefaultSwapChain(0) 
 {
 	CreateInternalWindow();
 	CreateDevice();
@@ -767,49 +767,18 @@ void mini3d::D3D9GraphicsService::SetRenderTarget(IRenderTarget* pRenderTarget)
 	// Set the depth stencil if we have one
 	if (pRenderTarget->GetDepthTestEnabled() == true)
 	{
-		D3D9DepthStencil* pDepthStencil = pD3D9RenderTarget->GetDepthStencil();
-		SetDepthStencil(pDepthStencil);
-	}
-	else if (pCurrentDepthStencil != 0)
-	{
-		SetDepthStencil(0);
-	}
-}
+		pDevice->SetDepthStencilSurface(pD3D9RenderTarget->GetDepthStencil());
 
-// DepthStencil
-mini3d::D3D9DepthStencil* mini3d::D3D9GraphicsService::GetDepthStencil(void) const
-{
-	return pCurrentDepthStencil;
-}
-void mini3d::D3D9GraphicsService::SetDepthStencil(D3D9DepthStencil* pDepthStencil)
-{
-	if (pDepthStencil == pCurrentDepthStencil)
-		return;
-	
-	D3D9DepthStencil* pD3D9DepthStencil = (D3D9DepthStencil*)pDepthStencil;
-	
-	if (pDepthStencil == 0)
-	{
-		pDevice->SetDepthStencilSurface(0);
-
-		if (pCurrentDepthStencil != 0)
-		{
-			pDevice->SetRenderState(D3DRS_ZENABLE, false);
-			pDevice->SetRenderState(D3DRS_ZWRITEENABLE, false);
-		}
+		pDevice->SetRenderState(D3DRS_ZENABLE, true);
+		pDevice->SetRenderState(D3DRS_ZWRITEENABLE, true);
 	}
 	else
 	{
-		pDevice->SetDepthStencilSurface(pD3D9DepthStencil->GetDepthStencilBuffer());
+		pDevice->SetDepthStencilSurface(0);
 
-		if (pCurrentDepthStencil == 0)
-		{
-			pDevice->SetRenderState(D3DRS_ZENABLE, true);
-			pDevice->SetRenderState(D3DRS_ZWRITEENABLE, true);
-		}
+		pDevice->SetRenderState(D3DRS_ZENABLE, false);
+		pDevice->SetRenderState(D3DRS_ZWRITEENABLE, false);
 	}
-
-	pCurrentDepthStencil = pDepthStencil;
 }
 
 // Index Buffer

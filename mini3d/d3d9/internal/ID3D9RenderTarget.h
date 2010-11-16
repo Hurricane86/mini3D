@@ -27,7 +27,7 @@ public:
 	virtual bool GetFullscreenCompatible() const = 0;
 	virtual bool GetWindowedCompatible() const = 0;
 
-	virtual D3D9DepthStencil* GetDepthStencil() const = 0;
+	virtual IDirect3DSurface9* GetDepthStencil() const = 0;
 
 	virtual IDirect3DSurface9* GetRenderTargetBuffer() const = 0;
 };

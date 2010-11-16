@@ -6,7 +6,6 @@
 
 
 #include "../D3D9WindowRenderTarget.h"
-#include "../D3D9DepthStencil.h"
 #include "../D3D9PresentationParameters.h"
 #include <d3d9.h>
 
@@ -34,8 +33,8 @@ void mini3d::D3D9WindowRenderTarget::SetFullscreenSize(const int& width, const i
 	if (fullscreenWidth == width && fullscreenHeight == height)
 		return;
 	
-	fullscreenWidth = width; 
-	fullscreenHeight = height;
+	fullscreenWidth = width | 1; 
+	fullscreenHeight = height | 1;
 
 	if (pGraphicsService->GetRenderTarget() == this) 
 		pGraphicsService->SetRenderTarget(this); 
@@ -112,29 +111,8 @@ void mini3d::D3D9WindowRenderTarget::SetWindowRenderTarget(const int& windowHand
 	// load the buffer
 	this->isDirty = true;
 	LoadResource();
-
-	// Change the settings if we are in windowed mode
-	if (pGraphicsService->GetIsFullScreen() == false)
-	{
-		// Create/Update depth Stencil as needed
-		if (depthTestEnabled == true)
-		{
-			if (pDepthStencil == 0)
-				pDepthStencil = new D3D9DepthStencil(pGraphicsService, width, height);
-			else
-				pDepthStencil->SetDepthStencil(width, height);
-		}
-		else
-		{
-			if (pDepthStencil != 0)
-			{
-				delete pDepthStencil;
-				pDepthStencil = 0;
-			}
-		}
-	}
-
 }
+
 void mini3d::D3D9WindowRenderTarget::Display(void)
 {
 	if (pScreenRenderTarget == 0 && screenState != SCREEN_STATE_FULLSCREEN)
@@ -149,31 +127,47 @@ void mini3d::D3D9WindowRenderTarget::Display(void)
 	else
 		pScreenRenderTarget->Present(0,0,0,0,0);
 }
+
 void mini3d::D3D9WindowRenderTarget::LoadResource(void)
 {
-
+	// In fullscreen mode we should use the default render target instead of this
 	if (pGraphicsService->GetIsFullScreen() == true)
 	{
-		return;
-	}
-
-	bool setRenderTargetToThis = false;
-
-	if (pGraphicsService->GetRenderTarget() == this)
-		setRenderTargetToThis = true;
-
-	/// Allocate buffer on the graphics card and add index data.
-	IDirect3DDevice9* pDevice = pGraphicsService->GetDevice();
-	if (pDevice == 0)
-	{
-		isDirty = true;	
-		return;
-	}
-
-	// If the buffer exists but is not the correct size, tear it down and recreate it
-	if (pScreenRenderTarget != 0 && (bufferWidth != width || bufferHeight != height))
-	{
 		UnloadResource();
+		return;
+	}
+
+	isDirty = true;
+
+	// Get handle to device
+	IDirect3DDevice9* pDevice = pGraphicsService->GetDevice();
+	
+	// Check handle is valid
+	if (pDevice == 0)
+		return;
+
+	bool setRenderTargetToThis = (pGraphicsService->GetRenderTarget() == this);
+
+	bool renderTargetIsDirty = !LoadRenderTarget(pDevice);
+	bool depthStencilIsDirty = !LoadDepthStencil(pDevice);
+
+	// restore rendertarget if neccessary
+	if (setRenderTargetToThis == true && pGraphicsService->GetRenderTarget() != this)
+		pGraphicsService->SetRenderTarget(this);
+}
+
+bool mini3d::D3D9WindowRenderTarget::LoadRenderTarget(IDirect3DDevice9* pDevice)
+{
+	// If the buffer exists but is not the correct size, tear it down and recreate it
+	if (pScreenRenderTarget != 0)
+	{
+		D3DPRESENT_PARAMETERS pp;
+		pScreenRenderTarget->GetPresentParameters(&pp);
+
+		if (pp.BackBufferWidth != width || pp.BackBufferHeight != height)
+		{
+			UnloadRenderTarget();
+		}
 	}
 
 	// If it does not exist, create a new one
@@ -190,42 +184,83 @@ void mini3d::D3D9WindowRenderTarget::LoadResource(void)
 		pp.MultiSampleType = D3D9PresentationParameters::FromMultisampleFormat(quality);
 				
 		if( FAILED( pDevice->CreateAdditionalSwapChain(&pp, &pScreenRenderTarget))) 
-		{
-			isDirty = true;
-			return;
-		}
+			return false;
 
 		// store the rendertargetsurface to avoid reference counting
 		pScreenRenderTarget->GetBackBuffer(0, D3DBACKBUFFER_TYPE_MONO, &pRenderTargetSurface);
 	}
 
-	bufferWidth = width;
-	bufferHeight = height;
 	hBufferWindow = hWindow;
-	isDirty = false;
-
-	// restore rendertarget if neccessary
-	if (setRenderTargetToThis == true && pGraphicsService->GetRenderTarget() != this)
-		pGraphicsService->SetRenderTarget(this);
-
+	return true;
 }
+
+bool mini3d::D3D9WindowRenderTarget::LoadDepthStencil(IDirect3DDevice9* pDevice)
+{
+	// If depth test is disabled, unload the depth stencil and return ok!
+	if (depthTestEnabled == false)
+	{
+		UnloadDepthStencil();
+		return true;
+	}
+
+	// If the buffer exists but is not the correct size, tear it down and recreate it
+	if (pDepthStencil != 0)
+	{
+		D3DSURFACE_DESC desc;
+		pDepthStencil->GetDesc(&desc);
+		
+		if (desc.Width != width || desc.Height != height)
+		{
+			UnloadDepthStencil();
+		}
+	}
+
+	D3DPRESENT_PARAMETERS pp = pGraphicsService->GetPresentationParameters();
+
+	// If it does not exist, create a new one
+	if (pDepthStencil == 0)
+	{
+		if( FAILED( pDevice->CreateDepthStencilSurface(width, height, pp.AutoDepthStencilFormat, pp.MultiSampleType, pp.MultiSampleQuality, true, &pDepthStencil, 0 ))) 
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
 
 void mini3d::D3D9WindowRenderTarget::UnloadResource(void)
 {
+	UnloadRenderTarget();
+	UnloadDepthStencil();
+
+	isDirty = true;
+}
+
+void mini3d::D3D9WindowRenderTarget::UnloadRenderTarget(void)
+{
+	// if we are removing the current render target, restore the default render target first
+	if (pGraphicsService->GetRenderTarget() == this)
+		pGraphicsService->SetRenderTarget(0);
+
 	if (pScreenRenderTarget != 0)
 	{
-		// if we are removing the current render target, restore the default render target first
-		if (pGraphicsService->GetRenderTarget() == this)
-			pGraphicsService->SetRenderTarget(0);
-
 		pRenderTargetSurface->Release();
 		pRenderTargetSurface = 0;
 
 		pScreenRenderTarget->Release();
 		pScreenRenderTarget = 0;
 	}
+}
 
-	isDirty = true;
+void mini3d::D3D9WindowRenderTarget::UnloadDepthStencil(void)
+{
+	if (pDepthStencil != 0)
+	{
+		pDepthStencil->Release();
+		pDepthStencil = 0;
+	}
 }
 
 void mini3d::D3D9WindowRenderTarget::UpdateSize()

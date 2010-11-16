@@ -59,7 +59,7 @@ public:
 	virtual bool GetWindowedCompatible(void) const { return true; };
 	
 	IDirect3DSurface9*  GetRenderTargetBuffer(void) const { return pRenderTargetSurface; }
-	virtual D3D9DepthStencil* GetDepthStencil(void) const { return pDepthStencil; }
+	virtual IDirect3DSurface9* GetDepthStencil(void) const { return pDepthStencil; }
 
 
 public:
@@ -75,6 +75,13 @@ private:
 	// ::::: Private Methods :::::::::::::::::::::::::::::::::::::::::::::::::::
 
 	void UpdateSize();
+	
+	bool LoadRenderTarget(IDirect3DDevice9* pDevice);
+	bool LoadDepthStencil(IDirect3DDevice9* pDevice);
+
+	void UnloadRenderTarget();
+	void UnloadDepthStencil();
+
 	static LRESULT CALLBACK HookWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 
@@ -84,7 +91,9 @@ private:
 
 	D3D9GraphicsService* pGraphicsService;
 	IDirect3DSwapChain9* pScreenRenderTarget;
-	D3D9DepthStencil* pDepthStencil;
+	
+	// Direct3D9 Stencil Surface
+	IDirect3DSurface9* pDepthStencil;
 
 	IDirect3DSurface9* pRenderTargetSurface;
 

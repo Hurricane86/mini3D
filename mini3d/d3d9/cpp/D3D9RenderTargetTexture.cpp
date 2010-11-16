@@ -5,7 +5,6 @@
 
 
 #include "../D3D9RenderTargetTexture.h"
-#include "../D3D9DepthStencil.h"
 #include "../../error/error.h"
 #include <d3d9.h>
 
@@ -41,38 +40,44 @@ void mini3d::D3D9RenderTargetTexture::SetRenderTargetTexture(const unsigned int&
 
 	this->isDirty = true;
 	LoadResource();	
-
-	// Update depth Stencil
-	if (depthTestEnabled == true)
-	{
-		if (pDepthStencil == 0)
-			pDepthStencil = new D3D9DepthStencil(pGraphicsService, width, height);
-		else
-			pDepthStencil->SetDepthStencil(width, height);
-	}
-	else
-	{
-		if (pDepthStencil != 0)
-		{
-			delete pDepthStencil;
-			pDepthStencil = 0;
-		}
-	}
 }
+
 void mini3d::D3D9RenderTargetTexture::LoadResource(void)
 {
-	/// Allocate buffer on the graphics card and add index data.
+	isDirty = true;	
+
+	// Get handle to device
 	IDirect3DDevice9* pDevice = pGraphicsService->GetDevice();
+	
+	// Check handle is valid
 	if (pDevice == 0)
-	{
-		isDirty = true;	
 		return;
-	}
+
+	bool setRenderTargetToThis = (pGraphicsService->GetRenderTarget() == this);
+
+	bool renderTargetIsDirty = !LoadRenderTarget(pDevice);
+	bool depthStencilIsDirty = !LoadDepthStencil(pDevice);
+
+	// restore rendertarget if neccessary
+	if (setRenderTargetToThis == true && pGraphicsService->GetRenderTarget() != this)
+		pGraphicsService->SetRenderTarget(this);
+
+	isDirty = renderTargetIsDirty || depthStencilIsDirty;
+}
+
+bool mini3d::D3D9RenderTargetTexture::LoadRenderTarget(IDirect3DDevice9* pDevice)
+{
 
 	// If the buffer exists but is not the correct size, tear it down and recreate it
-	if (pRenderTarget != 0 && (bufferWidth != width || bufferHeight != height))
+	if (pRenderTarget != 0)
 	{
-		UnloadResource();
+		D3DSURFACE_DESC desc;
+		pRenderTarget->GetLevelDesc(0, &desc);
+		
+		if (desc.Width != width || desc.Height != height)
+		{
+			UnloadRenderTarget();
+		}
 	}
 
 	// If it does not exist, create a new one
@@ -81,21 +86,61 @@ void mini3d::D3D9RenderTargetTexture::LoadResource(void)
 		// X8R8G8B8
 		if( FAILED( pDevice->CreateTexture(width, height, 1, D3DUSAGE_RENDERTARGET, D3DFMT_X8R8G8B8, D3DPOOL_DEFAULT, &pRenderTarget, 0 ) ) ) 
 		{
-			isDirty = true;
-			return;
+			return false;
 		}
 		
 		// Capture the render target surfrace to avoid reference counting in directx
 		pRenderTarget->GetSurfaceLevel(0, &pRenderTargetSurface);
 	}
 
-	bufferWidth = width;
-	bufferHeight = height;
-	isDirty = false;
-
+	return true;
 }
 
-void mini3d::D3D9RenderTargetTexture::UnloadResource(void)
+bool mini3d::D3D9RenderTargetTexture::LoadDepthStencil(IDirect3DDevice9* pDevice)
+{
+	// If depth test is disabled, unload the depth stencil and return ok!
+	if (depthTestEnabled == false)
+	{
+		UnloadDepthStencil();
+		return true;
+	}
+
+	// If the buffer exists but is not the correct size, tear it down and recreate it
+	if (pDepthStencil != 0)
+	{
+		D3DSURFACE_DESC desc;
+		pDepthStencil->GetDesc(&desc);
+		
+		if (desc.Width != width || desc.Height != height)
+		{
+			UnloadDepthStencil();
+		}
+	}
+
+	D3DPRESENT_PARAMETERS pp = pGraphicsService->GetPresentationParameters();
+
+	// If it does not exist, create a new one
+	if (pDepthStencil == 0)
+	{
+		if( FAILED( pDevice->CreateDepthStencilSurface(width, height, pp.AutoDepthStencilFormat, pp.MultiSampleType, pp.MultiSampleQuality, true, &pDepthStencil, 0 ))) 
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
+void mini3d::D3D9RenderTargetTexture::UnloadResource()
+{
+	UnloadRenderTarget();
+	UnloadDepthStencil();
+
+	isDirty = true;
+}
+
+
+void mini3d::D3D9RenderTargetTexture::UnloadRenderTarget()
 {
 	if (pRenderTarget != 0)
 	{
@@ -114,6 +159,13 @@ void mini3d::D3D9RenderTargetTexture::UnloadResource(void)
 		pRenderTarget->Release();
 		pRenderTarget = 0;
 	}
+}
 
-	isDirty = true;
+void mini3d::D3D9RenderTargetTexture::UnloadDepthStencil()
+{
+	if (pDepthStencil != 0)
+	{
+		pDepthStencil->Release();
+		pDepthStencil = 0;
+	}
 }

@@ -25,7 +25,6 @@
 #include "D3D9VertexBuffer.h"
 #include "D3D9IndexBuffer.h"
 #include "D3D9RenderTargetTexture.h"
-#include "D3D9DepthStencil.h"
 #include "D3D9WindowRenderTarget.h"
 
 
@@ -90,7 +89,6 @@ private:
 	
 	// currently loaded resources
 	IRenderTarget* pCurrentRenderTarget;
-	D3D9DepthStencil* pCurrentDepthStencil;
 	IVertexBuffer* pCurrentVertexBuffer;
 	IIndexBuffer* pCurrentIndexBuffer;
 	IPixelShader* pCurrentPixelShader;
@@ -100,7 +98,6 @@ private:
 
 	// Device lost graphics state
 	IRenderTarget* pLostDeviceRenderTarget;
-	D3D9DepthStencil* pLostDeviceDepthStencil;
 	IVertexBuffer* pLostDeviceVertexBuffer;
 	IIndexBuffer* pLostDeviceIndexBuffer;
 	IPixelShader* pLostDevicePixelShader;
@@ -179,9 +176,6 @@ public:
 	virtual IRenderTarget* GetRenderTarget() const;
 	virtual void SetRenderTarget(IRenderTarget* pRenderTarget);
 	
-	virtual D3D9DepthStencil* GetDepthStencil() const;
-	virtual void SetDepthStencil(D3D9DepthStencil* pDepthStencil);
-
 	// Shader Parameters
 	virtual void SetShaderParameterFloat(const unsigned int& index, const float* pData, const unsigned int& count);
 	virtual void SetShaderParameterInt(const unsigned int& index, const int* pData, const unsigned int& count);

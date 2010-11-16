@@ -38,9 +38,6 @@ float rotX = 3.1415f / 4.0f; // three quater spin
 float rotY = -3.1415f / 4.0f; // three quater spin
 float distance = 10.0f; // medium distance :)
 
-// current window size
-int width = 640;
-int height = 480;
 
 // ----- DECLARE GRAPHICS RESOURCES -------------------------------------------
 
@@ -163,9 +160,12 @@ void UpdateViewProjectionMatrix()
 	M3DVector target(0,0,0);
 	M3DVector up(0,-1,0);
 
+	float windowWidth = (float)(pWindowRenderTarget->GetWidth() | 1);
+	float windowHeight = (float)(pWindowRenderTarget->GetHeight() | 1);
+
 	// update camera
 	M3DMatrix::LookAt(viewMatrixE, eye, target, up);
-	M3DMatrix::PerspectiveProjection(projectionMatrixE, (float)(3.1416f / 4.0f), (float)width/(float)height, 40.0f / 100.0f, 80.0f);
+	M3DMatrix::PerspectiveProjection(projectionMatrixE, (float)(3.1416f / 4.0f), windowWidth/windowHeight, 40.0f / 100.0f, 80.0f);
 	M3DMatrix viewProjectionMatrixE = viewMatrixE * projectionMatrixE;
 
 	// set a shader parameter
@@ -187,8 +187,6 @@ void WndMessage(utilities::OSWindow* window, utilities::OSWindow::WindowMessage 
 			exitApplication = true;
 		break;
 		case utilities::OSWindow::SIZE:
-			width = window->GetWidth();
-			height = window->GetHeight();
 			pWindowRenderTarget->SetScreenStateWindowed();
 			Render();
 		break;

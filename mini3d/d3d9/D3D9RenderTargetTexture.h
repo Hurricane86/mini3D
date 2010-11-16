@@ -48,7 +48,7 @@ public:
 	// ::::: ID3D9RenderTarget :::::::::::::::::::::::::::::::::::::::::::::::::
 
 	virtual IDirect3DSurface9* GetRenderTargetBuffer() const { return pRenderTargetSurface; };
-	virtual D3D9DepthStencil* GetDepthStencil() const { return pDepthStencil; };
+	virtual IDirect3DSurface9* GetDepthStencil() const { return pDepthStencil; };
 	virtual bool GetFullscreenCompatible() const { return true; };
 	virtual bool GetWindowedCompatible() const { return true; };
 
@@ -57,6 +57,14 @@ public:
 
 	virtual IDirect3DTexture9* GetTextureBuffer() const { return pRenderTarget; };
 
+
+	// ::::: Private Methods :::::::::::::::::::::::::::::::::::::::::::::::::::
+
+	bool LoadRenderTarget(IDirect3DDevice9* pDevice);
+	bool LoadDepthStencil(IDirect3DDevice9* pDevice);
+
+	void UnloadRenderTarget();
+	void UnloadDepthStencil();
 
 private:
 
@@ -70,10 +78,8 @@ private:
 	bool isDirty;
 
 	// Buffer
-	unsigned int bufferWidth;
-	unsigned int bufferHeight;
 	IDirect3DTexture9* pRenderTarget;
-	D3D9DepthStencil* pDepthStencil;
+	IDirect3DSurface9* pDepthStencil;
 	IDirect3DSurface9* pRenderTargetSurface;
 	
 
