@@ -910,6 +910,8 @@ void mini3d::D3D9GraphicsService::DrawIndices(const unsigned int& startIndex, co
 // Clear
 void mini3d::D3D9GraphicsService::Clear(const float& r, const float& g, const float& b, const float& a)
 {
+	if (deviceLost == true)
+		return;
 
 	DWORD flags = D3DCLEAR_TARGET;
 	

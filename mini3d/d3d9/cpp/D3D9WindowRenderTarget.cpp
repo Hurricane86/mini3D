@@ -27,14 +27,14 @@ mini3d::D3D9WindowRenderTarget::~D3D9WindowRenderTarget(void)
 		delete pDepthStencil;
 }
 
-void mini3d::D3D9WindowRenderTarget::SetFullscreenSize(const int& width, const int& height)
+void mini3d::D3D9WindowRenderTarget::SetFullscreenSize(const unsigned int& width, const unsigned int& height)
 { 
 
 	if (fullscreenWidth == width && fullscreenHeight == height)
 		return;
 	
-	fullscreenWidth = width | 1; 
-	fullscreenHeight = height | 1;
+	fullscreenWidth = width; 
+	fullscreenHeight = height;
 
 	if (pGraphicsService->GetRenderTarget() == this) 
 		pGraphicsService->SetRenderTarget(this); 
@@ -45,10 +45,15 @@ void mini3d::D3D9WindowRenderTarget::SetScreenStateWindowed()
 	SetScreenState(SCREEN_STATE_WINDOWED);
 }
 
-void mini3d::D3D9WindowRenderTarget::SetScreenStateFullscreen(const int& fullscreenWidth, const int& fullscreenHeight)
+void mini3d::D3D9WindowRenderTarget::SetScreenStateFullscreen(const unsigned int& fullscreenWidth, const unsigned int& fullscreenHeight)
 {
-	this->fullscreenWidth = fullscreenWidth;
-	this->fullscreenHeight = fullscreenHeight;
+	unsigned int tempFullscreenWidth = fullscreenWidth;
+	unsigned int tempFullscreenHeight = fullscreenHeight;
+
+	GetClosestCompatibleResolution(tempFullscreenWidth, tempFullscreenHeight);
+
+	this->fullscreenWidth = tempFullscreenWidth;
+	this->fullscreenHeight = tempFullscreenHeight;
 
 	SetScreenState(SCREEN_STATE_FULLSCREEN);
 }
@@ -283,4 +288,79 @@ LRESULT CALLBACK mini3d::D3D9WindowRenderTarget::HookWndProc(HWND hwnd, UINT msg
 	}
 
 	return CallWindowProc(screenRenderTarget->pOrigProc, hwnd, msg, wParam, lParam);
+}
+
+void mini3d::D3D9WindowRenderTarget::GetClosestCompatibleResolution(unsigned int &width, unsigned int &height)
+{
+
+	// Get the current device mode
+	DEVMODE currentDM = {0};
+	currentDM.dmSize = sizeof(currentDM);
+	EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &currentDM);
+
+	// If width or height = 0 set them to the current desktop resolution
+	if (width == 0 || height == 0)
+	{
+		width = currentDM.dmPelsWidth;
+		height = currentDM.dmPelsHeight;
+
+		// We are done, return
+		return;
+	}
+
+	// initialize the device mode structure for requested device mode
+	DEVMODE requestedDM;
+	memcpy(&requestedDM, &currentDM, sizeof(currentDM));
+	requestedDM.dmPelsWidth = width;
+	requestedDM.dmPelsHeight = height;
+
+	// initialize the device mode structure for best match
+	DEVMODE bestDM;
+	memcpy(&bestDM, &currentDM, sizeof(currentDM));
+
+	// Difference in area between best match and 
+	unsigned int bestMatchAreaDifference = ScoreDeviceModeMatch(requestedDM, currentDM); 
+
+	// initialize the device mode structure for looping over all device modes
+	DEVMODE dm = {0};
+	dm.dmSize = sizeof(dm);
+
+	// loop variable
+	unsigned int i = 0;
+
+	// Loop over all display settings and find the best match
+	// EnumDisplaySettings returns 0 when we request a displaymode id that is out of range
+	while (EnumDisplaySettings(NULL, i++, &dm) != 0)
+	{
+		// skip modes with wrong color bit depth
+		if (dm.dmBitsPerPel != currentDM.dmBitsPerPel)
+			continue;
+
+		// skip modes with wrong display orientation
+		if (dm.dmOrientation != currentDM.dmOrientation)
+			continue;
+
+		unsigned int diff = ScoreDeviceModeMatch(requestedDM, dm);
+
+		if (diff < bestMatchAreaDifference)
+		{
+			memcpy(&bestDM, &dm, sizeof(dm));
+			bestMatchAreaDifference = diff;
+		}
+	}
+	
+	// Update return values
+	width = bestDM.dmPelsWidth;
+	height = bestDM.dmPelsHeight;
+}
+
+unsigned int mini3d::D3D9WindowRenderTarget::ScoreDeviceModeMatch(const DEVMODE &dm1, const DEVMODE &dm2)
+{
+	// Score the similarity of the display modes by getting the difference between widths, heights and frequencies.
+	// We get the total score when we add their absolute values together.
+	unsigned int score = (unsigned int)(abs((double)(dm1.dmPelsWidth - dm2.dmPelsWidth)) + 
+										abs((double)(dm1.dmPelsHeight - dm2.dmPelsHeight)) + 
+										abs((double)(dm1.dmDisplayFrequency - dm2.dmDisplayFrequency)));
+
+	return score;
 }

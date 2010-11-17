@@ -41,7 +41,7 @@ public:
 	ScreenState GetScreenState() const { return screenState; }
 
 	virtual void SetScreenStateWindowed();
-	virtual void SetScreenStateFullscreen(const int& fullscreenWidth, const int& fullscreenHeight);
+	virtual void SetScreenStateFullscreen(const unsigned int& fullscreenWidth, const unsigned int& fullscreenHeight);
 
 	virtual void Display();
 
@@ -67,7 +67,7 @@ public:
 	// ::::: Public Methods :::::::::::::::::::::::::::::::::::::::::::::::::::
 
 	void SetScreenState(ScreenState value);
-	virtual void SetFullscreenSize(const int& width, const int& height);
+	virtual void SetFullscreenSize(const unsigned int& width, const unsigned int& height);
 
 
 private:
@@ -81,6 +81,9 @@ private:
 
 	void UnloadRenderTarget();
 	void UnloadDepthStencil();
+
+	void GetClosestCompatibleResolution(unsigned int &width, unsigned int &height);
+	unsigned int ScoreDeviceModeMatch(const DEVMODE &dm1, const DEVMODE &dm2);
 
 	static LRESULT CALLBACK HookWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 

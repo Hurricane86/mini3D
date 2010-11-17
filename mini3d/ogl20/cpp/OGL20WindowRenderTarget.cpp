@@ -26,7 +26,7 @@ mini3d::OGL20WindowRenderTarget::~OGL20WindowRenderTarget(void)
 	pGraphicsService->RemoveResource(this);
 }
 
-void mini3d::OGL20WindowRenderTarget::SetFullscreenSize(const int& width, const int& height)
+void mini3d::OGL20WindowRenderTarget::SetFullscreenSize(const unsigned int& width, const unsigned int& height)
 { 
 
 	if (fullscreenWidth == width && fullscreenHeight == height)
@@ -57,7 +57,7 @@ void mini3d::OGL20WindowRenderTarget::SetScreenStateWindowed()
 	UpdateSize();
 }
 
-void mini3d::OGL20WindowRenderTarget::SetScreenStateFullscreen(const int& fullscreenWidth, const int& fullscreenHeight)
+void mini3d::OGL20WindowRenderTarget::SetScreenStateFullscreen(const unsigned int& fullscreenWidth, const unsigned int& fullscreenHeight)
 {
 	this->fullscreenWidth = fullscreenWidth;
 	this->fullscreenHeight = fullscreenHeight;

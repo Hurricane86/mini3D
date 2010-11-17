@@ -158,7 +158,7 @@ public:
 	@param fullscreenHeight Height of the render target in fullscreen mode.
 	@see ScreenState
 */
-	virtual void SetScreenStateFullscreen(const int& fullscreenWidth, const int& fullscreenHeight) = 0;
+	virtual void SetScreenStateFullscreen(const unsigned int& fullscreenWidth, const unsigned int& fullscreenHeight) = 0;
 
 /**
 	This function shall be called when all rendering to the screen render target
