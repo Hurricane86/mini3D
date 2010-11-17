@@ -198,14 +198,10 @@ void WndMessage(utilities::OSWindow* window, utilities::OSWindow::WindowMessage 
 			if ((window->GetKey() & window->VKC_F12) == window->VKC_F12)
 			{
 				if (pWindowRenderTarget->GetScreenState() == mini3d::IWindowRenderTarget::SCREEN_STATE_WINDOWED)
-				{
-					pWindowRenderTarget->SetScreenStateFullscreen(1280,800);
-				}
+					pWindowRenderTarget->SetScreenStateFullscreen(800,600);
 				else
-				{
 					pWindowRenderTarget->SetScreenStateWindowed();
-				}
-				// Refresh the screen
+
 				Render();
 			}
 		break;

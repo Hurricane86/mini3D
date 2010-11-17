@@ -112,14 +112,12 @@ private:
 
 	// other variables
 	HWND hWindow;
-	HWND hInternalWindow;
 	IDirect3D9* pD3D;
 	IDirect3DDevice9* pDevice;
 	bool deviceLost;
 	bool isFullscreen;
 	bool defaultDepthStencil;
 
-	//IDirect3DSurface9* pCurrentDepthStencilBuffer;
 	IDirect3DSurface9* pDefaultRenderTarget;
 	IDirect3DSurface9* pDefaultDepthStencilSurface;
 	IWindowRenderTarget* pDefaultSwapChain;
@@ -151,7 +149,6 @@ public:
 
 	// Create Resources
 	virtual IWindowRenderTarget* CreateWindowRenderTarget(const int& hWindow, const bool& depthTestEnabled, const IWindowRenderTarget::Quality& quality);
-//	virtual IFullscreenRenderTarget* CreateFullscreenRenderTarget(const unsigned int& width, const unsigned int& height, const int& hWindow, const bool& depthTestEnabled, const IFullscreenRenderTarget::Quality& quality);
 	virtual IRenderTargetTexture* CreateRenderTargetTexture(const unsigned int& width, const unsigned int& height, const bool& depthTestEnabled);
 	virtual IBitmapTexture* CreateBitmapTexture(const void* pBitmap, const unsigned int& width, const unsigned int& height, const IBitmapTexture::BitDepth bitDepth = IBitmapTexture::BIT_32, const ITexture::WrapStyle wrapStyle = ITexture::WRAP_TILE);
 	virtual IVertexBuffer* CreateVertexBuffer(const void* pVertices,const  unsigned int& count, const unsigned int& vertexSizeInBytes);
@@ -204,8 +201,11 @@ private:
 
 	// INTERNAL HELPER FUNCTIONS ----------------------------------------------
 
+	// Init and Dispose
+	void Init();
+	void Dispose();
+
 	// Device creation
-	void CreateDevice();
 	void CreateInternalWindow();
 
 	// Drawing Graphics
@@ -223,7 +223,11 @@ private:
 	void SaveGraphicsState();
 	void RestoreGraphicsState();
 	void HandleLostDevice();
+
 	void RecreateDevice();
+	void TearDownDevice();
+	void CreateDevice();
+
 	void ResetDevice();
 	void ReleaseDevice();
 	void RestoreDevice();

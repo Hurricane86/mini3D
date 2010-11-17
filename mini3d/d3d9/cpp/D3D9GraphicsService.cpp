@@ -14,28 +14,61 @@
 mini3d::D3D9GraphicsService::D3D9GraphicsService() :
 pD3D(0), pDevice(0), isDrawingScene(false), deviceLost(true), lostDeviceCurrentITextures(0), currentITextures(0), isFullscreen(false), pCurrentRenderTarget(0), pDefaultSwapChain(0) 
 {
-	CreateInternalWindow();
+	Init();
 	CreateDevice();
 }
+
 mini3d::D3D9GraphicsService::~D3D9GraphicsService()
 {
+	TearDownDevice();
+	Dispose();
+}
 
-	UnloadResources();
+void mini3d::D3D9GraphicsService::Init()
+{
+	if (pD3D == 0)
+		pD3D=Direct3DCreate9(D3D_SDK_VERSION);
 
-	if (pDefaultRenderTarget != 0)
-		pDefaultRenderTarget->Release();
-	
-	if (pDefaultDepthStencilSurface != 0)
-		pDefaultDepthStencilSurface->Release();
+	if (pD3D == 0)
+	{
+		throw Error::MINI3D_ERROR_UNKNOWN;
+	}
 
-	if (pDevice != 0)
-		pDevice->Release();
+	// Set the texture arrays to correct size
+	pD3D->GetDeviceCaps(0, D3DDEVTYPE_HAL, &deviceCaps);
+
+	if (lostDeviceCurrentITextures != 0)
+		delete[] lostDeviceCurrentITextures;
+
+	lostDeviceCurrentITextures = new ITexture*[deviceCaps.MaxSimultaneousTextures];
+
+	if (currentITextures != 0)
+		delete[] currentITextures;
+
+	currentITextures = new ITexture*[deviceCaps.MaxSimultaneousTextures];
+	memset(currentITextures, 0, deviceCaps.MaxSimultaneousTextures * sizeof(ITexture*));
+
+	// Create the window to hold the default render target
+	CreateInternalWindow();
+}
+
+void mini3d::D3D9GraphicsService::Dispose()
+{
+	if (lostDeviceCurrentITextures != 0)
+	{
+		delete[] lostDeviceCurrentITextures;
+		lostDeviceCurrentITextures = 0;
+	}
+
+	if (currentITextures != 0)
+	{
+		delete[] currentITextures;
+		lostDeviceCurrentITextures = 0;
+	}
 
 	if (pD3D != 0)
 		pD3D->Release();
 }
-
-
 
 // Friend Functions -----------------------------------------------------------
 
@@ -52,57 +85,6 @@ D3DPRESENT_PARAMETERS mini3d::D3D9GraphicsService::GetPresentationParameters()
 
 
 // Private helper methods -----------------------------------------------------
-
-void mini3d::D3D9GraphicsService::CreateDevice()
-{
-	if (pD3D == 0)
-		pD3D=Direct3DCreate9(D3D_SDK_VERSION);
-
-	if (pD3D == 0)
-	{
-		throw Error::MINI3D_ERROR_UNKNOWN;
-	}
-
-	pD3D->GetDeviceCaps(0, D3DDEVTYPE_HAL, &deviceCaps);
-
-	if (lostDeviceCurrentITextures != 0)
-		delete[] lostDeviceCurrentITextures;
-
-	lostDeviceCurrentITextures = new ITexture*[deviceCaps.MaxSimultaneousTextures];
-
-	if (currentITextures != 0)
-		delete[] currentITextures;
-
-	currentITextures = new ITexture*[deviceCaps.MaxSimultaneousTextures];
-	memset(currentITextures, 0, deviceCaps.MaxSimultaneousTextures * sizeof(ITexture*));
-	
-	// if we are not in fullscreen mode then pDefaultSwapChain == 0
-	D3DPRESENT_PARAMETERS d3dpp = D3D9PresentationParameters::GetPresentationParametersFromGraphicsSettings(pD3D, pDefaultSwapChain);
-	presentationParameters = d3dpp;
-
-	if (FAILED(pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, (HWND)hWindow, D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dpp, &pDevice)))
-	{
-		if (FAILED(pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, (HWND)hWindow, D3DCREATE_MIXED_VERTEXPROCESSING, &d3dpp, &pDevice)))
-		{
-			if (FAILED(pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, (HWND)hWindow, D3DCREATE_SOFTWARE_VERTEXPROCESSING, &d3dpp, &pDevice)))
-			{				
-				throw Error::MINI3D_ERROR_UNKNOWN;
-			}
-		}
-	}
-
-	// pDefaultSwapChain is 0 if we are not in fullscreen mode
-	pCurrentRenderTarget = pDefaultSwapChain;
-	
-	// Device created correctly, set device lost to false
-	deviceLost = false;
-
-	// store the default back buffer so we can put it back when we reset the device
-	pDevice->GetRenderTarget(0, &pDefaultRenderTarget);
-
-	// get the depthstencil even if it might be 0
-	pDevice->GetDepthStencilSurface(&pDefaultDepthStencilSurface);
-}
 
 LRESULT CALLBACK D3D9WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -145,8 +127,7 @@ void mini3d::D3D9GraphicsService::CreateInternalWindow()
 		return;
     }
 
-	hWindow = CreateWindowEx(WS_EX_CLIENTEDGE, L"D3D9InternalWindowClass", L"HiddenWindow", 0, CW_USEDEFAULT, CW_USEDEFAULT, 0, 0, HWND_MESSAGE, 0, hInstance, 0);
-	hInternalWindow = hWindow;
+	hWindow = CreateWindowEx(WS_EX_CLIENTEDGE, L"D3D9InternalWindowClass", L"HiddenWindow", 0, CW_USEDEFAULT, CW_USEDEFAULT, 800, 600, HWND_MESSAGE, 0, hInstance, 0);
 }
 
 // Resource Management
@@ -184,19 +165,16 @@ void mini3d::D3D9GraphicsService::SaveGraphicsState()
 	pLostDeviceRenderTarget = pCurrentRenderTarget; 
 	pCurrentRenderTarget = 0;
 
-//	pLostDeviceDepthStencil = pCurrentDepthStencil; 
-//	pCurrentDepthStencil = 0;
-
 	pLostDeviceVertexBuffer = pCurrentVertexBuffer; 
 	pCurrentVertexBuffer = 0;
 
 	pLostDeviceIndexBuffer = pCurrentIndexBuffer; 
 	pCurrentIndexBuffer = 0;
 
-//	pLostDevicePixelShader = pCurrentPixelShader; 
+	pLostDevicePixelShader = pCurrentPixelShader; 
 	pCurrentPixelShader = 0;
 
-//	pLostDeviceVertexShader = pCurrentVertexShader; 
+	pLostDeviceVertexShader = pCurrentVertexShader; 
 	pCurrentVertexShader = 0;
 
 	pLostDeviceShaderProgram = pCurrentShaderProgram;
@@ -211,16 +189,130 @@ void mini3d::D3D9GraphicsService::SaveGraphicsState()
 void mini3d::D3D9GraphicsService::RestoreGraphicsState()
 {
 	SetRenderTarget(pLostDeviceRenderTarget);
-//	SetDepthStencil(pLostDeviceDepthStencil);
 	SetVertexBuffer(pLostDeviceVertexBuffer);
 	SetIndexBuffer(pLostDeviceIndexBuffer);
-//	SetPixelShader(pLostDevicePixelShader);
-//	SetVertexShader(pLostDeviceVertexShader);
+	SetPixelShader(pLostDevicePixelShader);
+	SetVertexShader(pLostDeviceVertexShader);
 	SetShaderProgram(pLostDeviceShaderProgram);
 	for (unsigned int i = 0; i < GetMaxTextures(); i++)
 		SetTexture(lostDeviceCurrentITextures[i], i);
 
 }
+
+void mini3d::D3D9GraphicsService::RecreateDevice()
+{
+	// Tear down the old device
+	TearDownDevice();
+
+	// try to recreate the device
+	// this will throw an error if the driver is broken so there is no need to do that explicitly
+	CreateDevice();
+
+	// Reload the resources
+	UpdateResources();
+
+	// put back the stored graphics pipeline states
+	RestoreGraphicsState();
+}
+
+void mini3d::D3D9GraphicsService::CreateDevice()
+{
+	
+	// if we are not in fullscreen mode then pDefaultSwapChain == 0
+	D3DPRESENT_PARAMETERS d3dpp = D3D9PresentationParameters::GetPresentationParametersFromGraphicsSettings(pD3D, pDefaultSwapChain);
+	presentationParameters = d3dpp;
+
+	if (FAILED(pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, (HWND)hWindow, D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dpp, &pDevice)))
+	{
+		if (FAILED(pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, (HWND)hWindow, D3DCREATE_MIXED_VERTEXPROCESSING, &d3dpp, &pDevice)))
+		{
+			if (FAILED(pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, (HWND)hWindow, D3DCREATE_SOFTWARE_VERTEXPROCESSING, &d3dpp, &pDevice)))
+			{				
+				throw Error::MINI3D_ERROR_UNKNOWN;
+			}
+		}
+	}
+
+	// pDefaultSwapChain is 0 if we are not in fullscreen mode
+	pCurrentRenderTarget = pDefaultSwapChain;
+	
+	// Device created correctly, set device lost to false
+	deviceLost = false;
+
+	// store the default back buffer so we can put it back when we reset the device
+	pDevice->GetRenderTarget(0, &pDefaultRenderTarget);
+
+	// get the depthstencil even if it might be 0
+	pDevice->GetDepthStencilSurface(&pDefaultDepthStencilSurface);
+}
+
+void mini3d::D3D9GraphicsService::TearDownDevice()
+{
+	ReleaseDevice();
+
+	pDevice->Release();
+	pDevice = 0;
+}
+
+
+void mini3d::D3D9GraphicsService::ResetDevice()
+{
+	ReleaseDevice();
+
+	D3DPRESENT_PARAMETERS d3dpp = D3D9PresentationParameters::GetPresentationParametersFromGraphicsSettings(pD3D, pDefaultSwapChain);
+	presentationParameters = d3dpp;
+
+	RestoreDevice();
+}
+
+void mini3d::D3D9GraphicsService::RestoreDevice()
+{
+	D3DPRESENT_PARAMETERS pp = D3D9PresentationParameters::GetPresentationParametersFromGraphicsSettings(pD3D, pDefaultSwapChain);
+	int newDeviceState = pDevice->Reset(&pp);
+		
+	// if it was not successful, just return and try agian later
+	if (newDeviceState != D3D_OK)
+		return;
+
+	// capture the new default render target
+	pDevice->GetRenderTarget(0, &pDefaultRenderTarget);
+	pDevice->GetDepthStencilSurface(&pDefaultDepthStencilSurface);
+
+	//if it was succesful, reload all resources and set device lost to false
+	UpdateResources();
+
+	// put back the current graphics pipeline states
+	RestoreGraphicsState();
+
+	deviceLost = false;
+}
+
+void mini3d::D3D9GraphicsService::ReleaseDevice()
+{
+	deviceLost = true;
+
+	// Store away the current state of the graphics pipeline
+	SaveGraphicsState();
+
+	// unload all resources
+	UnloadResources();
+
+	// Release the default render target 
+	if (pDefaultRenderTarget != 0)
+	{
+		// This must be done after UnloadResources since UnloadResources restores
+		// the default render target
+		pDefaultRenderTarget->Release();
+		pDefaultRenderTarget = 0;
+	}
+
+	if (pDefaultDepthStencilSurface != 0)
+	{
+		pDefaultDepthStencilSurface->Release();
+		pDefaultDepthStencilSurface = 0;
+	}
+}
+
 
 void mini3d::D3D9GraphicsService::HandleLostDevice()
 {
@@ -253,82 +345,6 @@ void mini3d::D3D9GraphicsService::HandleLostDevice()
 	}
 }
 
-void mini3d::D3D9GraphicsService::ResetDevice()
-{
-	ReleaseDevice();
-
-	D3DPRESENT_PARAMETERS d3dpp = D3D9PresentationParameters::GetPresentationParametersFromGraphicsSettings(pD3D, pDefaultSwapChain);
-	presentationParameters = d3dpp;
-
-	RestoreDevice();
-}
-
-void mini3d::D3D9GraphicsService::RecreateDevice()
-{
-	ReleaseDevice();
-
-	pDevice->Release();
-	pDevice = 0;
-
-	pD3D->Release();
-	pD3D = 0;
-
-	// try to recreate the device
-	// this will throw an error if the driver is broken so there is no need to do that explicitly
-	CreateDevice();
-	UpdateResources();
-
-	// put back the stored graphics pipeline states
-	RestoreGraphicsState();
-}
-
-void mini3d::D3D9GraphicsService::ReleaseDevice()
-{
-	deviceLost = true;
-
-	// Store away the current state of the graphics pipeline
-	SaveGraphicsState();
-
-	// unload all resources
-	UnloadResources();
-
-	// Release the default render target 
-	if (pDefaultRenderTarget != 0)
-	{
-		// This must be done after UnloadResources since UnloadResources restores
-		// the default render target
-		pDefaultRenderTarget->Release();
-		pDefaultRenderTarget = 0;
-	}
-
-	if (pDefaultDepthStencilSurface != 0)
-	{
-		pDefaultDepthStencilSurface->Release();
-		pDefaultDepthStencilSurface = 0;
-	}
-}
-
-void mini3d::D3D9GraphicsService::RestoreDevice()
-{
-	D3DPRESENT_PARAMETERS pp = D3D9PresentationParameters::GetPresentationParametersFromGraphicsSettings(pD3D, pDefaultSwapChain);
-	int newDeviceState = pDevice->Reset(&pp);
-		
-	// if it was not successful, just return and try agian later
-	if (newDeviceState != D3D_OK)
-		return;
-
-	// capture the new default render target
-	pDevice->GetRenderTarget(0, &pDefaultRenderTarget);
-	pDevice->GetDepthStencilSurface(&pDefaultDepthStencilSurface);
-
-	//if it was succesful, reload all resources and set device lost to false
-	UpdateResources();
-
-	// put back the current graphics pipeline states
-	RestoreGraphicsState();
-
-	deviceLost = false;
-}
 
 // Vertex Declaration Pool
 void mini3d::D3D9GraphicsService::PoolVertexDeclaration(IVertexShader::VertexDataType vertexDeclaration[], const unsigned int& count)
@@ -921,10 +937,6 @@ mini3d::IWindowRenderTarget* mini3d::D3D9GraphicsService::CreateWindowRenderTarg
 {
 	return new D3D9WindowRenderTarget(this, hWindow, depthTestEnabled, quality);
 }
-//mini3d::IFullscreenRenderTarget* mini3d::D3D9GraphicsService::CreateFullscreenRenderTarget(const unsigned int& width, const unsigned int& height, const int& hWindow, const bool& depthTestEnabled, const IFullscreenRenderTarget::Quality& quality)
-//{
-//	return new D3D9FullscreenRenderTarget(this, width, height, hWindow, depthTestEnabled, quality);
-//}
 mini3d::IRenderTargetTexture* mini3d::D3D9GraphicsService::CreateRenderTargetTexture(const unsigned int& width, const unsigned int& height, const bool& depthTestEnabled)
 {
 	return new D3D9RenderTargetTexture(this, width, height, depthTestEnabled);
