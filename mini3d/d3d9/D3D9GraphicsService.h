@@ -207,6 +207,7 @@ private:
 
 	// Device creation
 	void CreateInternalWindow();
+	void DisposeInternalWindow();
 
 	// Drawing Graphics
 	virtual void BeginScene();

@@ -9,6 +9,7 @@
 #include "../D3D9GraphicsSettings.h"
 #include "../../error/error.h"
 
+
 // Constructor Destructor -----------------------------------------------------
 
 mini3d::D3D9GraphicsService::D3D9GraphicsService() :
@@ -66,6 +67,8 @@ void mini3d::D3D9GraphicsService::Dispose()
 		lostDeviceCurrentITextures = 0;
 	}
 
+	DisposeInternalWindow();
+
 	if (pD3D != 0)
 		pD3D->Release();
 }
@@ -86,21 +89,6 @@ D3DPRESENT_PARAMETERS mini3d::D3D9GraphicsService::GetPresentationParameters()
 
 // Private helper methods -----------------------------------------------------
 
-LRESULT CALLBACK D3D9WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-    switch(msg)
-    {
-        case WM_CLOSE:
-            DestroyWindow(hwnd);
-        break;
-        case WM_DESTROY:
-            PostQuitMessage(0);
-        break;
-        default:
-            return DefWindowProc(hwnd, msg, wParam, lParam);
-    }
-    return 0;
-}
 
 void mini3d::D3D9GraphicsService::CreateInternalWindow()
 {
@@ -110,7 +98,7 @@ void mini3d::D3D9GraphicsService::CreateInternalWindow()
 
     wc.cbSize        = sizeof(WNDCLASSEX);
     wc.style         = 0;
-    wc.lpfnWndProc   = D3D9WndProc;
+    wc.lpfnWndProc   = DefWindowProc;
     wc.cbClsExtra    = 0;
     wc.cbWndExtra    = 0;
     wc.hInstance     = hInstance;
@@ -129,6 +117,16 @@ void mini3d::D3D9GraphicsService::CreateInternalWindow()
 
 	hWindow = CreateWindowEx(WS_EX_CLIENTEDGE, L"D3D9InternalWindowClass", L"HiddenWindow", 0, CW_USEDEFAULT, CW_USEDEFAULT, 800, 600, HWND_MESSAGE, 0, hInstance, 0);
 }
+
+void mini3d::D3D9GraphicsService::DisposeInternalWindow()
+{
+	if (hWindow != 0)
+	{
+		DestroyWindow(hWindow);
+		hWindow = 0;
+	}
+}
+
 
 // Resource Management
 void mini3d::D3D9GraphicsService::UpdateResources()
