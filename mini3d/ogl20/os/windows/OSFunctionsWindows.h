@@ -45,7 +45,7 @@ public:
 
 	// GENERAL
 	virtual void GLSwapBuffers() const {};
-	virtual void GLBindFramebuffer(GLenum target, GLuint framebuffer) const { glBindFramebuffer(target, framebuffer); };
+	virtual void GLBindFramebuffer(GLenum target, GLuint framebuffer) const { glBindFramebufferEXT(target, framebuffer); };
 	//virtual void GLMakeCurrent(const DisplayContext displayContext, const WindowContext windowContext, const GLRenderingContext renderingContext) const {};
 	virtual void GLViewport(const unsigned int width, const unsigned int height) const {};
 
@@ -61,17 +61,17 @@ public:
 	virtual void GLBindTexture(GLenum target, GLuint texture) const { glBindTexture(target, texture); };
 	virtual void GLTexParameteri(GLenum target, GLenum pname, GLint params) const { glTexParameteri(target, pname, params); };	
 
-	virtual void GLGenRenderbuffers(GLsizei n, GLuint* renderbuffers) const { glGenRenderbuffers(n, renderbuffers); };
-	virtual void GLBindRenderbuffer(GLenum target, GLuint renderbuffer) const {glBindRenderbuffer(target, renderbuffer); };
-	virtual void GLRenderbufferStorage(GLenum target, GLenum internalformat, GLsizei width, GLsizei height) const { glRenderbufferStorage(target, internalformat, width, height); };
+	virtual void GLGenRenderbuffers(GLsizei n, GLuint* renderbuffers) const { glGenRenderbuffersEXT(n, renderbuffers); };
+	virtual void GLBindRenderbuffer(GLenum target, GLuint renderbuffer) const {glBindRenderbufferEXT(target, renderbuffer); };
+	virtual void GLRenderbufferStorage(GLenum target, GLenum internalformat, GLsizei width, GLsizei height) const { glRenderbufferStorageEXT(target, internalformat, width, height); };
 
-	virtual void GLDeleteRenderbuffers(GLsizei n, GLuint* renderbuffers) const { glDeleteRenderbuffers(n, renderbuffers); };
-	virtual void GLDeleteFramebuffers(GLsizei n, GLuint* framebuffers) const{ glDeleteFramebuffers(n, framebuffers); };
+	virtual void GLDeleteRenderbuffers(GLsizei n, GLuint* renderbuffers) const { glDeleteRenderbuffersEXT(n, renderbuffers); };
+	virtual void GLDeleteFramebuffers(GLsizei n, GLuint* framebuffers) const{ glDeleteFramebuffersEXT(n, framebuffers); };
 
-	virtual void GLGenFramebuffers(GLsizei n, GLuint* ids) const { glGenFramebuffers(n, ids); };
+	virtual void GLGenFramebuffers(GLsizei n, GLuint* ids) const { glGenFramebuffersEXT(n, ids); };
 
-	virtual void GLFramebufferTexture2D(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level) const { glFramebufferTexture2D(target, attachment, textarget, texture, level); };
-	virtual void GLFramebufferRenderbuffer(GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer) const { glFramebufferRenderbuffer(target, attachment, renderbuffertarget, renderbuffer); };
+	virtual void GLFramebufferTexture2D(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level) const { glFramebufferTexture2DEXT(target, attachment, textarget, texture, level); };
+	virtual void GLFramebufferRenderbuffer(GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer) const { glFramebufferRenderbufferEXT(target, attachment, renderbuffertarget, renderbuffer); };
 
 	// SHADER FUNCTIONS
 	virtual void GLUseProgram(GLuint program) const { glUseProgram(program); }; 
@@ -166,19 +166,19 @@ public:
 	PFNGLDISABLEVERTEXATTRIBARRAYPROC glDisableVertexAttribArray;
 	PFNGLVERTEXATTRIBPOINTERPROC glVertexAttribPointer;
 	PFNGLACTIVETEXTUREPROC glActiveTexture;
-	PFNGLBINDFRAMEBUFFERPROC glBindFramebuffer;
 
-	PFNGLGENRENDERBUFFERSPROC glGenRenderbuffers;
-	PFNGLBINDRENDERBUFFERPROC glBindRenderbuffer;
-	PFNGLRENDERBUFFERSTORAGEPROC glRenderbufferStorage;
+	PFNGLGENRENDERBUFFERSEXTPROC glGenRenderbuffersEXT;
+	PFNGLBINDRENDERBUFFEREXTPROC glBindRenderbufferEXT;
+	PFNGLBINDFRAMEBUFFERPROC glBindFramebufferEXT;
+	PFNGLRENDERBUFFERSTORAGEEXTPROC glRenderbufferStorageEXT;
 
-	PFNGLDELETERENDERBUFFERSPROC glDeleteRenderbuffers;
-	PFNGLDELETEFRAMEBUFFERSPROC glDeleteFramebuffers;
+	PFNGLDELETERENDERBUFFERSEXTPROC glDeleteRenderbuffersEXT;
+	PFNGLDELETEFRAMEBUFFERSEXTPROC glDeleteFramebuffersEXT;
 
-	PFNGLGENFRAMEBUFFERSPROC glGenFramebuffers;
+	PFNGLGENFRAMEBUFFERSEXTPROC glGenFramebuffersEXT;
 
-	PFNGLFRAMEBUFFERTEXTURE2DPROC glFramebufferTexture2D;
-	PFNGLFRAMEBUFFERRENDERBUFFERPROC glFramebufferRenderbuffer;
+	PFNGLFRAMEBUFFERTEXTURE2DEXTPROC glFramebufferTexture2DEXT;
+	PFNGLFRAMEBUFFERRENDERBUFFEREXTPROC glFramebufferRenderbufferEXT;
 	
 	PFNGLBINDBUFFERPROC glBindBuffer;
 	PFNGLMAPBUFFERPROC glMapBuffer;
