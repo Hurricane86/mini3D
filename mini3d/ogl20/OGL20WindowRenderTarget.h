@@ -69,14 +69,13 @@ public:
 
 	void SetScreenState(ScreenState value);
 
-	virtual unsigned int GetFullscreenWidth() const { return fullscreenWidth; };
-	virtual unsigned int GetFullscreenHeight() const { return fullscreenHeight; };
-	virtual void SetFullscreenSize(const unsigned int& width, const unsigned int& height);
-
 
 private:
 
 	// ::::: Private Methods :::::::::::::::::::::::::::::::::::::::::::::::::::
+
+	DEVMODE GetClosestCompatibleResolution(const unsigned int &width, const unsigned int &height);
+	unsigned int ScoreDeviceModeMatch(const DEVMODE &dm1, const DEVMODE &dm2);
 
 	virtual void UpdateSize();
 
@@ -100,8 +99,11 @@ private:
 	unsigned int width;
 	unsigned int height;
 
-	unsigned int fullscreenWidth;
-	unsigned int fullscreenHeight;
+	// Stores the original window position and size before entering fullscreen
+	RECT winRect;
+
+	// Stores the windowstyle for the window before changing it when entering fullscreen
+	long windowStyle;
 
 	MINI3D_WINDOW hWindow;
 

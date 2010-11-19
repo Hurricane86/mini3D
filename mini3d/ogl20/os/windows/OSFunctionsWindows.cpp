@@ -206,8 +206,8 @@ void mini3d::OSFunctions::SetRenderWindow(const HWND hWindow) const
 	else
 	{
 		HDC hDC = GetWindowDC((HWND)hWindow);
-		ChangeDisplaySettings(NULL,0);	// Switch back to the desktop default resolution stored in registry
-		ShowCursor(TRUE);	// Show mouse pointer
+		//ChangeDisplaySettings(NULL,0);	// Switch back to the desktop default resolution stored in registry
+		//ShowCursor(TRUE);	// Show mouse pointer
 			
 		GLBindFramebuffer(GL_FRAMEBUFFER, 0);
 		wglMakeCurrent(hDC, hRenderContext);

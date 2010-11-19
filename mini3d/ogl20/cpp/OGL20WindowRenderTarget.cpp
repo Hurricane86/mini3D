@@ -11,10 +11,8 @@
 std::map<MINI3D_WINDOW, mini3d::OGL20WindowRenderTarget*> mini3d::OGL20WindowRenderTarget::windowMap;
 
 mini3d::OGL20WindowRenderTarget::OGL20WindowRenderTarget(OGL20GraphicsService* pGraphicsService, const MINI3D_WINDOW windowHandle, const bool& depthTestEnabled, const Quality& quality) : 
-	pGraphicsService(pGraphicsService), pScreenRenderTarget(0), pDepthStencil(0), quality(quality), fullscreenWidth(0), fullscreenHeight(0), pOS(pGraphicsService->GetOS())
+	pGraphicsService(pGraphicsService), pScreenRenderTarget(0), pDepthStencil(0), quality(quality), pOS(pGraphicsService->GetOS())
 {
-	fullscreenWidth = 1680;
-	fullscreenHeight = 1050;
 	screenState = SCREEN_STATE_WINDOWED;
 	SetWindowRenderTarget(windowHandle, depthTestEnabled, quality);
 	pGraphicsService->AddResource(this);
@@ -26,43 +24,70 @@ mini3d::OGL20WindowRenderTarget::~OGL20WindowRenderTarget(void)
 	pGraphicsService->RemoveResource(this);
 }
 
-void mini3d::OGL20WindowRenderTarget::SetFullscreenSize(const unsigned int& width, const unsigned int& height)
-{ 
-
-	if (fullscreenWidth == width && fullscreenHeight == height)
-		return;
-	
-	fullscreenWidth = width; 
-	fullscreenHeight = height;
-
-	if (pGraphicsService->GetScreenRenderTarget() == this) 
-		pGraphicsService->SetRenderTarget(this); 
-}
-
-void mini3d::OGL20WindowRenderTarget::SetScreenState(ScreenState value)
-{ 
-	if (screenState == value)
-		return;
-
-	screenState = value;
-
-	if (pGraphicsService->GetScreenRenderTarget() == this) 
-		pGraphicsService->SetRenderTarget(this);
-}
-
 void mini3d::OGL20WindowRenderTarget::SetScreenStateWindowed()
 {
-	//SetScreenState(SCREEN_STATE_WINDOWED);
-	SetWindowRenderTarget(hWindow, depthTestEnabled, quality);
+	// Dont set the windowed screen state if it is already set
+	if (screenState == SCREEN_STATE_WINDOWED)
+		return;
+
+	// Restore window style
+	SetWindowLongPtr((HWND)hWindow, GWL_STYLE, windowStyle);
+
+	// Restore window size and position
+	SetWindowPos((HWND)hWindow,
+				 HWND_TOPMOST,
+				 winRect.left, 
+				 winRect.top, 
+				 winRect.right - winRect.left, 
+				 winRect.bottom - winRect.top, 
+				 SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+
+	// Restore desktop resolution
+	ChangeDisplaySettings(NULL, 0);
+
+	// Keep track of our new state
+	screenState = SCREEN_STATE_WINDOWED;
+
+	// Set the viewport
 	UpdateSize();
+
 }
 
-void mini3d::OGL20WindowRenderTarget::SetScreenStateFullscreen(const unsigned int& fullscreenWidth, const unsigned int& fullscreenHeight)
+void mini3d::OGL20WindowRenderTarget::SetScreenStateFullscreen(const unsigned int& width, const unsigned int& height)
 {
-	this->fullscreenWidth = fullscreenWidth;
-	this->fullscreenHeight = fullscreenHeight;
+	// Get the Device Mode that is closest to the requested resolution
+	DEVMODE dm = GetClosestCompatibleResolution(width, height);
 
-	SetScreenState(SCREEN_STATE_FULLSCREEN);
+	// If we are already in fullscreen mode and the requested resolution is the same as the current one, dont set it again.
+	if ((screenState == SCREEN_STATE_FULLSCREEN) && (this->width = dm.dmPelsWidth) && (this->height = dm.dmPelsHeight))
+		return;
+
+	// if we are not already in fullscreen state, capture the original window settings before we change them
+	if (screenState == SCREEN_STATE_WINDOWED)
+	{
+		// Capture window style
+		windowStyle = GetWindowLongPtr((HWND)hWindow, GWL_STYLE);
+			
+		// Capture window position
+		GetWindowRect((HWND)hWindow, &winRect);
+	}
+
+	// Make the window fullscreen and the same size as the fullscreen desktop
+	SetWindowLongPtr((HWND)hWindow, GWL_STYLE, WS_POPUP);
+	SetWindowPos((HWND)hWindow, HWND_TOPMOST, 0, 0, dm.dmPelsWidth, dm.dmPelsHeight, SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+
+	// Change Screen Resolution
+	if (ChangeDisplaySettings(&dm, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)
+	{      
+		MessageBox(NULL, L"Display mode failed", NULL, MB_OK);
+		return;
+	}
+
+	// Keep track of our new state
+	screenState = SCREEN_STATE_FULLSCREEN;
+
+	// Set the viewport
+	UpdateSize();
 }
 
 void mini3d::OGL20WindowRenderTarget::SetWindowRenderTarget(const MINI3D_WINDOW windowHandle, const bool& depthTestEnabled, const Quality& quality)
@@ -117,12 +142,10 @@ void mini3d::OGL20WindowRenderTarget::UnloadResource(void)
 
 void mini3d::OGL20WindowRenderTarget::UpdateSize()
 {
-	pGraphicsService->GetOS()->GetClientAreaSize(hWindow, width, height);
-	//SetWindowRenderTarget(hWindow, depthTestEnabled, quality);
-	
 	// if the rendertarget is currently set, update the viewport
 	if (pGraphicsService->GetRenderTarget() == this)
 	{
+		pGraphicsService->GetOS()->GetClientAreaSize(hWindow, width, height);
 		glViewport(0,0,width,height);
 	}
 }
@@ -173,4 +196,71 @@ LRESULT CALLBACK mini3d::OGL20WindowRenderTarget::HookWndProc(HWND hwnd, UINT ms
 
 	return CallWindowProc(windowRenderTarget->pOrigProc, hwnd, msg, wParam, lParam);
 }
+
+DEVMODE mini3d::OGL20WindowRenderTarget::GetClosestCompatibleResolution(const unsigned int &width, const unsigned int &height)
+{
+
+	// Get the current device mode
+	DEVMODE currentDM = {0};
+	currentDM.dmSize = sizeof(currentDM);
+	EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &currentDM);
+
+	// If width or height = 0 set them to the current desktop resolution
+	if (width == 0 || height == 0)
+		return currentDM;
+
+	// initialize the device mode structure for requested device mode
+	DEVMODE requestedDM = currentDM;
+	requestedDM.dmPelsWidth = width;
+	requestedDM.dmPelsHeight = height;
+
+	// initialize the device mode structure for best match
+	DEVMODE bestDM = currentDM;
+
+	// Difference in area between best match and 
+	unsigned int bestMatchAreaDifference = ScoreDeviceModeMatch(requestedDM, currentDM); 
+
+	// initialize the device mode structure for looping over all device modes
+	DEVMODE dm = {0};
+	dm.dmSize = sizeof(dm);
+
+	// loop variable
+	unsigned int i = 0;
+
+	// Loop over all display settings and find the best match
+	// EnumDisplaySettings returns 0 when we request a displaymode id that is out of range
+	while (EnumDisplaySettings(NULL, i++, &dm) != 0)
+	{
+		// skip modes with wrong color bit depth
+		if (dm.dmBitsPerPel != currentDM.dmBitsPerPel)
+			continue;
+
+		// skip modes with wrong display orientation
+		if (dm.dmOrientation != currentDM.dmOrientation)
+			continue;
+
+		unsigned int diff = ScoreDeviceModeMatch(requestedDM, dm);
+
+		if (diff < bestMatchAreaDifference)
+		{
+			bestDM = dm;
+			bestMatchAreaDifference = diff;
+		}
+	}
+	
+	// Return the best match found
+	return bestDM;
+}
+
+unsigned int mini3d::OGL20WindowRenderTarget::ScoreDeviceModeMatch(const DEVMODE &dm1, const DEVMODE &dm2)
+{
+	// Score the similarity of the display modes by getting the difference between widths, heights and frequencies.
+	// We get the total score when we add their absolute values together.
+	unsigned int score = (unsigned int)(abs((double)(dm1.dmPelsWidth - dm2.dmPelsWidth)) + 
+										abs((double)(dm1.dmPelsHeight - dm2.dmPelsHeight)) + 
+										abs((double)(dm1.dmDisplayFrequency - dm2.dmDisplayFrequency)));
+
+	return score;
+}
+
 #endif

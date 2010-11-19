@@ -331,20 +331,11 @@ void mini3d::OGL20GraphicsService::SetRenderTarget(IRenderTarget* pRenderTarget)
 		// TODO: Verify screen res also if switching fullscreen -> fullscreen (force set?)
 
 		// if this rendertarget is already the current and the correct screen state is set, return
-		if ((pCurrentWindowRenderTarget == (IWindowRenderTarget*)pOGL20WindowRenderTarget) && (isFullscreen == pOGL20WindowRenderTarget->GetScreenState()))
+		if (pCurrentWindowRenderTarget == (IWindowRenderTarget*)pOGL20WindowRenderTarget)
 			return;
 		
-		if (pOGL20WindowRenderTarget->GetScreenState() == OGL20WindowRenderTarget::SCREEN_STATE_WINDOWED)
-		{
-			// TODO: Restore screen resolution if necessary
-			pOS->SetRenderWindow(pOGL20WindowRenderTarget->GetWindowHandle());
-			glViewport(0,0,pOGL20WindowRenderTarget->GetWidth(), pOGL20WindowRenderTarget->GetHeight());
-		}
-		else if (pOGL20WindowRenderTarget->GetScreenState() == OGL20WindowRenderTarget::SCREEN_STATE_FULLSCREEN)
-		{
-			pOS->SetFullscreenRenderWindow(pOGL20WindowRenderTarget->GetWindowHandle(), pOGL20WindowRenderTarget->GetFullscreenWidth(), pOGL20WindowRenderTarget->GetFullscreenHeight());
-			glViewport(0,0,pOGL20WindowRenderTarget->GetFullscreenWidth(), pOGL20WindowRenderTarget->GetFullscreenHeight());
-		}
+		pOS->SetRenderWindow(pOGL20WindowRenderTarget->GetWindowHandle());
+		glViewport(0,0,pOGL20WindowRenderTarget->GetWidth(), pOGL20WindowRenderTarget->GetHeight());
 
 		// set the current render target to this
 		pCurrentRenderTarget = pRenderTarget;
