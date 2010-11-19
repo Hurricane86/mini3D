@@ -31,8 +31,8 @@ public:
 
 	virtual void SetWindowRenderTarget(const int& windowHandle, const bool& depthTestEnabled, const Quality& quality);
 
-	virtual unsigned int GetWidth() const { int w; w = screenState == SCREEN_STATE_WINDOWED ? width : fullscreenWidth; return w; };
-	virtual unsigned int GetHeight() const { int h; h = screenState == SCREEN_STATE_WINDOWED ? height : fullscreenHeight; return h; };
+	virtual unsigned int GetWidth() const { return width; };
+	virtual unsigned int GetHeight() const { return height; };
 
 	virtual bool GetDepthTestEnabled() const { return depthTestEnabled; };
 	virtual Quality GetQuality() const { return quality; }
@@ -84,41 +84,39 @@ private:
 
 	// ::::: Private Member Varaibles :::::::::::::::::::::::::::::::::::::::::
 
+	// Graphics service handle
 	D3D9GraphicsService* pGraphicsService;
-	IDirect3DSwapChain9* pScreenRenderTarget;
 	
-	// Direct3D9 Stencil Surface
+	// Hardware resources
+	IDirect3DSwapChain9* pScreenRenderTarget;
 	IDirect3DSurface9* pDepthStencil;
-
 	IDirect3DSurface9* pRenderTargetSurface;
 
+	// Size of the window
 	int width;
 	int height;
-
-	unsigned int fullscreenWidth;
-	unsigned int fullscreenHeight;
-
-	// Fullscreen
-	RECT winRect;
-	long windowStyle;
-	DEVMODE fullscreenDM;
 
 	// state parameters
 	int hWindow;
 	bool depthTestEnabled;
 	Quality quality;
 	
+	// Screen state related parameter
 	ScreenState screenState;
 	
+	// Stores the original window position and size before entering fullscreen
+	RECT winRect;
+
+	// Stores the windowstyle for the window before changing it when entering fullscreen
+	long windowStyle;
+
+	// The original windowproc of the OS window attached to this rendertarget
 	WNDPROC pOrigProc;
 
+	// A map matching window handles to the correct window render target object
 	static std::map<int, D3D9WindowRenderTarget*> windowMap;
 
-	int bufferWidth;
-	int bufferHeight;
-	int hBufferWindow;
-	int bufferDepthTestEnabled;
-	
+	// State of hardware resources
 	bool isDirty;
 
 };
