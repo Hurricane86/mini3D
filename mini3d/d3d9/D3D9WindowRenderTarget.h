@@ -23,20 +23,20 @@ public:
 
 	// ::::: Constructor & Destructor :::::::::::::::::::::::::::::::::::::::::
 
-	D3D9WindowRenderTarget(D3D9GraphicsService* pGraphicsService, const int& windowHandle, const bool& depthTestEnabled, const Quality& quality);
+	D3D9WindowRenderTarget(D3D9GraphicsService* pGraphicsService, const HWND windowHandle, const bool& depthTestEnabled, const Quality& quality);
 	virtual ~D3D9WindowRenderTarget(void);
 
 
 	// ::::: IWindowRenderTarget ::::::::::::::::::::::::::::::::::::::::::::::
 
-	virtual void SetWindowRenderTarget(const int& windowHandle, const bool& depthTestEnabled, const Quality& quality);
+	virtual void SetWindowRenderTarget(const MINI3D_WINDOW windowHandle, const bool& depthTestEnabled, const Quality& quality);
 
 	virtual unsigned int GetWidth() const { return width; };
 	virtual unsigned int GetHeight() const { return height; };
 
 	virtual bool GetDepthTestEnabled() const { return depthTestEnabled; };
 	virtual Quality GetQuality() const { return quality; }
-	virtual int GetWindowHandle() const { return hWindow; };
+	virtual MINI3D_WINDOW GetWindowHandle() const { return hWindow; };
 
 	ScreenState GetScreenState() const { return screenState; }
 
@@ -97,7 +97,7 @@ private:
 	int height;
 
 	// state parameters
-	int hWindow;
+	HWND hWindow;
 	bool depthTestEnabled;
 	Quality quality;
 	
@@ -114,7 +114,7 @@ private:
 	WNDPROC pOrigProc;
 
 	// A map matching window handles to the correct window render target object
-	static std::map<int, D3D9WindowRenderTarget*> windowMap;
+	static std::map<MINI3D_WINDOW, D3D9WindowRenderTarget*> windowMap;
 
 	// State of hardware resources
 	bool isDirty;

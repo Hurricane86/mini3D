@@ -20,7 +20,7 @@ typedef char GLchar;
 
 namespace mini3d
 {
-class OSFunctions
+class OSFunctions : IOSFunction
 {
 public:
 	
@@ -31,7 +31,7 @@ public:
 
 	// Used by OPENGL for determining setting buffer and depth buffer format
 	virtual unsigned int GetMonitorBitDepth() const;
-	virtual void GetClientAreaSize(int windowHandle, unsigned int &width, unsigned int &height) const;
+	virtual void GetClientAreaSize(Window windowHandle, unsigned int &width, unsigned int &height) const;
 	virtual Display* GetDisplayFromWindow(Window window) const;
 	virtual void Log(char* message) const;
 
@@ -42,11 +42,11 @@ public:
 	// ---------- ABSTRACT OPENGL FUNCTIONS --------------------------------------
 	// These functions preform opengl operations but they do not map 1-1 against opengl functions.
 	// what they do is platform dependent
-	virtual void PrepareWindow(const int& hWindow) const;
-	virtual void SetRenderWindow(const int& hWindow) const;
-	virtual void SetFullscreenRenderWindow(const int& hWindow, const unsigned int& width, const unsigned int& height) const;
+	virtual void PrepareWindow(const Window hWindow) const;
+	virtual void SetRenderWindow(const Window hWindow) const;
+	virtual void SetFullscreenRenderWindow(const Window hWindow, const unsigned int& width, const unsigned int& height) const;
 	virtual void SetDefaultRenderWindow() const;
-	virtual void SwapWindowBuffers(const int& hWindow) const;
+	virtual void SwapWindowBuffers(const Window hWindow) const;
 
 	// ---------- OPEN GL FUNCTIONS ----------------------------------------------
 

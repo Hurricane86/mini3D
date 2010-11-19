@@ -3,7 +3,6 @@
 // This file is part of mini3d <www.mini3d.org>
 // It is distributed under the MIT Software License <www.mini3d.org/license>
 
-
 #define NOMINMAX
 
 #include "mini3d/ogl20/OGL20GraphicsService.h"
@@ -13,3 +12,4 @@
 #endif
 
 #include "mini3d/IGraphicsService.h"
+

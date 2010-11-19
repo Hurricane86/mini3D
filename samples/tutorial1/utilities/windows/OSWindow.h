@@ -30,11 +30,11 @@ private:
 	static int x, y;
 	static int mouseX, mouseY, mouseWheelDelta;
 	static int key;	
-	static int windowHandle;
+	static HWND windowHandle;
 	static bool leftMouseDown;
 	static WNDCLASSEX windowClass;
 	static WINDOWCALLBACK windowCallback;
-	static std::map<int, OSWindow*> windowMap;
+	static std::map<HWND, OSWindow*> windowMap;
 	static OSWindow* defaultWindow;
 	
 public:
@@ -52,7 +52,7 @@ public:
 	bool GetLeftMouseDown() const { return leftMouseDown; };
 	int GetMouseWheelDelta() const { return mouseWheelDelta; };
 	int GetKey() const { return key; };
-	int GetWindowHandle() const	{ return windowHandle; };
+	HWND GetWindowHandle() const { return windowHandle; };
 	long windowStyle;
 	
 	// ---------- PUBLIC MEMBER FUNCTIONS -------------------------------------
@@ -62,7 +62,7 @@ public:
 		ZeroMemory(&windowClass, sizeof(WNDCLASSEX));
 		windowCallback = callback;
 		leftMouseDown = false;
-		windowHandle = (int)CreateWindowsWindow(&utilities::OSWindow::WndProc, width, height);
+		windowHandle = CreateWindowsWindow(&utilities::OSWindow::WndProc, width, height);
 		defaultWindow = this;
 	}
 
@@ -126,7 +126,7 @@ private:
 		}
 
 		HWND hWindow = CreateWindowEx( WS_EX_APPWINDOW, L"mini3D", L"Mini3D", WS_OVERLAPPEDWINDOW | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, CW_USEDEFAULT, CW_USEDEFAULT, width, height, 0, 0, hInstance, 0);
-		windowMap[(int)hWindow] = this;
+		windowMap[hWindow] = this;
 
 		windowClass = wc;
 
@@ -149,7 +149,7 @@ private:
 	static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
 		
-		std::map<int, OSWindow*>::const_iterator iter = windowMap.find((int)hwnd);
+		std::map<HWND, OSWindow*>::const_iterator iter = windowMap.find(hwnd);
 		if (iter == windowMap.end())
 		{
 			return DefWindowProc(hwnd, msg, wParam, lParam);
@@ -204,13 +204,13 @@ private:
 };
 }
 
-std::map<int, utilities::OSWindow*> utilities::OSWindow::windowMap;
+std::map<HWND, utilities::OSWindow*> utilities::OSWindow::windowMap;
 int utilities::OSWindow::width, utilities::OSWindow::height;
 int utilities::OSWindow::x, utilities::OSWindow::y;
 unsigned int utilities::OSWindow::clientWidth, utilities::OSWindow::clientHeight;
 int utilities::OSWindow::mouseX, utilities::OSWindow::mouseY, utilities::OSWindow::mouseWheelDelta;
 int utilities::OSWindow::key;	
-int utilities::OSWindow::windowHandle;
+HWND utilities::OSWindow::windowHandle;
 bool utilities::OSWindow::leftMouseDown;
 WNDCLASSEX utilities::OSWindow::windowClass;
 utilities::OSWindow::WINDOWCALLBACK utilities::OSWindow::windowCallback;

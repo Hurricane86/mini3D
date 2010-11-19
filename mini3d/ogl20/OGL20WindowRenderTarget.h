@@ -25,13 +25,13 @@ public:
 
 	// ::::: Constructor & Destructor :::::::::::::::::::::::::::::::::::::::::
 
-	OGL20WindowRenderTarget(OGL20GraphicsService* pGraphicsService, const int& windowHandle, const bool& depthTestEnabled, const Quality& quality);
+	OGL20WindowRenderTarget(OGL20GraphicsService* pGraphicsService, const MINI3D_WINDOW windowHandle, const bool& depthTestEnabled, const Quality& quality);
 	virtual ~OGL20WindowRenderTarget(void);
 
 
 	// ::::: IWindowRenderTarget ::::::::::::::::::::::::::::::::::::::::::::::
 
-	virtual void SetWindowRenderTarget(const int& windowHandle, const bool& depthTestEnabled, const Quality& quality);
+	virtual void SetWindowRenderTarget(const MINI3D_WINDOW windowHandle, const bool& depthTestEnabled, const Quality& quality);
 	
 	virtual unsigned int GetWidth() const { return width; };
 	virtual unsigned int GetHeight() const { return height; };
@@ -40,7 +40,7 @@ public:
 	
 	virtual Quality GetQuality() const { return quality; };
 	
-	virtual int GetWindowHandle() const { return hWindow; };
+	virtual MINI3D_WINDOW GetWindowHandle() const { return hWindow; };
 
 	ScreenState GetScreenState() const { return screenState; }
 
@@ -81,7 +81,7 @@ private:
 	virtual void UpdateSize();
 
 #ifdef _WIN32
-	void CaptureWindowProc(const int& windowHandle);
+	void CaptureWindowProc(const MINI3D_WINDOW windowHandle);
 	static LRESULT CALLBACK HookWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 #endif
 
@@ -103,7 +103,7 @@ private:
 	unsigned int fullscreenWidth;
 	unsigned int fullscreenHeight;
 
-	int hWindow;
+	MINI3D_WINDOW hWindow;
 
 	bool depthTestEnabled;
 	Quality quality;
@@ -111,9 +111,9 @@ private:
 #ifdef _WIN32
 	WNDPROC pOrigProc;
 #endif
-	static std::map<int, OGL20WindowRenderTarget*> windowMap;
+	static std::map<MINI3D_WINDOW, OGL20WindowRenderTarget*> windowMap;
 
-	int hBufferWindow;
+	MINI3D_WINDOW hBufferWindow;
 	int bufferDepthTestEnabled;
 
 	ScreenState screenState;

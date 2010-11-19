@@ -163,8 +163,8 @@ void UpdateViewProjectionMatrix()
 	M3DVector target(0,0,0);
 	M3DVector up(0,-1,0);
 
-	float windowWidth = window->GetWidth(); //(float)(pWindowRenderTarget->GetWidth() | 1);
-	float windowHeight = window->GetHeight();//(float)(pWindowRenderTarget->GetHeight() | 1);
+	float windowWidth = (float)window->GetWidth();
+	float windowHeight = (float)window->GetHeight();
 
 	// update camera
 	M3DMatrix::LookAt(viewMatrixE, eye, target, up);
@@ -174,10 +174,6 @@ void UpdateViewProjectionMatrix()
 	// set a shader parameter
 	graphics->SetShaderParameterMatrix(0, viewProjectionMatrixE(0,0), 4, 4);
 }
-
-bool fullscreen = false;
-int x,y,width,height;
-long windowStyle;
 
 void WndMessage(utilities::OSWindow* window, utilities::OSWindow::WindowMessage message)
 {
@@ -204,18 +200,9 @@ void WndMessage(utilities::OSWindow* window, utilities::OSWindow::WindowMessage 
 			if ((window->GetKey() & window->VKC_F12) == window->VKC_F12)
 			{
 				if (pWindowRenderTarget->GetScreenState() == mini3d::IWindowRenderTarget::SCREEN_STATE_WINDOWED)
-//				if (fullscreen == false)
-				{
 					pWindowRenderTarget->SetScreenStateFullscreen(800, 600);
-					//ShowCursor(FALSE);
-				}
 				else
-				{
 					pWindowRenderTarget->SetScreenStateWindowed();
-					
-					//ShowCursor(TRUE);
-				}
-				fullscreen = !fullscreen;
 
 				Render();
 			}

@@ -7,7 +7,10 @@
 #ifndef MINI3D_IWINDOWRENDERTARGET_H
 #define MINI3D_IWINDOWRENDERTARGET_H
 
-#include "internal\IRenderTarget.h"
+// Set the data type for the MINI3D_WINDOW macro
+#include "datatypes/DataTypes.h"
+
+#include "internal/IRenderTarget.h"
 
 namespace mini3d
 {
@@ -79,7 +82,7 @@ public:
 	@param quality The quality level that should be used for drawing.
 	@see Quality
 */
-	virtual void SetWindowRenderTarget(const int& windowHandle, const bool& depthTestEnabled, const Quality& quality) = 0;
+	virtual void SetWindowRenderTarget(const MINI3D_WINDOW windowHandle, const bool& depthTestEnabled, const Quality& quality) = 0;
 
 /**
 	Get the width of the render target in windowed mode.
@@ -117,7 +120,7 @@ public:
 	@return Handle to the widget that contains the window render target.
 	@see SetWindowRenderTarget
  */
-	virtual int GetWindowHandle() const = 0;
+	virtual MINI3D_WINDOW GetWindowHandle() const = 0;
 
 /**
 	Gets the current screen state.
@@ -158,7 +161,7 @@ public:
 	@param fullscreenHeight Height of the render target in fullscreen mode.
 	@see ScreenState
 */
-	virtual void SetScreenStateFullscreen(const unsigned int& fullscreenWidth, const unsigned int& fullscreenHeight) = 0;
+	virtual void SetScreenStateFullscreen(const unsigned int& width, const unsigned int& height) = 0;
 
 /**
 	This function shall be called when all rendering to the screen render target

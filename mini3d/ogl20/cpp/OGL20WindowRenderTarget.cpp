@@ -8,9 +8,9 @@
 #include "../OGL20GraphicsService.h"
 #include "../../error/Error.h"
 
-std::map<int, mini3d::OGL20WindowRenderTarget*> mini3d::OGL20WindowRenderTarget::windowMap;
+std::map<MINI3D_WINDOW, mini3d::OGL20WindowRenderTarget*> mini3d::OGL20WindowRenderTarget::windowMap;
 
-mini3d::OGL20WindowRenderTarget::OGL20WindowRenderTarget(OGL20GraphicsService* pGraphicsService, const int& windowHandle, const bool& depthTestEnabled, const Quality& quality) : 
+mini3d::OGL20WindowRenderTarget::OGL20WindowRenderTarget(OGL20GraphicsService* pGraphicsService, const MINI3D_WINDOW windowHandle, const bool& depthTestEnabled, const Quality& quality) : 
 	pGraphicsService(pGraphicsService), pScreenRenderTarget(0), pDepthStencil(0), quality(quality), fullscreenWidth(0), fullscreenHeight(0), pOS(pGraphicsService->GetOS())
 {
 	fullscreenWidth = 1680;
@@ -65,7 +65,7 @@ void mini3d::OGL20WindowRenderTarget::SetScreenStateFullscreen(const unsigned in
 	SetScreenState(SCREEN_STATE_FULLSCREEN);
 }
 
-void mini3d::OGL20WindowRenderTarget::SetWindowRenderTarget(const int& windowHandle, const bool& depthTestEnabled, const Quality& quality)
+void mini3d::OGL20WindowRenderTarget::SetWindowRenderTarget(const MINI3D_WINDOW windowHandle, const bool& depthTestEnabled, const Quality& quality)
 {
 
 #ifdef _WIN32
@@ -129,7 +129,7 @@ void mini3d::OGL20WindowRenderTarget::UpdateSize()
 
 #ifdef _WIN32
 
-void mini3d::OGL20WindowRenderTarget::CaptureWindowProc(const int& windowHandle)
+void mini3d::OGL20WindowRenderTarget::CaptureWindowProc(const MINI3D_WINDOW windowHandle)
 {
 	if (windowHandle != hWindow)
 	{
@@ -140,25 +140,25 @@ void mini3d::OGL20WindowRenderTarget::CaptureWindowProc(const int& windowHandle)
 			pOrigProc = (WNDPROC)SetWindowLongPtr((HWND)windowHandle, GWL_WNDPROC, (LONG)&HookWndProc);
 			
 			// make a map so the window process can find this class from the window handle
-			windowMap.insert(std::pair<int, OGL20WindowRenderTarget*>(windowHandle, this));
+			windowMap.insert(std::pair<MINI3D_WINDOW, OGL20WindowRenderTarget*>(windowHandle, this));
 		}
 		// else we need to restore the old one first and then setup the new one
 		else
 		{
 			// restore old
-			(WNDPROC)SetWindowLongPtr((HWND)hWindow, GWL_WNDPROC, (LONG)&pOrigProc);
+			(WNDPROC)SetWindowLongPtr(hWindow, GWL_WNDPROC, (LONG)&pOrigProc);
 			windowMap.erase(hWindow);
 
 			// set new
-			pOrigProc = (WNDPROC)SetWindowLongPtr((HWND)windowHandle, GWL_WNDPROC, (LONG)&HookWndProc);
-			windowMap.insert(std::pair<int,OGL20WindowRenderTarget*>(windowHandle, this));
+			pOrigProc = (WNDPROC)SetWindowLongPtr(windowHandle, GWL_WNDPROC, (LONG)&HookWndProc);
+			windowMap.insert(std::pair<MINI3D_WINDOW,OGL20WindowRenderTarget*>(windowHandle, this));
 		}
 	}
 }
 
 LRESULT CALLBACK mini3d::OGL20WindowRenderTarget::HookWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	OGL20WindowRenderTarget* windowRenderTarget = windowMap.find((int)hwnd)->second;
+	OGL20WindowRenderTarget* windowRenderTarget = windowMap.find(hwnd)->second;
 
 	switch(msg)
 	{

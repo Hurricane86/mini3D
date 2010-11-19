@@ -7,6 +7,8 @@
 #ifndef MINI3D_IGRAPHICSSERVICE_H
 #define MINI3D_IGRAPHICSSERVICE_H
 
+// Set the data type for the MINI3D_WINDOW macro
+#include "datatypes/DataTypes.h"
 
 #include "IPixelShader.h"
 #include "IVertexShader.h"
@@ -62,7 +64,7 @@ public:
 	@see IWindowRenderTarget
 	@see IWindowRenderTarget::Quality
 */
-	virtual IWindowRenderTarget* CreateWindowRenderTarget(const int& windowHandle, const bool& depthTestEnabled, const IWindowRenderTarget::Quality& quality) = 0;
+	virtual IWindowRenderTarget* CreateWindowRenderTarget(const MINI3D_WINDOW windowHandle, const bool& depthTestEnabled, const IWindowRenderTarget::Quality& quality) = 0;
 
 /**
 	Creates a compatible IRenderTargetTexture

@@ -6,6 +6,9 @@
 #ifndef MINI3D_IOSFUNCTION_H
 #define MINI3D_IOSFUNCTION_H
 
+// Set the data type for the MINI3D_WINDOW macro
+#include "../../datatypes/DataTypes.h"
+
 #include <GL/gl.h>
 #include <GL/glext.h>
 
@@ -24,17 +27,17 @@ public:
 
 	// Used by OPENGL for determining setting buffer and depth buffer format
 	virtual unsigned int GetMonitorBitDepth() const = 0;
-	virtual void GetClientAreaSize(int windowHandle, unsigned int &width, unsigned int &height) const = 0;
+	virtual void GetClientAreaSize(const MINI3D_WINDOW windowHandle, unsigned int &width, unsigned int &height) const = 0;
 	virtual void Log(char* message) const = 0;
 
 	// ---------- ABSTRACT OPENGL FUNCTIONS --------------------------------------
 	// These functions preform opengl operations but they do not necessarily map 1-1 against any opengl functions.
 	// what they do depends on the platform opengl implementation.
-	virtual void PrepareWindow(const int& hWindow) const = 0;
-	virtual void SetRenderWindow(const int& hWindow) const = 0;
-	virtual void SetFullscreenRenderWindow(const int& hWindow, const unsigned int& width, const unsigned int& height) const = 0;
+	virtual void PrepareWindow(const MINI3D_WINDOW hWindow) const = 0;
+	virtual void SetRenderWindow(const MINI3D_WINDOW hWindow) const = 0;
+	virtual void SetFullscreenRenderWindow(const MINI3D_WINDOW hWindow, const unsigned int& width, const unsigned int& height) const = 0;
 	virtual void SetDefaultRenderWindow() const = 0;
-	virtual void SwapWindowBuffers(const int& hWindow) const = 0;
+	virtual void SwapWindowBuffers(const MINI3D_WINDOW hWindow) const = 0;
 
 	// ---------- OPEN GL FUNCTIONS ----------------------------------------------
 

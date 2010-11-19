@@ -25,7 +25,7 @@ public:
 
 	// Used by OPENGL for determining setting buffer and depth buffer format
 	virtual unsigned int GetMonitorBitDepth() const;
-	virtual void GetClientAreaSize(int windowHandle, unsigned int &width, unsigned int &height) const;
+	virtual void GetClientAreaSize(const HWND windowHandle, unsigned int &width, unsigned int &height) const;
 	virtual void Log(char* message) const;
 
 	// Device creation
@@ -35,11 +35,11 @@ public:
 	// ---------- ABSTRACT OPENGL FUNCTIONS --------------------------------------
 	// These functions preform opengl operations but they do not map 1-1 against opengl functions.
 	// what they do is platform dependent
-	virtual void PrepareWindow(const int& hWindow) const;
-	virtual void SetRenderWindow(const int& hWindow) const;
-	virtual void SetFullscreenRenderWindow(const int& hWindow, const unsigned int& width, const unsigned int& height) const;
+	virtual void PrepareWindow(const HWND hWindow) const;
+	virtual void SetRenderWindow(const HWND hWindow) const;
+	virtual void SetFullscreenRenderWindow(const HWND hWindow, const unsigned int& width, const unsigned int& height) const;
 	virtual void SetDefaultRenderWindow() const;
-	virtual void SwapWindowBuffers(const int& hWindow) const;
+	virtual void SwapWindowBuffers(const HWND hWindow) const;
 
 	// ---------- OPEN GL FUNCTIONS ----------------------------------------------
 

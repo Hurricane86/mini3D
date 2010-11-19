@@ -895,7 +895,7 @@ void mini3d::D3D9GraphicsService::Clear(const float& r, const float& g, const fl
 
 
 // Create Resources
-mini3d::IWindowRenderTarget* mini3d::D3D9GraphicsService::CreateWindowRenderTarget(const int& hWindow, const bool& depthTestEnabled, const IWindowRenderTarget::Quality& quality)
+mini3d::IWindowRenderTarget* mini3d::D3D9GraphicsService::CreateWindowRenderTarget(const MINI3D_WINDOW hWindow, const bool& depthTestEnabled, const IWindowRenderTarget::Quality& quality)
 {
 	return new D3D9WindowRenderTarget(this, hWindow, depthTestEnabled, quality);
 }

@@ -9,9 +9,9 @@
 #include "../D3D9PresentationParameters.h"
 #include <d3d9.h>
 
-std::map<int, mini3d::D3D9WindowRenderTarget*> mini3d::D3D9WindowRenderTarget::windowMap;
+std::map<HWND, mini3d::D3D9WindowRenderTarget*> mini3d::D3D9WindowRenderTarget::windowMap;
 
-mini3d::D3D9WindowRenderTarget::D3D9WindowRenderTarget(D3D9GraphicsService* pGraphicsService, const int& windowHandle, const bool& depthTestEnabled, const Quality& quality) : 
+mini3d::D3D9WindowRenderTarget::D3D9WindowRenderTarget(D3D9GraphicsService* pGraphicsService, const HWND windowHandle, const bool& depthTestEnabled, const Quality& quality) : 
 pGraphicsService(pGraphicsService), pScreenRenderTarget(0), pDepthStencil(0), quality(quality), depthTestEnabled(depthTestEnabled), pOrigProc(0), screenState(SCREEN_STATE_WINDOWED)
 {
 	SetWindowRenderTarget(windowHandle, depthTestEnabled, quality);
@@ -88,7 +88,7 @@ void mini3d::D3D9WindowRenderTarget::SetScreenStateFullscreen(const unsigned int
 }
 
 
-void mini3d::D3D9WindowRenderTarget::SetWindowRenderTarget(const int& windowHandle, const bool& depthTestEnabled, const Quality& quality)
+void mini3d::D3D9WindowRenderTarget::SetWindowRenderTarget(const MINI3D_WINDOW windowHandle, const bool& depthTestEnabled, const Quality& quality)
 {
 
 	if (windowHandle != hWindow)
@@ -100,7 +100,7 @@ void mini3d::D3D9WindowRenderTarget::SetWindowRenderTarget(const int& windowHand
 			pOrigProc = (WNDPROC)SetWindowLongPtr((HWND)windowHandle, GWL_WNDPROC, (LONG)&HookWndProc);
 			
 			// make a map so the window process can find this class from the window handle
-			windowMap.insert(std::pair<int, D3D9WindowRenderTarget*>(windowHandle, this));
+			windowMap.insert(std::pair<HWND, D3D9WindowRenderTarget*>(windowHandle, this));
 		}
 		// else we need to restore the old one first and then setup the new one
 		else
@@ -111,7 +111,7 @@ void mini3d::D3D9WindowRenderTarget::SetWindowRenderTarget(const int& windowHand
 
 			// set new
 			pOrigProc = (WNDPROC)SetWindowLongPtr((HWND)windowHandle, GWL_WNDPROC, (LONG)&HookWndProc);
-			windowMap.insert(std::pair<int, D3D9WindowRenderTarget*>(windowHandle, this));
+			windowMap.insert(std::pair<HWND, D3D9WindowRenderTarget*>(windowHandle, this));
 		}
 	}
 
@@ -285,7 +285,7 @@ void mini3d::D3D9WindowRenderTarget::UpdateSize()
 
 LRESULT CALLBACK mini3d::D3D9WindowRenderTarget::HookWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	D3D9WindowRenderTarget* screenRenderTarget = windowMap.find((int)hwnd)->second;
+	D3D9WindowRenderTarget* screenRenderTarget = windowMap.find(hwnd)->second;
 
 	switch(msg)
 	{
