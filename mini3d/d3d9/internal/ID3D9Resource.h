@@ -4,6 +4,8 @@
 // It is distributed under the MIT Software License <www.mini3d.org/license>
 
 
+#ifdef _WIN32
+
 #ifndef MINI3D_ID3D9RESOURCE_H
 #define MINI3D_ID3D9RESOURCE_H
 
@@ -21,4 +23,5 @@ public:
 };
 }
 
+#endif
 #endif

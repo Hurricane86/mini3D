@@ -4,6 +4,8 @@
 // It is distributed under the MIT Software License <www.mini3d.org/license>
 
 
+#ifdef _WIN32
+
 #ifndef MINI3D_ID3D9WINDOWRENDERTARGET_H
 #define MINI3D_ID3D9WINDOWRENDERTARGET_H
 
@@ -122,4 +124,5 @@ private:
 };
 }
 
+#endif
 #endif

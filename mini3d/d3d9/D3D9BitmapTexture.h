@@ -4,6 +4,8 @@
 // It is distributed under the MIT Software License <www.mini3d.org/license>
 
 
+#ifdef _WIN32
+
 #ifndef MINI3D_D3D9BITMAPTEXTURE_H
 #define MINI3D_D3D9BITMAPTEXTURE_H
 
@@ -97,4 +99,5 @@ private:
 };
 }
 
+#endif
 #endif
