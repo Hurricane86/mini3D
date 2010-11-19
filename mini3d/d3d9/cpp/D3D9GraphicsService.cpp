@@ -90,21 +90,29 @@ D3DPRESENT_PARAMETERS mini3d::D3D9GraphicsService::GetPresentationParameters()
 // Private helper methods -----------------------------------------------------
 
 
+	static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+	{
+		return DefWindowProc(hwnd, msg, wParam, lParam);
+	}
+
 void mini3d::D3D9GraphicsService::CreateInternalWindow()
 {
+	if (hWindow != 0)
+		DisposeInternalWindow();
+
 	HINSTANCE hInstance = GetModuleHandle(NULL);
 
     WNDCLASSEX wc;
 
     wc.cbSize        = sizeof(WNDCLASSEX);
     wc.style         = 0;
-    wc.lpfnWndProc   = DefWindowProc;
+    wc.lpfnWndProc   = WndProc;
     wc.cbClsExtra    = 0;
     wc.cbWndExtra    = 0;
     wc.hInstance     = hInstance;
     wc.hIcon         = LoadIcon(NULL, IDI_APPLICATION);
     wc.hCursor       = LoadCursor(NULL, IDC_ARROW);
-    wc.hbrBackground = (HBRUSH)(COLOR_WINDOW+1);
+    wc.hbrBackground = (HBRUSH)(COLOR_WINDOW+1);;
     wc.lpszMenuName  = NULL;
     wc.lpszClassName = L"D3D9InternalWindowClass";
     wc.hIconSm       = LoadIcon(NULL, IDI_APPLICATION);
@@ -115,7 +123,7 @@ void mini3d::D3D9GraphicsService::CreateInternalWindow()
 		return;
     }
 
-	hWindow = CreateWindowEx(WS_EX_CLIENTEDGE, L"D3D9InternalWindowClass", L"HiddenWindow", 0, CW_USEDEFAULT, CW_USEDEFAULT, 800, 600, HWND_MESSAGE, 0, hInstance, 0);
+	hWindow = CreateWindowEx(0, L"D3D9InternalWindowClass", L"HiddenWindow", 0, CW_USEDEFAULT, CW_USEDEFAULT, 800, 600, 0, 0, hInstance, 0);
 }
 
 void mini3d::D3D9GraphicsService::DisposeInternalWindow()
@@ -125,6 +133,10 @@ void mini3d::D3D9GraphicsService::DisposeInternalWindow()
 		DestroyWindow(hWindow);
 		hWindow = 0;
 	}
+
+	HINSTANCE hInstance = GetModuleHandle(NULL);
+
+	UnregisterClass(L"D3D9InternalWindowClass", hInstance);
 }
 
 
@@ -696,13 +708,9 @@ mini3d::IRenderTarget* mini3d::D3D9GraphicsService::GetRenderTarget(void) const
 }
 void mini3d::D3D9GraphicsService::SetRenderTarget(IRenderTarget* pRenderTarget)
 {
-	// This method is tricky and complex because if the user sets a fullscreen render target
-	// we need to reset the device to get a new default fullscreen swapchain (and the opposite when we switch back...)
-	
-
-	// This is a dynamic cast used as a typecheck, code police says this should be solved with virtual function calls instead
-	D3D9WindowRenderTarget* pD3D9WindowRenderTarget = dynamic_cast<D3D9WindowRenderTarget*>(pRenderTarget);
-
+	// Dont set the rendertarget if it is already set
+	if (pRenderTarget == pCurrentRenderTarget)
+		return;
 
 	// ---------- SETTING DEFAULT RENDER TARGET -------------------------------
 	if (pRenderTarget == 0)
@@ -718,57 +726,11 @@ void mini3d::D3D9GraphicsService::SetRenderTarget(IRenderTarget* pRenderTarget)
 		return;	
 	}
 
-	// pDefaultSwapChain == 0 if device was not created in fullscreen
-	// Setting the render target to 0 or the pDefaultSwapChain will restore the default render target
-	if ((pRenderTarget == pDefaultSwapChain) && (pD3D9WindowRenderTarget != 0) && (pD3D9WindowRenderTarget->GetScreenState() == IWindowRenderTarget::SCREEN_STATE_FULLSCREEN))
-	{
-		// Dont set the rendertarget if it is already set
-		if (pRenderTarget == pCurrentRenderTarget)
-			return;
 
-		pDevice->SetRenderTarget(0, pDefaultRenderTarget);
-		pDevice->SetDepthStencilSurface(pDefaultDepthStencilSurface);
-		
-		pCurrentRenderTarget = pRenderTarget;
-		return;
-	}
-
-	// ---------- SCREEN RENDER TARGETS ------------------------------------------
-
-	// If the type check above succeded we need to check if we should change the default swap chain
-	if (pD3D9WindowRenderTarget != 0)
-	{
-
-		bool isFullscreen = (pD3D9WindowRenderTarget->GetScreenState() == IWindowRenderTarget::SCREEN_STATE_FULLSCREEN);
-
-		// if this rendertarget is already the current and the correct screen state is set, return
-		if ((pRenderTarget == pCurrentRenderTarget) && (isFullscreen == GetIsFullScreen()))
-			return;
-
-		// if the device is not created for the screen mode we want to set, we need to recreate the device
-		if (isFullscreen != GetIsFullScreen())
-		{
-			// Set the current rendertarget to the new screen render target so it gets set when we restore the device
-			pCurrentRenderTarget = pD3D9WindowRenderTarget;
-
-			// Set the pDefualtSwapChain depending on screen state
-			pDefaultSwapChain = isFullscreen ? pD3D9WindowRenderTarget : 0;
-
-			// Reset the device with the new fullscreen or windowed setup
-			ResetDevice();
-
-			// done
-			return;
-		}
-	}
-
-	// ---------- ALL OTHER CASES ---------------------------------------------
-
-	// Dont set the rendertarget if it is already set
-	if (pRenderTarget == pCurrentRenderTarget)
-		return;
+	// ---------- SET THE RENDER TARGET ---------------------------------------
 
 	// this cast is "unfailable" (will never return NULL), whoever inherits from IRenderTarget must also inherit from ID3D9RenderTarget
+	// Only exception is if someone tries to put an IRenderTarget created with a different implmentation, in which case the behaviour is undefined.
 	ID3D9RenderTarget* pD3D9RenderTarget = dynamic_cast<ID3D9RenderTarget*>(pRenderTarget);
 
 	// Get the render target buffer from the render target

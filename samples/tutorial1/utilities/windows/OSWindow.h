@@ -25,6 +25,7 @@ private:
 	typedef void (*WINDOWCALLBACK)(OSWindow*, WindowMessage);
 
 	// ---------- MEMBER VARIABLES --------------------------------------------
+	static unsigned int clientWidth, clientHeight;
 	static int width, height;
 	static int x, y;
 	static int mouseX, mouseY, mouseWheelDelta;
@@ -35,7 +36,7 @@ private:
 	static WINDOWCALLBACK windowCallback;
 	static std::map<int, OSWindow*> windowMap;
 	static OSWindow* defaultWindow;
-
+	
 public:
 
 	// ---------- GETTERS AND SETTERS -----------------------------------------
@@ -44,13 +45,15 @@ public:
 	int GetY() const { return y; };
 	int GetWidth() const { return width; };
 	int GetHeight() const { return height; };
+	int GetClientWidth() const { return clientWidth; };
+	int GetClientHeight() const { return clientHeight; };
 	int GetMouseX() const { return mouseX; };
 	int GetMouseY() const { return mouseY; };
 	bool GetLeftMouseDown() const { return leftMouseDown; };
 	int GetMouseWheelDelta() const { return mouseWheelDelta; };
 	int GetKey() const { return key; };
 	int GetWindowHandle() const	{ return windowHandle; };
-
+	long windowStyle;
 	
 	// ---------- PUBLIC MEMBER FUNCTIONS -------------------------------------
 
@@ -122,12 +125,24 @@ private:
 			// TODO: Error message
 		}
 
-		HWND hWindow = CreateWindowEx( WS_EX_APPWINDOW | WS_EX_WINDOWEDGE, L"mini3D", L"Mini3D", WS_OVERLAPPEDWINDOW | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, CW_USEDEFAULT, CW_USEDEFAULT, width, height, 0, 0, hInstance, 0);
+		HWND hWindow = CreateWindowEx( WS_EX_APPWINDOW, L"mini3D", L"Mini3D", WS_OVERLAPPEDWINDOW | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, CW_USEDEFAULT, CW_USEDEFAULT, width, height, 0, 0, hInstance, 0);
 		windowMap[(int)hWindow] = this;
 
 		windowClass = wc;
 
 		return hWindow;
+	}
+
+	static void UpdateClientSize()
+	{
+		LPRECT clientRectangle = new tagRECT();
+		GetClientRect(HWND(windowHandle), clientRectangle);
+
+		// get the width and height (must be bigger than 0)
+		clientWidth = (clientRectangle->right - clientRectangle->left) | 1;
+		clientHeight = (clientRectangle->bottom - clientRectangle->top) | 1;
+
+		delete clientRectangle;
 	}
 
 	// callback for our window, handles window messages
@@ -156,6 +171,7 @@ private:
 			case WM_SIZE:
 				width = LOWORD(lParam);
 				height = HIWORD(lParam);
+				UpdateClientSize();				
 				windowCallback(window, SIZE);
 			break;
 			case WM_LBUTTONDOWN:
@@ -191,6 +207,7 @@ private:
 std::map<int, utilities::OSWindow*> utilities::OSWindow::windowMap;
 int utilities::OSWindow::width, utilities::OSWindow::height;
 int utilities::OSWindow::x, utilities::OSWindow::y;
+unsigned int utilities::OSWindow::clientWidth, utilities::OSWindow::clientHeight;
 int utilities::OSWindow::mouseX, utilities::OSWindow::mouseY, utilities::OSWindow::mouseWheelDelta;
 int utilities::OSWindow::key;	
 int utilities::OSWindow::windowHandle;

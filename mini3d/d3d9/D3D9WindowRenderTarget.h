@@ -41,7 +41,7 @@ public:
 	ScreenState GetScreenState() const { return screenState; }
 
 	virtual void SetScreenStateWindowed();
-	virtual void SetScreenStateFullscreen(const unsigned int& fullscreenWidth, const unsigned int& fullscreenHeight);
+	virtual void SetScreenStateFullscreen(const unsigned int& width, const unsigned int& height);
 
 	virtual void Display();
 
@@ -62,14 +62,6 @@ public:
 	virtual IDirect3DSurface9* GetDepthStencil(void) const { return pDepthStencil; }
 
 
-public:
-
-	// ::::: Public Methods :::::::::::::::::::::::::::::::::::::::::::::::::::
-
-	void SetScreenState(ScreenState value);
-	virtual void SetFullscreenSize(const unsigned int& width, const unsigned int& height);
-
-
 private:
 
 	// ::::: Private Methods :::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -82,7 +74,7 @@ private:
 	void UnloadRenderTarget();
 	void UnloadDepthStencil();
 
-	void GetClosestCompatibleResolution(unsigned int &width, unsigned int &height);
+	DEVMODE GetClosestCompatibleResolution(const unsigned int &width, const unsigned int &height);
 	unsigned int ScoreDeviceModeMatch(const DEVMODE &dm1, const DEVMODE &dm2);
 
 	static LRESULT CALLBACK HookWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -106,6 +98,12 @@ private:
 	unsigned int fullscreenWidth;
 	unsigned int fullscreenHeight;
 
+	// Fullscreen
+	RECT winRect;
+	long windowStyle;
+	DEVMODE fullscreenDM;
+
+	// state parameters
 	int hWindow;
 	bool depthTestEnabled;
 	Quality quality;

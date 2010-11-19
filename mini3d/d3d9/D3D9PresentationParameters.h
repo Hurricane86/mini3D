@@ -41,27 +41,13 @@ public:
 
 		// For storing the quality setting as defined in if statements below
 		IWindowRenderTarget::Quality quality;
-
-		// If pScreenRenderTarget != 0 then we have a screen render target that should be used as the default screen render target
-		// This is used for fullscreen mode
-		if (pScreenRenderTarget != 0)
-		{
-			quality = pScreenRenderTarget->GetQuality();
-			// safe because only D3D9FullscreenRenderTargets are assigned to pFullscreenRenderTarget
-			d3dpp.BackBufferWidth = pScreenRenderTarget->GetWidth();
-			d3dpp.BackBufferHeight = pScreenRenderTarget->GetHeight();
-			d3dpp.Windowed = false;
-			d3dpp.EnableAutoDepthStencil = pScreenRenderTarget->GetDepthTestEnabled();
-		}
-		// Create an "empty" default render target
-		else
-		{
-			quality = IWindowRenderTarget::QUALITY_MINIMUM;
-			d3dpp.BackBufferWidth = 1; // Default backbuffer should be 1x1 and is never used
-			d3dpp.BackBufferHeight = 1; // Default backbuffer should be 1x1 and is never used
-			d3dpp.Windowed = true;
-			d3dpp.EnableAutoDepthStencil = false; // we manage swap chains manually
-		}
+		quality = IWindowRenderTarget::QUALITY_MINIMUM;
+		// Default backbuffer is never used
+		// It has small area to not take up memory, but not so small that it will cause issues with the graphcis driver
+		d3dpp.BackBufferWidth = 64; 
+		d3dpp.BackBufferHeight = 64;
+		d3dpp.Windowed = true;
+		d3dpp.EnableAutoDepthStencil = false; // we manage swap chains manually
 
 		CheckMultisampleFormat(pD3D, quality, false);
 
@@ -90,7 +76,7 @@ public:
 				FAILED(pD3D->CheckDeviceMultiSampleType( D3DADAPTER_DEFAULT, 
 															D3DDEVTYPE_HAL, 
 															displayMode.Format, 
-															!fullscreen,
+															true,
 															FromMultisampleFormat(quality),
 															&pQualityLevels)))
 		{

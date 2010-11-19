@@ -12,7 +12,7 @@
 std::map<int, mini3d::D3D9WindowRenderTarget*> mini3d::D3D9WindowRenderTarget::windowMap;
 
 mini3d::D3D9WindowRenderTarget::D3D9WindowRenderTarget(D3D9GraphicsService* pGraphicsService, const int& windowHandle, const bool& depthTestEnabled, const Quality& quality) : 
-pGraphicsService(pGraphicsService), pScreenRenderTarget(0), pDepthStencil(0), quality(quality), depthTestEnabled(depthTestEnabled), pOrigProc(0), fullscreenWidth(1680), fullscreenHeight(1050)
+pGraphicsService(pGraphicsService), pScreenRenderTarget(0), pDepthStencil(0), quality(quality), depthTestEnabled(depthTestEnabled), pOrigProc(0), fullscreenWidth(1680), fullscreenHeight(1050), screenState(SCREEN_STATE_WINDOWED)
 {
 	SetWindowRenderTarget(windowHandle, depthTestEnabled, quality);
 	pGraphicsService->AddResource(this);
@@ -27,48 +27,66 @@ mini3d::D3D9WindowRenderTarget::~D3D9WindowRenderTarget(void)
 		delete pDepthStencil;
 }
 
-void mini3d::D3D9WindowRenderTarget::SetFullscreenSize(const unsigned int& width, const unsigned int& height)
-{ 
-
-	if (fullscreenWidth == width && fullscreenHeight == height)
-		return;
-	
-	fullscreenWidth = width; 
-	fullscreenHeight = height;
-
-	if (pGraphicsService->GetRenderTarget() == this) 
-		pGraphicsService->SetRenderTarget(this); 
-}
-
 void mini3d::D3D9WindowRenderTarget::SetScreenStateWindowed()
 {
-	SetScreenState(SCREEN_STATE_WINDOWED);
-}
-
-void mini3d::D3D9WindowRenderTarget::SetScreenStateFullscreen(const unsigned int& fullscreenWidth, const unsigned int& fullscreenHeight)
-{
-	unsigned int tempFullscreenWidth = fullscreenWidth;
-	unsigned int tempFullscreenHeight = fullscreenHeight;
-
-	GetClosestCompatibleResolution(tempFullscreenWidth, tempFullscreenHeight);
-
-	this->fullscreenWidth = tempFullscreenWidth;
-	this->fullscreenHeight = tempFullscreenHeight;
-
-	SetScreenState(SCREEN_STATE_FULLSCREEN);
-}
-
-
-void mini3d::D3D9WindowRenderTarget::SetScreenState(ScreenState value)
-{ 
-	if (screenState == value)
+	// Dont set the windowed screen state if it is already set
+	if (screenState == SCREEN_STATE_WINDOWED)
 		return;
 
-	screenState = value;
+	// Restore window style
+	SetWindowLongPtr((HWND)hWindow, GWL_STYLE, windowStyle);
 
-	if (pGraphicsService->GetRenderTarget() == this) 
-		pGraphicsService->SetRenderTarget(this);
+	// Restore window size and position
+	SetWindowPos((HWND)hWindow,
+				 HWND_TOPMOST,
+				 winRect.left, 
+				 winRect.top, 
+				 winRect.right - winRect.left, 
+				 winRect.bottom - winRect.top, 
+				 SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+
+	// Restore desktop resolution
+	ChangeDisplaySettings(NULL, 0);
+
+	// Keep track of our new state
+	screenState = SCREEN_STATE_WINDOWED;
 }
+
+void mini3d::D3D9WindowRenderTarget::SetScreenStateFullscreen(const unsigned int& width, const unsigned int& height)
+{
+	// Get the Device Mode that is closest to the requested resolution
+	DEVMODE dm = GetClosestCompatibleResolution(width, height);
+
+	// If we are already in fullscreen mode and the requested resolution is the same as the current one, dont set it again.
+	if ((screenState == SCREEN_STATE_FULLSCREEN) && (this->width = dm.dmPelsWidth) && (this->height = dm.dmPelsHeight))
+		return;
+
+	// if we are not already in fullscreen state, capture the original window settings before we change them
+	if (screenState == SCREEN_STATE_WINDOWED)
+	{
+		// Capture window style
+		windowStyle = GetWindowLongPtr((HWND)hWindow, GWL_STYLE);
+			
+		// Capture window position
+		GetWindowRect((HWND)hWindow, &winRect);
+	}
+
+	// Make the window fullscreen and the same size as the fullscreen desktop
+	SetWindowLongPtr((HWND)hWindow, GWL_STYLE, WS_POPUP);
+	SetWindowPos((HWND)hWindow, HWND_TOPMOST, 0, 0, dm.dmPelsWidth, dm.dmPelsHeight, SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+
+	// Change Screen Resolution
+	if (ChangeDisplaySettings(&dm, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)
+	{      
+		MessageBox(NULL, L"Display mode failed", NULL, MB_OK);
+		return;
+	}
+
+	// Keep track of our new state
+	screenState = SCREEN_STATE_FULLSCREEN;
+
+}
+
 
 void mini3d::D3D9WindowRenderTarget::SetWindowRenderTarget(const int& windowHandle, const bool& depthTestEnabled, const Quality& quality)
 {
@@ -102,17 +120,15 @@ void mini3d::D3D9WindowRenderTarget::SetWindowRenderTarget(const int& windowHand
 	GetClientRect(HWND(windowHandle), clientRectangle);
 
 	// get the width and height (must be bigger than 0)
-	int width = (clientRectangle->right - clientRectangle->left) | 1;
-	int height = (clientRectangle->bottom - clientRectangle->top) | 1;
+	width = clientRectangle->right | 1;
+	height = clientRectangle->bottom | 1;
 
 	delete clientRectangle;
 
 	// set the variables from the call
 	this->hWindow = windowHandle;
-	this->width = width;
-	this->height = height;
 	this->depthTestEnabled = depthTestEnabled;
-	
+
 	// load the buffer
 	this->isDirty = true;
 	LoadResource();
@@ -127,21 +143,11 @@ void mini3d::D3D9WindowRenderTarget::Display(void)
 	if (pGraphicsService->isDrawingScene == true)
 		pGraphicsService->EndScene();
 
-	if (screenState == SCREEN_STATE_FULLSCREEN)
-		pGraphicsService->GetDevice()->Present(0,0,0,0);
-	else
-		pScreenRenderTarget->Present(0,0,0,0,0);
+	pScreenRenderTarget->Present(0,0,0,0,0);
 }
 
 void mini3d::D3D9WindowRenderTarget::LoadResource(void)
 {
-	// In fullscreen mode we should use the default render target instead of this
-	if (pGraphicsService->GetIsFullScreen() == true)
-	{
-		UnloadResource();
-		return;
-	}
-
 	isDirty = true;
 
 	// Get handle to device
@@ -151,13 +157,14 @@ void mini3d::D3D9WindowRenderTarget::LoadResource(void)
 	if (pDevice == 0)
 		return;
 
+	// Check if this is the currently bound render target
 	bool setRenderTargetToThis = (pGraphicsService->GetRenderTarget() == this);
 
 	bool renderTargetIsDirty = !LoadRenderTarget(pDevice);
 	bool depthStencilIsDirty = !LoadDepthStencil(pDevice);
 
 	// restore rendertarget if neccessary
-	if (setRenderTargetToThis == true && pGraphicsService->GetRenderTarget() != this)
+	if (setRenderTargetToThis == true)
 		pGraphicsService->SetRenderTarget(this);
 }
 
@@ -261,6 +268,10 @@ void mini3d::D3D9WindowRenderTarget::UnloadRenderTarget(void)
 
 void mini3d::D3D9WindowRenderTarget::UnloadDepthStencil(void)
 {
+	// if we are removing the current render target, restore the default render target first
+	if (pGraphicsService->GetRenderTarget() == this)
+		pGraphicsService->SetRenderTarget(0);
+
 	if (pDepthStencil != 0)
 	{
 		pDepthStencil->Release();
@@ -281,16 +292,20 @@ LRESULT CALLBACK mini3d::D3D9WindowRenderTarget::HookWndProc(HWND hwnd, UINT msg
 	{
 	// Window has been resized
 	case WM_SIZE:
+		
+		// Update the window size
+		screenRenderTarget->width = LOWORD(lParam);
+		screenRenderTarget->height = HIWORD(lParam);
 
 		// update the render target size
-		screenRenderTarget->UpdateSize();
+		screenRenderTarget->LoadResource();
 		break;
 	}
 
 	return CallWindowProc(screenRenderTarget->pOrigProc, hwnd, msg, wParam, lParam);
 }
 
-void mini3d::D3D9WindowRenderTarget::GetClosestCompatibleResolution(unsigned int &width, unsigned int &height)
+DEVMODE mini3d::D3D9WindowRenderTarget::GetClosestCompatibleResolution(const unsigned int &width, const unsigned int &height)
 {
 
 	// Get the current device mode
@@ -300,23 +315,15 @@ void mini3d::D3D9WindowRenderTarget::GetClosestCompatibleResolution(unsigned int
 
 	// If width or height = 0 set them to the current desktop resolution
 	if (width == 0 || height == 0)
-	{
-		width = currentDM.dmPelsWidth;
-		height = currentDM.dmPelsHeight;
-
-		// We are done, return
-		return;
-	}
+		return currentDM;
 
 	// initialize the device mode structure for requested device mode
-	DEVMODE requestedDM;
-	memcpy(&requestedDM, &currentDM, sizeof(currentDM));
+	DEVMODE requestedDM = currentDM;
 	requestedDM.dmPelsWidth = width;
 	requestedDM.dmPelsHeight = height;
 
 	// initialize the device mode structure for best match
-	DEVMODE bestDM;
-	memcpy(&bestDM, &currentDM, sizeof(currentDM));
+	DEVMODE bestDM = currentDM;
 
 	// Difference in area between best match and 
 	unsigned int bestMatchAreaDifference = ScoreDeviceModeMatch(requestedDM, currentDM); 
@@ -344,14 +351,13 @@ void mini3d::D3D9WindowRenderTarget::GetClosestCompatibleResolution(unsigned int
 
 		if (diff < bestMatchAreaDifference)
 		{
-			memcpy(&bestDM, &dm, sizeof(dm));
+			bestDM = dm;
 			bestMatchAreaDifference = diff;
 		}
 	}
 	
-	// Update return values
-	width = bestDM.dmPelsWidth;
-	height = bestDM.dmPelsHeight;
+	// Return the best match found
+	return bestDM;
 }
 
 unsigned int mini3d::D3D9WindowRenderTarget::ScoreDeviceModeMatch(const DEVMODE &dm1, const DEVMODE &dm2)

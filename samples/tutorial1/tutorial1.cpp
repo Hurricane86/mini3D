@@ -41,6 +41,9 @@ float distance = 10.0f; // medium distance :)
 
 // ----- DECLARE GRAPHICS RESOURCES -------------------------------------------
 
+// Render Window
+utilities::OSWindow* window;
+
 // Graphics Service
 mini3d::IGraphicsService* graphics;
 
@@ -72,7 +75,7 @@ int main()
 	// ----- CREATE GRAPHICS RESOURCES ----------------------------------------
 
 	// create an os window and attach a render target (mini3d does not have a default render target)
-	utilities::OSWindow* window = new utilities::OSWindow(WndMessage, 800, 600);
+	window = new utilities::OSWindow(WndMessage, 800, 600);
 	pWindowRenderTarget = graphics->CreateWindowRenderTarget(window->GetWindowHandle(), true, mini3d::IWindowRenderTarget::QUALITY_MINIMUM);
 
 	// create index buffer
@@ -160,8 +163,8 @@ void UpdateViewProjectionMatrix()
 	M3DVector target(0,0,0);
 	M3DVector up(0,-1,0);
 
-	float windowWidth = (float)(pWindowRenderTarget->GetWidth() | 1);
-	float windowHeight = (float)(pWindowRenderTarget->GetHeight() | 1);
+	float windowWidth = window->GetWidth(); //(float)(pWindowRenderTarget->GetWidth() | 1);
+	float windowHeight = window->GetHeight();//(float)(pWindowRenderTarget->GetHeight() | 1);
 
 	// update camera
 	M3DMatrix::LookAt(viewMatrixE, eye, target, up);
@@ -171,6 +174,10 @@ void UpdateViewProjectionMatrix()
 	// set a shader parameter
 	graphics->SetShaderParameterMatrix(0, viewProjectionMatrixE(0,0), 4, 4);
 }
+
+bool fullscreen = false;
+int x,y,width,height;
+long windowStyle;
 
 void WndMessage(utilities::OSWindow* window, utilities::OSWindow::WindowMessage message)
 {
@@ -187,7 +194,6 @@ void WndMessage(utilities::OSWindow* window, utilities::OSWindow::WindowMessage 
 			exitApplication = true;
 		break;
 		case utilities::OSWindow::SIZE:
-			pWindowRenderTarget->SetScreenStateWindowed();
 			Render();
 		break;
 		case utilities::OSWindow::MOUSE_LEFT_DOWN:
@@ -198,9 +204,18 @@ void WndMessage(utilities::OSWindow* window, utilities::OSWindow::WindowMessage 
 			if ((window->GetKey() & window->VKC_F12) == window->VKC_F12)
 			{
 				if (pWindowRenderTarget->GetScreenState() == mini3d::IWindowRenderTarget::SCREEN_STATE_WINDOWED)
-					pWindowRenderTarget->SetScreenStateFullscreen(800,600);
+//				if (fullscreen == false)
+				{
+					pWindowRenderTarget->SetScreenStateFullscreen(800, 600);
+					//ShowCursor(FALSE);
+				}
 				else
+				{
 					pWindowRenderTarget->SetScreenStateWindowed();
+					
+					//ShowCursor(TRUE);
+				}
+				fullscreen = !fullscreen;
 
 				Render();
 			}
