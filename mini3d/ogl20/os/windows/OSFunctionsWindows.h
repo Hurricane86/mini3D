@@ -37,7 +37,13 @@ public:
 	// what they do is platform dependent
 	virtual void PrepareWindow(const HWND hWindow) const;
 	virtual void SetRenderWindow(const HWND hWindow) const;
-	virtual void SetFullscreenRenderWindow(const HWND hWindow, const unsigned int& width, const unsigned int& height) const;
+
+	virtual void SetFullscreenWindow(HWND hWindow, const unsigned int& width, const unsigned int& height);	
+	virtual void RestoreFullscreenWindow(HWND hWindow);
+
+	DEVMODE GetClosestCompatibleResolution(const unsigned int& width, const unsigned int& height);
+	unsigned ScoreDeviceModeMatch(const DEVMODE &dm1, const DEVMODE &dm2);
+
 	virtual void SetDefaultRenderWindow() const;
 	virtual void SwapWindowBuffers(const HWND hWindow) const;
 
@@ -205,6 +211,15 @@ public:
 	HWND hWindow;
 	HDC hDeviceContext;
 	HGLRC hRenderContext;
+
+	// Current fullscreen window
+	HWND fullscreenWindow;
+
+	// Stores the original window position and size before entering fullscreen
+	RECT winRect;
+
+	// Stores the windowstyle for the window before changing it when entering fullscreen
+	long windowStyle;
 };
 }
 

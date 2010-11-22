@@ -35,7 +35,6 @@ public:
 	// what they do depends on the platform opengl implementation.
 	virtual void PrepareWindow(const MINI3D_WINDOW hWindow) const = 0;
 	virtual void SetRenderWindow(const MINI3D_WINDOW hWindow) const = 0;
-	virtual void SetFullscreenRenderWindow(const MINI3D_WINDOW hWindow, const unsigned int& width, const unsigned int& height) const = 0;
 	virtual void SetDefaultRenderWindow() const = 0;
 	virtual void SwapWindowBuffers(const MINI3D_WINDOW hWindow) const = 0;
 
@@ -44,7 +43,6 @@ public:
 	// GENERAL
 	virtual void GLSwapBuffers() const = 0;
 	virtual void GLBindFramebuffer(GLenum target, GLuint framebuffer) const = 0;
-	//virtual void GLMakeCurrent(const DisplayContext displayContext, const WindowContext windowContext, const GLRenderingContext renderingContext) const = 0;
 	virtual void GLViewport(const unsigned int width, const unsigned int height) const = 0;
 
 	virtual void GLShadeModel(GLenum mode) const = 0;

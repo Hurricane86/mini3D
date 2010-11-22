@@ -6,10 +6,11 @@
 #ifdef _WIN32
 
 #include "OSFunctionsWindows.h"
+#include <math.h>
 #include <GL/glext.h>
 #include <GL/wglext.h>
 
-mini3d::OSFunctions::OSFunctions()
+mini3d::OSFunctions::OSFunctions() : fullscreenWindow(0)
 {
 	CreateInternalWindow();
 	CreateDevice();
@@ -214,30 +215,134 @@ void mini3d::OSFunctions::SetRenderWindow(const HWND hWindow) const
 	}
 }
 
-void mini3d::OSFunctions::SetFullscreenRenderWindow(const HWND hWindow, const unsigned int& width, const unsigned int& height) const
+void mini3d::OSFunctions::SetFullscreenWindow(HWND hWindow, const unsigned int& width, const unsigned int& height)
 {
-	// Set the video resolution to the fullscreen resolution
+	// Get the Device Mode that is closest to the requested resolution
+	DEVMODE dm = GetClosestCompatibleResolution(width, height);
 
-	DEVMODE dmScreenSettings = {0}; // Device Mode initialized to zero
-	dmScreenSettings.dmSize=sizeof(dmScreenSettings); // Size Of The Devmode Structure
-	dmScreenSettings.dmPelsWidth = width; // Selected Screen Width
-	dmScreenSettings.dmPelsHeight = height;	// Selected Screen Height
+	// GetWindow client size
+	RECT clientRect;
+	GetClientRect((HWND)hWindow, &clientRect);
 
-	// if the size is zero, use the default desktop size
-	if (dmScreenSettings.dmPelsWidth != 0 && dmScreenSettings.dmPelsWidth != 0)
+	int currentWidth = clientRect.right - clientRect.left;
+	int currentHeight = clientRect.bottom - clientRect.top;
+
+	// If we are already in fullscreen mode and the requested resolution is the same as the current one, dont set it again.
+	if ((fullscreenWindow != 0) && (currentWidth == dm.dmPelsWidth) && (currentHeight == dm.dmPelsHeight))
+		return;
+
+	// if we are not already in fullscreen state, capture the original window settings before we change them
+	if (fullscreenWindow == 0)
 	{
-		dmScreenSettings.dmFields |= DM_PELSWIDTH | DM_PELSHEIGHT;
+		// Capture window style
+		windowStyle = GetWindowLongPtr((HWND)hWindow, GWL_STYLE);
+			
+		// Capture window position
+		GetWindowRect((HWND)hWindow, &winRect);
 	}
 
-	if (ChangeDisplaySettings(&dmScreenSettings, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)
-	{
+	// Make the window fullscreen and the same size as the fullscreen desktop
+	SetWindowLongPtr((HWND)hWindow, GWL_STYLE, WS_POPUP);
+	SetWindowPos((HWND)hWindow, HWND_TOPMOST, 0, 0, dm.dmPelsWidth, dm.dmPelsHeight, SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+
+	// Change Screen Resolution
+	if (ChangeDisplaySettings(&dm, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)
+	{      
+		// TODO: Handle Error?
 		return;
 	}
 
-	HDC hDC = GetWindowDC((HWND)hWindow);
-	GLBindFramebuffer(GL_FRAMEBUFFER, 0);
-	wglMakeCurrent(hDC, hRenderContext);
+	// Keep track of new fullscreen window
+	fullscreenWindow = hWindow;
 }
+
+void mini3d::OSFunctions::RestoreFullscreenWindow(HWND hWindow)
+{
+	// Restore window style
+	SetWindowLongPtr((HWND)hWindow, GWL_STYLE, windowStyle);
+
+	// Restore window size and position
+	SetWindowPos((HWND)hWindow,
+					HWND_TOP,
+					winRect.left, 
+					winRect.top, 
+					winRect.right - winRect.left, 
+					winRect.bottom - winRect.top, 
+					SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+
+	// Restore desktop resolution
+	ChangeDisplaySettings(NULL, 0);
+
+	// Set the fullscreenWindow to 0
+	fullscreenWindow = 0;
+}
+
+DEVMODE mini3d::OSFunctions::GetClosestCompatibleResolution(const unsigned int& width, const unsigned int& height)
+{
+
+	// Get the current device mode
+	DEVMODE currentDM = {0};
+	currentDM.dmSize = sizeof(currentDM);
+	EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &currentDM);
+
+	// If width or height = 0 set them to the current desktop resolution
+	if (width == 0 || height == 0)
+		return currentDM;
+
+	// initialize the device mode structure for requested device mode
+	DEVMODE requestedDM = currentDM;
+	requestedDM.dmPelsWidth = width;
+	requestedDM.dmPelsHeight = height;
+
+	// initialize the device mode structure for best match
+	DEVMODE bestDM = currentDM;
+
+	// Difference in area between best match and 
+	unsigned int bestMatchAreaDifference = ScoreDeviceModeMatch(requestedDM, currentDM); 
+
+	// initialize the device mode structure for looping over all device modes
+	DEVMODE dm = {0};
+	dm.dmSize = sizeof(dm);
+
+	// loop variable
+	unsigned int i = 0;
+
+	// Loop over all display settings and find the best match
+	// EnumDisplaySettings returns 0 when we request a displaymode id that is out of range
+	while (EnumDisplaySettings(NULL, i++, &dm) != 0)
+	{
+		// skip modes with wrong color bit depth
+		if (dm.dmBitsPerPel != currentDM.dmBitsPerPel)
+			continue;
+
+		// skip modes with wrong display orientation
+		if (dm.dmOrientation != currentDM.dmOrientation)
+			continue;
+
+		unsigned int diff = ScoreDeviceModeMatch(requestedDM, dm);
+
+		if (diff < bestMatchAreaDifference)
+		{
+			bestDM = dm;
+			bestMatchAreaDifference = diff;
+		}
+	}
+	
+	// Return the best match found
+	return bestDM;
+}
+
+unsigned int mini3d::OSFunctions::ScoreDeviceModeMatch(const DEVMODE &dm1, const DEVMODE &dm2)
+{
+	// Score the similarity of the display modes by getting the difference between widths, heights and frequencies.
+	// We get the total score when we add their absolute values together.
+	unsigned int score = (unsigned int)(abs((double)(dm1.dmPelsWidth - dm2.dmPelsWidth)) + 
+										abs((double)(dm1.dmPelsHeight - dm2.dmPelsHeight)) + 
+										abs((double)(dm1.dmDisplayFrequency - dm2.dmDisplayFrequency)));
+
+	return score;
+}
+
 
 void mini3d::OSFunctions::SetDefaultRenderWindow() const
 {

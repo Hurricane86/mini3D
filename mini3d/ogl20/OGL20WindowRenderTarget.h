@@ -99,12 +99,6 @@ private:
 	unsigned int width;
 	unsigned int height;
 
-	// Stores the original window position and size before entering fullscreen
-	RECT winRect;
-
-	// Stores the windowstyle for the window before changing it when entering fullscreen
-	long windowStyle;
-
 	MINI3D_WINDOW hWindow;
 
 	bool depthTestEnabled;
