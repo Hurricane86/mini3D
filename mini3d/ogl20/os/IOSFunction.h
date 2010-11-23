@@ -33,6 +33,7 @@ public:
 	// ---------- ABSTRACT OPENGL FUNCTIONS --------------------------------------
 	// These functions preform opengl operations but they do not necessarily map 1-1 against any opengl functions.
 	// what they do depends on the platform opengl implementation.
+	
 	virtual void PrepareWindow(const MINI3D_WINDOW hWindow) const = 0;
 	virtual void SetRenderWindow(const MINI3D_WINDOW hWindow) const = 0;
 	virtual void SetDefaultRenderWindow() const = 0;

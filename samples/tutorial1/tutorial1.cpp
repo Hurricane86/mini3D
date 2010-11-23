@@ -13,6 +13,8 @@
 #include "shaders.h"
 #include "geometry.h"
 
+#include "../../mini3d/os/OSFunctionsW.h"
+
 
 // ----- FORWARD DECLARATIONS -------------------------------------------------
 void WndMessage(utilities::OSWindow* window, utilities::OSWindow::WindowMessage message);
@@ -66,6 +68,7 @@ int main()
 #endif
 {
 	
+
 	// ----- CREATE GRAPHICS SERVICE ------------------------------------------
 	
 	//graphics = new mini3d::D3D9GraphicsService();
@@ -106,7 +109,6 @@ int main()
 
 	// Show the window
 	window->Show();
-
 
 	// ----- MAIN LOOP --------------------------------------------------------
 
