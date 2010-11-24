@@ -26,7 +26,7 @@ public:
 	// Used by OPENGL for determining setting buffer and depth buffer format
 	virtual unsigned int GetMonitorBitDepth() const;
 	virtual void GetClientAreaSize(const HWND windowHandle, unsigned int &width, unsigned int &height) const;
-	virtual void Log(char* message) const;
+	void Log(const char* message) const;
 
 	// Device creation
 	void CreateDevice();

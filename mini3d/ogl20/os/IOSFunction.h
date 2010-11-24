@@ -28,7 +28,7 @@ public:
 	// Used by OPENGL for determining setting buffer and depth buffer format
 	virtual unsigned int GetMonitorBitDepth() const = 0;
 	virtual void GetClientAreaSize(const MINI3D_WINDOW windowHandle, unsigned int &width, unsigned int &height) const = 0;
-	virtual void Log(char* message) const = 0;
+	virtual void Log(const char* message) const = 0;
 
 	// ---------- ABSTRACT OPENGL FUNCTIONS --------------------------------------
 	// These functions preform opengl operations but they do not necessarily map 1-1 against any opengl functions.

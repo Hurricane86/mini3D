@@ -208,7 +208,7 @@ Display* mini3d::OSFunctions::GetDisplayFromWindow(Window window) const
 	return attr.screen->display;
 }
 
-void mini3d::OSFunctions::Log(char* message) const
+void mini3d::OSFunctions::Log(const char* message) const
 {
 	//printf(message);
 }

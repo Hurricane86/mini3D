@@ -12,11 +12,13 @@
 #include "../IWindowRenderTarget.h"
 #include "D3D9GraphicsService.h"
 #include "internal/ID3D9Resource.h"
+
 #include <map>
 
 namespace mini3d
 {
 class D3D9DepthStencil;
+class OSWrapper;
 class D3D9WindowRenderTarget : public IWindowRenderTarget, public ID3D9RenderTarget, public ID3D9Resource
 {
 
@@ -76,9 +78,6 @@ private:
 	void UnloadRenderTarget();
 	void UnloadDepthStencil();
 
-	DEVMODE GetClosestCompatibleResolution(const unsigned int &width, const unsigned int &height);
-	unsigned int ScoreDeviceModeMatch(const DEVMODE &dm1, const DEVMODE &dm2);
-
 	static LRESULT CALLBACK HookWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 
@@ -89,14 +88,17 @@ private:
 	// Graphics service handle
 	D3D9GraphicsService* pGraphicsService;
 	
+	// Connection to generic OS functions
+	OSWrapper* oSWrapper;
+
 	// Hardware resources
 	IDirect3DSwapChain9* pScreenRenderTarget;
 	IDirect3DSurface9* pDepthStencil;
 	IDirect3DSurface9* pRenderTargetSurface;
 
 	// Size of the window
-	int width;
-	int height;
+	unsigned int width;
+	unsigned int height;
 
 	// state parameters
 	HWND hWindow;

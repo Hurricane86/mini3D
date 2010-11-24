@@ -4,9 +4,9 @@
 // It is distributed under the MIT Software License <www.mini3d.org/license>
 
 
-
 #include "../D3D9WindowRenderTarget.h"
 #include "../D3D9PresentationParameters.h"
+#include "../../oswrapper/OSWrapper.h"
 #include <d3d9.h>
 
 std::map<HWND, mini3d::D3D9WindowRenderTarget*> mini3d::D3D9WindowRenderTarget::windowMap;
@@ -16,6 +16,8 @@ pGraphicsService(pGraphicsService), pScreenRenderTarget(0), pDepthStencil(0), qu
 {
 	SetWindowRenderTarget(windowHandle, depthTestEnabled, quality);
 	pGraphicsService->AddResource(this);
+
+	oSWrapper = new OSWrapper();
 }
 
 mini3d::D3D9WindowRenderTarget::~D3D9WindowRenderTarget(void)
@@ -25,6 +27,10 @@ mini3d::D3D9WindowRenderTarget::~D3D9WindowRenderTarget(void)
 	
 	if (pDepthStencil != 0)
 		delete pDepthStencil;
+
+	if (oSWrapper != 0)
+		delete oSWrapper;
+
 }
 
 void mini3d::D3D9WindowRenderTarget::SetScreenStateWindowed()
@@ -33,20 +39,7 @@ void mini3d::D3D9WindowRenderTarget::SetScreenStateWindowed()
 	if (screenState == SCREEN_STATE_WINDOWED)
 		return;
 
-	// Restore window style
-	SetWindowLongPtr((HWND)hWindow, GWL_STYLE, windowStyle);
-
-	// Restore window size and position
-	SetWindowPos((HWND)hWindow,
-				 HWND_TOPMOST,
-				 winRect.left, 
-				 winRect.top, 
-				 winRect.right - winRect.left, 
-				 winRect.bottom - winRect.top, 
-				 SWP_FRAMECHANGED | SWP_SHOWWINDOW);
-
-	// Restore desktop resolution
-	ChangeDisplaySettings(NULL, 0);
+	oSWrapper->RestoreFullscreenWindow(hWindow);
 
 	// Keep track of our new state
 	screenState = SCREEN_STATE_WINDOWED;
@@ -54,43 +47,15 @@ void mini3d::D3D9WindowRenderTarget::SetScreenStateWindowed()
 
 void mini3d::D3D9WindowRenderTarget::SetScreenStateFullscreen(const unsigned int& width, const unsigned int& height)
 {
-	// Get the Device Mode that is closest to the requested resolution
-	DEVMODE dm = GetClosestCompatibleResolution(width, height);
-
-	// If we are already in fullscreen mode and the requested resolution is the same as the current one, dont set it again.
-	if ((screenState == SCREEN_STATE_FULLSCREEN) && (this->width = dm.dmPelsWidth) && (this->height = dm.dmPelsHeight))
-		return;
-
-	// if we are not already in fullscreen state, capture the original window settings before we change them
-	if (screenState == SCREEN_STATE_WINDOWED)
-	{
-		// Capture window style
-		windowStyle = GetWindowLongPtr((HWND)hWindow, GWL_STYLE);
-			
-		// Capture window position
-		GetWindowRect((HWND)hWindow, &winRect);
-	}
-
-	// Make the window fullscreen and the same size as the fullscreen desktop
-	SetWindowLongPtr((HWND)hWindow, GWL_STYLE, WS_POPUP);
-	SetWindowPos((HWND)hWindow, HWND_TOPMOST, 0, 0, dm.dmPelsWidth, dm.dmPelsHeight, SWP_FRAMECHANGED | SWP_SHOWWINDOW);
-
-	// Change Screen Resolution
-	if (ChangeDisplaySettings(&dm, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)
-	{      
-		MessageBox(NULL, L"Display mode failed", NULL, MB_OK);
-		return;
-	}
+	// Attempt to set the window to fullscreen mode
+	oSWrapper->SetFullscreenWindow(hWindow, width, height);
 
 	// Keep track of our new state
 	screenState = SCREEN_STATE_FULLSCREEN;
-
 }
-
 
 void mini3d::D3D9WindowRenderTarget::SetWindowRenderTarget(const MINI3D_WINDOW windowHandle, const bool& depthTestEnabled, const Quality& quality)
 {
-
 	if (windowHandle != hWindow)
 	{
 		// if this is the first time we set this up, just replace the window process
@@ -116,14 +81,7 @@ void mini3d::D3D9WindowRenderTarget::SetWindowRenderTarget(const MINI3D_WINDOW w
 	}
 
 	// Get the size of the client area of the window 
-	LPRECT clientRectangle = new tagRECT();
-	GetClientRect(HWND(windowHandle), clientRectangle);
-
-	// get the width and height (must be bigger than 0)
-	width = clientRectangle->right | 1;
-	height = clientRectangle->bottom | 1;
-
-	delete clientRectangle;
+	oSWrapper->GetWindowSize(windowHandle, width, height);
 
 	// set the variables from the call
 	this->hWindow = windowHandle;
@@ -302,70 +260,4 @@ LRESULT CALLBACK mini3d::D3D9WindowRenderTarget::HookWndProc(HWND hwnd, UINT msg
 	}
 
 	return CallWindowProc(screenRenderTarget->pOrigProc, hwnd, msg, wParam, lParam);
-}
-
-DEVMODE mini3d::D3D9WindowRenderTarget::GetClosestCompatibleResolution(const unsigned int &width, const unsigned int &height)
-{
-
-	// Get the current device mode
-	DEVMODE currentDM = {0};
-	currentDM.dmSize = sizeof(currentDM);
-	EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &currentDM);
-
-	// If width or height = 0 set them to the current desktop resolution
-	if (width == 0 || height == 0)
-		return currentDM;
-
-	// initialize the device mode structure for requested device mode
-	DEVMODE requestedDM = currentDM;
-	requestedDM.dmPelsWidth = width;
-	requestedDM.dmPelsHeight = height;
-
-	// initialize the device mode structure for best match
-	DEVMODE bestDM = currentDM;
-
-	// Difference in area between best match and 
-	unsigned int bestMatchAreaDifference = ScoreDeviceModeMatch(requestedDM, currentDM); 
-
-	// initialize the device mode structure for looping over all device modes
-	DEVMODE dm = {0};
-	dm.dmSize = sizeof(dm);
-
-	// loop variable
-	unsigned int i = 0;
-
-	// Loop over all display settings and find the best match
-	// EnumDisplaySettings returns 0 when we request a displaymode id that is out of range
-	while (EnumDisplaySettings(NULL, i++, &dm) != 0)
-	{
-		// skip modes with wrong color bit depth
-		if (dm.dmBitsPerPel != currentDM.dmBitsPerPel)
-			continue;
-
-		// skip modes with wrong display orientation
-		if (dm.dmOrientation != currentDM.dmOrientation)
-			continue;
-
-		unsigned int diff = ScoreDeviceModeMatch(requestedDM, dm);
-
-		if (diff < bestMatchAreaDifference)
-		{
-			bestDM = dm;
-			bestMatchAreaDifference = diff;
-		}
-	}
-	
-	// Return the best match found
-	return bestDM;
-}
-
-unsigned int mini3d::D3D9WindowRenderTarget::ScoreDeviceModeMatch(const DEVMODE &dm1, const DEVMODE &dm2)
-{
-	// Score the similarity of the display modes by getting the difference between widths, heights and frequencies.
-	// We get the total score when we add their absolute values together.
-	unsigned int score = (unsigned int)(abs((double)(dm1.dmPelsWidth - dm2.dmPelsWidth)) + 
-										abs((double)(dm1.dmPelsHeight - dm2.dmPelsHeight)) + 
-										abs((double)(dm1.dmDisplayFrequency - dm2.dmDisplayFrequency)));
-
-	return score;
 }

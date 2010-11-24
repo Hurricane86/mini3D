@@ -33,7 +33,7 @@ public:
 	virtual unsigned int GetMonitorBitDepth() const;
 	virtual void GetClientAreaSize(Window windowHandle, unsigned int &width, unsigned int &height) const;
 	virtual Display* GetDisplayFromWindow(Window window) const;
-	virtual void Log(char* message) const;
+	virtual void Log(const char* message) const;
 
 	// Device creation
 	void CreateDevice();
