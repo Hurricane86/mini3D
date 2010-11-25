@@ -251,11 +251,11 @@ LRESULT CALLBACK mini3d::D3D9WindowRenderTarget::HookWndProc(HWND hwnd, UINT msg
 	case WM_SIZE:
 		
 		// Update the window size
-		screenRenderTarget->width = LOWORD(lParam);
-		screenRenderTarget->height = HIWORD(lParam);
+		//screenRenderTarget->width = LOWORD(lParam) | 1;
+		//screenRenderTarget->height = HIWORD(lParam) | 1;
 
 		// update the render target size
-		screenRenderTarget->LoadResource();
+		//screenRenderTarget->LoadResource();
 		break;
 	}
 

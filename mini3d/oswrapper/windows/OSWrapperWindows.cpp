@@ -225,10 +225,18 @@ void mini3d::OSWrapper::GetWindowSize(const MINI3D_WINDOW window, unsigned int &
 void mini3d::OSWrapper::SetFullscreenWindow(MINI3D_WINDOW window, const unsigned int& width, const unsigned int& height)
 {
 	// Find and store the fullscreen monitor name
-	GetMonitorNameFromWindow(window, fullscreenMonitorName);
+	MONITORINFOEX monitorInfo;
+	monitorInfo.cbSize = sizeof(MONITORINFOEX);
+	GetMonitorInfo(MonitorFromWindow(window, MONITOR_DEFAULTTONEAREST), &monitorInfo);
+
+	memcpy(fullscreenMonitorName, &monitorInfo.szDevice, sizeof(monitorInfo.szDevice));
 
 	// Get the Device Mode that is closest to the requested resolution
 	DEVMODE dm = GetClosestCompatibleGraphicsMode(fullscreenMonitorName, width, height);
+
+	// Set the device mode position based on the current monitor coordinates in the virtual desktop
+	dm.dmPosition.x = monitorInfo.rcMonitor.left;
+	dm.dmPosition.y = monitorInfo.rcMonitor.top;
 
 	// If we are already in fullscreen mode and the requested resolution is the same as the current one, dont set it again.
 	if ((fullscreenWindow != 0) && (fullscreenDeviceMode.dmPelsWidth == dm.dmPelsWidth) && (fullscreenDeviceMode.dmPelsHeight == dm.dmPelsHeight))
@@ -257,8 +265,10 @@ void mini3d::OSWrapper::SetFullscreenWindow(MINI3D_WINDOW window, const unsigned
 		return;
 	}
 
+	// TODO: Fix mouse cursor position (SetCursorPos, GetCursorPos)
+
 	// Make the window fullscreen and the same size as the fullscreen desktop
-	SetWindowLongPtr(window, GWL_STYLE, WS_POPUP);
+	SetWindowLongPtr(window, GWL_STYLE, 0);
 	SetWindowPos(window, HWND_TOPMOST, dm.dmPosition.x, dm.dmPosition.y, dm.dmPelsWidth, dm.dmPelsHeight, SWP_FRAMECHANGED | SWP_SHOWWINDOW);
 
 }
@@ -271,10 +281,8 @@ void mini3d::OSWrapper::RestoreFullscreenWindow(MINI3D_WINDOW window)
 	// Restore desktop resolution
 	ChangeDisplaySettingsEx(fullscreenMonitorName, 0, 0, 0, 0);
 
-	// Restore window style
+	// Restore window style, size and position
 	SetWindowLongPtr(window, GWL_STYLE, windowStyle);
-
-	// Restore window size and position
 	SetWindowPos(window, HWND_TOP, winRect.left, winRect.top, winRect.right - winRect.left, winRect.bottom - winRect.top, SWP_FRAMECHANGED | SWP_SHOWWINDOW);
 
 	// Set the fullscreenWindow to 0
@@ -311,6 +319,8 @@ DEVMODE mini3d::OSWrapper::GetClosestCompatibleGraphicsMode(const WCHAR monitorN
 	currentDM.dmSize = sizeof(currentDM);
 	EnumDisplaySettings(monitorName, ENUM_CURRENT_SETTINGS, &currentDM);
 
+	// inel
+
 	// If width or height = 0 return the current device mode
 	if (width == 0 || height == 0)
 		return currentDM;
@@ -342,7 +352,7 @@ DEVMODE mini3d::OSWrapper::GetClosestCompatibleGraphicsMode(const WCHAR monitorN
 			continue;
 
 		// skip modes with wrong display orientation
-		if (dm.dmOrientation != currentDM.dmOrientation)
+		if (dm.dmDisplayOrientation != currentDM.dmDisplayOrientation)
 			continue;
 
 		// Score this match
@@ -355,7 +365,7 @@ DEVMODE mini3d::OSWrapper::GetClosestCompatibleGraphicsMode(const WCHAR monitorN
 			bestMatch = match;
 		}
 	}
-	
+
 	// Return the best match found
 	return bestDM;
 }
