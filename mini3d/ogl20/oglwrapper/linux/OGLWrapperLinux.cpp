@@ -6,23 +6,23 @@
 
 #ifdef __linux
 
-#include "OSFunctionsLinux.h"
+#include "OGLWrapperLinux.h"
 #include <GL/glext.h>
 
-mini3d::OSFunctions::OSFunctions()
+mini3d::OGLWrapper::OGLWrapper()
 {
 	CreateDevice();
 	CreateInternalWindow();
 	Init();
 }
 
-mini3d::OSFunctions::~OSFunctions()
+mini3d::OGLWrapper::~OGLWrapper()
 {
 	
 }
 
 
-void mini3d::OSFunctions::Init()
+void mini3d::OGLWrapper::Init()
 {
 	glIsShader = (PFNGLISSHADERPROC)glXGetProcAddress((const GLubyte*)"glIsShader");
 	
@@ -88,7 +88,7 @@ void mini3d::OSFunctions::Init()
 
 }
 
-void mini3d::OSFunctions::CreateDevice(void)
+void mini3d::OGLWrapper::CreateDevice(void)
 {
 	int attrList[20];
 	int indx=0; 
@@ -123,7 +123,7 @@ void mini3d::OSFunctions::CreateDevice(void)
 	swattr.border_pixel = BlackPixel (display, vinfo->screen);
 }
 
-void mini3d::OSFunctions::CreateInternalWindow(void)
+void mini3d::OGLWrapper::CreateInternalWindow(void)
 {
 	    window = XCreateWindow(display, RootWindow(display, vinfo->screen), 30, 30, 64, 64, 0, vinfo->depth, CopyFromParent, vinfo->visual,CWBackPixel | CWBorderPixel | CWColormap, &swattr);
 		renderingContext = glXCreateContext(display, vinfo, NULL, True);
@@ -141,12 +141,12 @@ void mini3d::OSFunctions::CreateInternalWindow(void)
 		int j = 0;
 }
 
-void mini3d::OSFunctions::PrepareWindow(const int& hWindow) const
+void mini3d::OGLWrapper::PrepareWindow(const int& hWindow) const
 {
 
 }
 
-void mini3d::OSFunctions::SetRenderWindow(const int& hWindow) const
+void mini3d::OGLWrapper::SetRenderWindow(const int& hWindow) const
 {
 	if (hWindow == 0)
 	{
@@ -167,7 +167,7 @@ void mini3d::OSFunctions::SetRenderWindow(const int& hWindow) const
 	}
 }
 
-void mini3d::OSFunctions::SetFullscreenRenderWindow(const int& hWindow, const unsigned int& width, const unsigned int& height) const
+void mini3d::OGLWrapper::SetFullscreenRenderWindow(const int& hWindow, const unsigned int& width, const unsigned int& height) const
 {
 	// Set the video resolution to the fullscreen resolution
 	
@@ -176,22 +176,22 @@ void mini3d::OSFunctions::SetFullscreenRenderWindow(const int& hWindow, const un
 	glXMakeCurrent(GetDisplayFromWindow(hWindow), hWindow, renderingContext);
 }
 
-void mini3d::OSFunctions::SetDefaultRenderWindow() const
+void mini3d::OGLWrapper::SetDefaultRenderWindow() const
 {
 	glXMakeCurrent(display, window, renderingContext);
 }
 
-void mini3d::OSFunctions::SwapWindowBuffers(const int& hWindow) const
+void mini3d::OGLWrapper::SwapWindowBuffers(const int& hWindow) const
 {
 	glXSwapBuffers(GetDisplayFromWindow(hWindow), hWindow);
 }
 
-unsigned int mini3d::OSFunctions::GetMonitorBitDepth() const
+unsigned int mini3d::OGLWrapper::GetMonitorBitDepth() const
 {
 	return 32;
 }
 
-void mini3d::OSFunctions::GetClientAreaSize(int windowHandle, unsigned int &width, unsigned int &height) const
+void mini3d::OGLWrapper::GetClientAreaSize(int windowHandle, unsigned int &width, unsigned int &height) const
 {
 	XWindowAttributes attr;
 	XGetWindowAttributes(display, windowHandle, &attr);
@@ -200,7 +200,7 @@ void mini3d::OSFunctions::GetClientAreaSize(int windowHandle, unsigned int &widt
 	height = attr.height;
 }
 
-Display* mini3d::OSFunctions::GetDisplayFromWindow(Window window) const
+Display* mini3d::OGLWrapper::GetDisplayFromWindow(Window window) const
 {
 	XWindowAttributes attr;
 	XGetWindowAttributes(display, window, &attr);
@@ -208,7 +208,7 @@ Display* mini3d::OSFunctions::GetDisplayFromWindow(Window window) const
 	return attr.screen->display;
 }
 
-void mini3d::OSFunctions::Log(const char* message) const
+void mini3d::OGLWrapper::Log(const char* message) const
 {
 	//printf(message);
 }

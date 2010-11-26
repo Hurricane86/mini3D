@@ -10,7 +10,7 @@
 #define MINI3D_OSFUNCTIONLINUX_H
 
 #define GL_GLEXT_PROTOTYPES
-#include "../IOSFunction.h"
+#include "../IOGLWrapper.h"
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <GL/glx.h>
@@ -20,12 +20,12 @@ typedef char GLchar;
 
 namespace mini3d
 {
-class OSFunctions : IOSFunction
+class OGLWrapper : IOGLWrapper
 {
 public:
 	
-	OSFunctions();
-	virtual ~OSFunctions();
+	OGLWrapper();
+	virtual ~OGLWrapper();
 
 	virtual void Init();
 
