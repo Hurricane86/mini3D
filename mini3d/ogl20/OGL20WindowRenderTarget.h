@@ -18,6 +18,7 @@ namespace mini3d
 {
 class OGL20DepthStencil;
 class OGL20GraphicsService;
+class OSWrapper;
 class OGL20WindowRenderTarget : public IWindowRenderTarget, public IOGL20RenderTarget, public IOGL20Resource
 {
 
@@ -117,6 +118,8 @@ private:
 	GLuint pScreenRenderTarget;
 
 	bool isDirty;
+
+	OSWrapper* oSWrapper;
 
 };
 }

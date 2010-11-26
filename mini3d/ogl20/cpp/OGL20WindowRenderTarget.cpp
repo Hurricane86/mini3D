@@ -6,7 +6,9 @@
 
 #include "../OGL20WindowRenderTarget.h"
 #include "../OGL20GraphicsService.h"
+#include "../../oswrapper/OSWrapper.h"
 #include "../../error/Error.h"
+
 
 std::map<MINI3D_WINDOW, mini3d::OGL20WindowRenderTarget*> mini3d::OGL20WindowRenderTarget::windowMap;
 
@@ -16,6 +18,8 @@ mini3d::OGL20WindowRenderTarget::OGL20WindowRenderTarget(OGL20GraphicsService* p
 	screenState = SCREEN_STATE_WINDOWED;
 	SetWindowRenderTarget(windowHandle, depthTestEnabled, quality);
 	pGraphicsService->AddResource(this);
+
+	oSWrapper = new OSWrapper();
 }
 
 mini3d::OGL20WindowRenderTarget::~OGL20WindowRenderTarget(void)
@@ -31,7 +35,7 @@ void mini3d::OGL20WindowRenderTarget::SetScreenStateWindowed()
 		return;
 
 	// Set Windowed state and restore window
-	pGraphicsService->GetOS()->RestoreFullscreenWindow(hWindow);
+	oSWrapper->RestoreFullscreenWindow(hWindow);
 
 	// Keep track of our new state
 	screenState = SCREEN_STATE_WINDOWED;
@@ -44,7 +48,7 @@ void mini3d::OGL20WindowRenderTarget::SetScreenStateWindowed()
 void mini3d::OGL20WindowRenderTarget::SetScreenStateFullscreen(const unsigned int& width, const unsigned int& height)
 {
 	// Set Windowed state and restore window
-	pGraphicsService->GetOS()->SetFullscreenWindow(hWindow, width, height);
+	oSWrapper->SetFullscreenWindow(hWindow, width, height);
 
 	// Keep track of our new state
 	screenState = SCREEN_STATE_FULLSCREEN;
