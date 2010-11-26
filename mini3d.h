@@ -7,9 +7,9 @@
 #define NOMINMAX
 #endif
 
-#include "mini3d/ogl20/OGL20GraphicsService.h"
+#include "source/ogl20/OGL20GraphicsService.h"
 
 #ifdef _WIN32
-#include "mini3d/d3d9/D3D9GraphicsService.h"
+#include "source/d3d9/D3D9GraphicsService.h"
 #endif
 
