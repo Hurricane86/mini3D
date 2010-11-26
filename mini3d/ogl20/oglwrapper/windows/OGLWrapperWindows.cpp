@@ -5,19 +5,20 @@
 
 #ifdef _WIN32
 
-#include "OSFunctionsWindows.h"
+#include "OGLWrapperWindows.h"
 #include <math.h>
 #include <GL/glext.h>
 #include <GL/wglext.h>
 
-mini3d::OSFunctions::OSFunctions() : fullscreenWindow(0)
+mini3d::OGLWrapper::OGLWrapper() : fullscreenWindow(0), oSWrapper(0)
 {
+	oSWrapper = new OSWrapper();
 	CreateInternalWindow();
 	CreateDevice();
 	Init();
 }
 
-mini3d::OSFunctions::~OSFunctions()
+mini3d::OGLWrapper::~OGLWrapper()
 {
 	// Remove the default device context
 	DeleteDC(hDeviceContext);
@@ -27,10 +28,13 @@ mini3d::OSFunctions::~OSFunctions()
 
 	// delete the default render context
 	wglDeleteContext(hRenderContext);
+
+	if (oSWrapper != 0)
+		delete oSWrapper;
 }
 
 
-void mini3d::OSFunctions::Init()
+void mini3d::OGLWrapper::Init()
 {
 	glIsShader = (PFNGLISSHADERPROC)wglGetProcAddress("glIsShader");
 	
@@ -97,7 +101,7 @@ void mini3d::OSFunctions::Init()
 	glDrawRangeElements = (PFNGLDRAWRANGEELEMENTSPROC)wglGetProcAddress("glDrawRangeElements");
 }
 
-void mini3d::OSFunctions::CreateDevice(void)
+void mini3d::OGLWrapper::CreateDevice(void)
 {
 	// get the pixel format for the device context
 	// query desktop video settings
@@ -141,7 +145,7 @@ LRESULT CALLBACK OGL20WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
-void mini3d::OSFunctions::CreateInternalWindow(void)
+void mini3d::OGLWrapper::CreateInternalWindow(void)
 {
 	HINSTANCE hInstance = GetModuleHandle(NULL);
 
@@ -170,7 +174,7 @@ void mini3d::OSFunctions::CreateInternalWindow(void)
 	hDeviceContext = GetDC((HWND)hWindow);
 }
 
-void mini3d::OSFunctions::PrepareWindow(const MINI3D_WINDOW hWindow) const
+void mini3d::OGLWrapper::PrepareWindow(const MINI3D_WINDOW hWindow) const
 {
 	PIXELFORMATDESCRIPTOR pfd;
 	int iFormat;
@@ -178,7 +182,7 @@ void mini3d::OSFunctions::PrepareWindow(const MINI3D_WINDOW hWindow) const
 	int colorBits = 24;
 	int depthBits = 32;
 
-	if (GetMonitorBitDepth() == 16)
+	if (oSWrapper->GetMonitorBitDepth() == 16)
 	{
 		colorBits = depthBits = 16;
 	}
@@ -198,7 +202,7 @@ void mini3d::OSFunctions::PrepareWindow(const MINI3D_WINDOW hWindow) const
 	SetPixelFormat(hDC, iFormat, &pfd);
 }
 
-void mini3d::OSFunctions::SetRenderWindow(const HWND hWindow) const
+void mini3d::OGLWrapper::SetRenderWindow(const HWND hWindow) const
 {
 	if (hWindow == 0)
 	{
@@ -207,193 +211,20 @@ void mini3d::OSFunctions::SetRenderWindow(const HWND hWindow) const
 	else
 	{
 		HDC hDC = GetWindowDC((HWND)hWindow);
-		//ChangeDisplaySettings(NULL,0);	// Switch back to the desktop default resolution stored in registry
-		//ShowCursor(TRUE);	// Show mouse pointer
-			
 		GLBindFramebuffer(GL_FRAMEBUFFER, 0);
 		wglMakeCurrent(hDC, hRenderContext);
 	}
 }
 
-void mini3d::OSFunctions::SetFullscreenWindow(HWND hWindow, const unsigned int& width, const unsigned int& height)
-{
-	// Get the Device Mode that is closest to the requested resolution
-	DEVMODE dm = GetClosestCompatibleResolution(width, height);
-
-	// GetWindow client size
-	RECT clientRect;
-	GetClientRect((HWND)hWindow, &clientRect);
-
-	int currentWidth = clientRect.right - clientRect.left;
-	int currentHeight = clientRect.bottom - clientRect.top;
-
-	// If we are already in fullscreen mode and the requested resolution is the same as the current one, dont set it again.
-	if ((fullscreenWindow != 0) && (currentWidth == dm.dmPelsWidth) && (currentHeight == dm.dmPelsHeight))
-		return;
-
-	// if we are not already in fullscreen state, capture the original window settings before we change them
-	if (fullscreenWindow == 0)
-	{
-		// Capture window style
-		windowStyle = GetWindowLongPtr((HWND)hWindow, GWL_STYLE);
-			
-		// Capture window position
-		GetWindowRect((HWND)hWindow, &winRect);
-	}
-
-	// Make the window fullscreen and the same size as the fullscreen desktop
-	SetWindowLongPtr((HWND)hWindow, GWL_STYLE, WS_POPUP);
-	SetWindowPos((HWND)hWindow, HWND_TOPMOST, 0, 0, dm.dmPelsWidth, dm.dmPelsHeight, SWP_FRAMECHANGED | SWP_SHOWWINDOW);
-
-	// Change Screen Resolution
-	if (ChangeDisplaySettings(&dm, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)
-	{      
-		// TODO: Handle Error?
-		return;
-	}
-
-	// Keep track of new fullscreen window
-	fullscreenWindow = hWindow;
-}
-
-void mini3d::OSFunctions::RestoreFullscreenWindow(HWND hWindow)
-{
-	// Restore window style
-	SetWindowLongPtr((HWND)hWindow, GWL_STYLE, windowStyle);
-
-	// Restore window size and position
-	SetWindowPos((HWND)hWindow,
-					HWND_TOP,
-					winRect.left, 
-					winRect.top, 
-					winRect.right - winRect.left, 
-					winRect.bottom - winRect.top, 
-					SWP_FRAMECHANGED | SWP_SHOWWINDOW);
-
-	// Restore desktop resolution
-	ChangeDisplaySettings(NULL, 0);
-
-	// Set the fullscreenWindow to 0
-	fullscreenWindow = 0;
-}
-
-DEVMODE mini3d::OSFunctions::GetClosestCompatibleResolution(const unsigned int& width, const unsigned int& height)
-{
-
-	// Get the current device mode
-	DEVMODE currentDM = {0};
-	currentDM.dmSize = sizeof(currentDM);
-	EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &currentDM);
-
-	// If width or height = 0 set them to the current desktop resolution
-	if (width == 0 || height == 0)
-		return currentDM;
-
-	// initialize the device mode structure for requested device mode
-	DEVMODE requestedDM = currentDM;
-	requestedDM.dmPelsWidth = width;
-	requestedDM.dmPelsHeight = height;
-
-	// initialize the device mode structure for best match
-	DEVMODE bestDM = currentDM;
-
-	// Difference in area between best match and 
-	unsigned int bestMatchAreaDifference = ScoreDeviceModeMatch(requestedDM, currentDM); 
-
-	// initialize the device mode structure for looping over all device modes
-	DEVMODE dm = {0};
-	dm.dmSize = sizeof(dm);
-
-	// loop variable
-	unsigned int i = 0;
-
-	// Loop over all display settings and find the best match
-	// EnumDisplaySettings returns 0 when we request a displaymode id that is out of range
-	while (EnumDisplaySettings(NULL, i++, &dm) != 0)
-	{
-		// skip modes with wrong color bit depth
-		if (dm.dmBitsPerPel != currentDM.dmBitsPerPel)
-			continue;
-
-		// skip modes with wrong display orientation
-		if (dm.dmOrientation != currentDM.dmOrientation)
-			continue;
-
-		unsigned int diff = ScoreDeviceModeMatch(requestedDM, dm);
-
-		if (diff < bestMatchAreaDifference)
-		{
-			bestDM = dm;
-			bestMatchAreaDifference = diff;
-		}
-	}
-	
-	// Return the best match found
-	return bestDM;
-}
-
-unsigned int mini3d::OSFunctions::ScoreDeviceModeMatch(const DEVMODE &dm1, const DEVMODE &dm2)
-{
-	// Score the similarity of the display modes by getting the difference between widths, heights and frequencies.
-	// We get the total score when we add their absolute values together.
-	unsigned int score = (unsigned int)(abs((double)(dm1.dmPelsWidth - dm2.dmPelsWidth)) + 
-										abs((double)(dm1.dmPelsHeight - dm2.dmPelsHeight)) + 
-										abs((double)(dm1.dmDisplayFrequency - dm2.dmDisplayFrequency)));
-
-	return score;
-}
-
-
-void mini3d::OSFunctions::SetDefaultRenderWindow() const
+void mini3d::OGLWrapper::SetDefaultRenderWindow() const
 {
 	wglMakeCurrent(hDeviceContext, hRenderContext);
 }
 
-void mini3d::OSFunctions::SwapWindowBuffers(const HWND hWindow) const
+void mini3d::OGLWrapper::SwapWindowBuffers(const HWND hWindow) const
 {
 	HDC hDC = GetWindowDC((HWND)hWindow);
 	SwapBuffers(hDC);
-}
-
-unsigned int mini3d::OSFunctions::GetMonitorBitDepth() const
-{
-	// read the monitor information from win32
-	DEVMODE devMode;
-	memset(&devMode, 0, sizeof(devMode));
-	devMode.dmSize = sizeof(devMode);
-
-	// get monitor settings from os
-	EnumDisplaySettings(0, ENUM_CURRENT_SETTINGS, &devMode);
-
-	switch(devMode.dmBitsPerPel)
-	{
-		case 16:
-			return 16;
-		case 32:
-			return 32;
-	}
-
-	// Default case for when running 8 strange desktop modes. (I have no idea what mode that would be!)
-	return 16;
-}
-
-void mini3d::OSFunctions::GetClientAreaSize(const HWND windowHandle, unsigned int &width, unsigned int &height) const
-{
-	// Get the size of the client area of the window 
-
-	// TODO: Should be RECT somehow?
-	RECT clientRectangle;
-	GetClientRect(HWND(windowHandle), (LPRECT)&clientRectangle);
-
-	// get the width and height (must be bigger than 0)
-	width = clientRectangle.right - clientRectangle.left;
-	height = clientRectangle.bottom - clientRectangle.top;
-
-}
-
-void mini3d::OSFunctions::Log(const char* message) const
-{
-	OutputDebugStringA(message);
 }
 
 #endif

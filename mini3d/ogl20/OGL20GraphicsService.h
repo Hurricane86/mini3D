@@ -30,11 +30,12 @@
 #include "OGL20IndexBuffer.h"
 #include "OGL20RenderTargetTexture.h"
 #include "OGL20WindowRenderTarget.h"
-#include "os/OSFunction.h"
 
 namespace mini3d
 {
 
+class OSFunction;
+class OSWrapper;
 class OGL20GraphicsService : public IGraphicsService
 {
 
@@ -47,7 +48,8 @@ private:
 	// Member variables
 	
 	// Operating system functions
-	OSFunctions* pOS;
+	OGLWrapper* pOGLWrapper;
+	OSWrapper* pOSWrapper;
 
 	// currently loaded resources
 	IRenderTarget* pCurrentRenderTarget;
@@ -158,7 +160,8 @@ public:
 
 	// PUBLIC MEMBER FUNCTIONS ------------------------------------------------
 
-	OSFunctions* GetOS() { return pOS; };
+	OGLWrapper* GetOGLWrapper() { return pOGLWrapper; };
+	OSWrapper* GetOSWrapper() { return pOSWrapper; };
 
 	IWindowRenderTarget* GetScreenRenderTarget() { return pCurrentWindowRenderTarget; };
 
@@ -166,8 +169,6 @@ private:
 	
 	// INTERNAL HELPER FUNCTIONS ----------------------------------------------
 	
-	void printLog(GLuint obj);
-
 	// Device creation
 	void CreateDevice();
 	void CreateInternalWindow();

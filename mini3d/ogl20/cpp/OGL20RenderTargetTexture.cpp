@@ -8,7 +8,7 @@
 #include "../OGL20GraphicsService.h"
 
 mini3d::OGL20RenderTargetTexture::OGL20RenderTargetTexture(OGL20GraphicsService* pGraphicsService, const unsigned int& width, const unsigned int& height, const bool& depthTestEnabled) : 
-	pGraphicsService(pGraphicsService), pDepthStencil(0), pOS(pGraphicsService->GetOS())
+	pGraphicsService(pGraphicsService), pDepthStencil(0), pOGLWrapper(pGraphicsService->GetOGLWrapper())
 {
 	SetRenderTargetTexture(width, height, depthTestEnabled);
 	pGraphicsService->AddResource(this);
@@ -38,7 +38,7 @@ void mini3d::OGL20RenderTargetTexture::LoadResource(void)
 
 	// create a texture object
 	glGenTextures(1, &pTexture);
-	pOS->GLBindTexture(GL_TEXTURE_2D, pTexture);
+	pOGLWrapper->GLBindTexture(GL_TEXTURE_2D, pTexture);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -50,28 +50,28 @@ void mini3d::OGL20RenderTargetTexture::LoadResource(void)
 	if (depthTestEnabled == true)
 	{
 		// create a renderbuffer object to store depth info
-		pOS->GLGenRenderbuffers(1, &pDepthStencil);
-		pOS->GLBindRenderbuffer(GL_RENDERBUFFER, pDepthStencil);
-		pOS->GLRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
-		pOS->GLBindRenderbuffer(GL_RENDERBUFFER, 0);
+		pOGLWrapper->GLGenRenderbuffers(1, &pDepthStencil);
+		pOGLWrapper->GLBindRenderbuffer(GL_RENDERBUFFER, pDepthStencil);
+		pOGLWrapper->GLRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
+		pOGLWrapper->GLBindRenderbuffer(GL_RENDERBUFFER, 0);
 	}
 	
 	
 	// create a framebuffer object
-	pOS->GLGenFramebuffers(1, &pRenderTarget);
-	pOS->GLBindFramebuffer(GL_FRAMEBUFFER, pRenderTarget);
+	pOGLWrapper->GLGenFramebuffers(1, &pRenderTarget);
+	pOGLWrapper->GLBindFramebuffer(GL_FRAMEBUFFER, pRenderTarget);
 
 	// attach the texture to FBO color attachment point
-	pOS->GLFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pTexture, 0);
+	pOGLWrapper->GLFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pTexture, 0);
 
 	// attach the renderbuffer to depth attachment point
 	if (depthTestEnabled == true)
 	{
-		pOS->GLFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, pDepthStencil);
+		pOGLWrapper->GLFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, pDepthStencil);
 	}
 
 	// switch back to window-system-provided framebuffer
-	pOS->GLBindFramebuffer(GL_FRAMEBUFFER, 0);
+	pOGLWrapper->GLBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	bufferWidth = width;
 	bufferHeight = height;
@@ -91,9 +91,9 @@ void mini3d::OGL20RenderTargetTexture::UnloadResource(void)
 			if (pGraphicsService->GetTexture(i) == this)
 				pGraphicsService->SetTexture(0, i);
 
-		pOS->GLDeleteRenderbuffers(1, &pDepthStencil);
+		pOGLWrapper->GLDeleteRenderbuffers(1, &pDepthStencil);
 		glDeleteTextures(1, &pTexture);
-		pOS->GLDeleteFramebuffers(1, &pRenderTarget);
+		pOGLWrapper->GLDeleteFramebuffers(1, &pRenderTarget);
 		
 		pDepthStencil = 0;
 		pTexture = 0;

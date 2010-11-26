@@ -13,19 +13,23 @@
 std::map<MINI3D_WINDOW, mini3d::OGL20WindowRenderTarget*> mini3d::OGL20WindowRenderTarget::windowMap;
 
 mini3d::OGL20WindowRenderTarget::OGL20WindowRenderTarget(OGL20GraphicsService* pGraphicsService, const MINI3D_WINDOW windowHandle, const bool& depthTestEnabled, const Quality& quality) : 
-	pGraphicsService(pGraphicsService), pScreenRenderTarget(0), pDepthStencil(0), quality(quality), pOS(pGraphicsService->GetOS())
+	pGraphicsService(pGraphicsService), pScreenRenderTarget(0), pDepthStencil(0), quality(quality), pOGLWrapper(pGraphicsService->GetOGLWrapper()), oSWrapper()
 {
+	oSWrapper = new OSWrapper();
+
 	screenState = SCREEN_STATE_WINDOWED;
 	SetWindowRenderTarget(windowHandle, depthTestEnabled, quality);
 	pGraphicsService->AddResource(this);
 
-	oSWrapper = new OSWrapper();
 }
 
 mini3d::OGL20WindowRenderTarget::~OGL20WindowRenderTarget(void)
 {
 	UnloadResource();
 	pGraphicsService->RemoveResource(this);
+
+	if (oSWrapper != 0)
+		delete oSWrapper;
 }
 
 void mini3d::OGL20WindowRenderTarget::SetScreenStateWindowed()
@@ -65,16 +69,10 @@ void mini3d::OGL20WindowRenderTarget::SetWindowRenderTarget(const MINI3D_WINDOW 
 #endif
 
 	// Get the size of the client area of the window 
-	unsigned int width, height;
-	pGraphicsService->GetOS()->GetClientAreaSize(windowHandle, width, height);
+	oSWrapper->GetWindowContentSize(windowHandle, width, height);
 
 	// set the variables from the call
 	this->hWindow = windowHandle;
-	
-	// The width and height (must be bigger than 0)
-	this->width = width | 1;
-	this->height = height | 1;
-	
 	this->depthTestEnabled = depthTestEnabled;
 	
 	// load the buffer
@@ -84,12 +82,12 @@ void mini3d::OGL20WindowRenderTarget::SetWindowRenderTarget(const MINI3D_WINDOW 
 
 void mini3d::OGL20WindowRenderTarget::Display(void)
 {
-	pOS->SwapWindowBuffers(hWindow);
+	pOGLWrapper->SwapWindowBuffers(hWindow);
 }
 
 void mini3d::OGL20WindowRenderTarget::LoadResource(void)
 {
-	pOS->PrepareWindow(hWindow);
+	pOGLWrapper->PrepareWindow(hWindow);
 
 	hBufferWindow = hWindow;
 	isDirty = false;
@@ -112,7 +110,7 @@ void mini3d::OGL20WindowRenderTarget::UpdateSize()
 	// if the rendertarget is currently set, update the viewport
 	if (pGraphicsService->GetRenderTarget() == this)
 	{
-		pGraphicsService->GetOS()->GetClientAreaSize(hWindow, width, height);
+		oSWrapper->GetWindowContentSize(hWindow, width, height);
 		glViewport(0,0,width,height);
 	}
 }

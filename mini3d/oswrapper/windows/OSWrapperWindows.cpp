@@ -67,7 +67,7 @@ void Init() { }
 
 
 // Window Functions
-void mini3d::OSWrapper::GetWindowSize(const MINI3D_WINDOW window, unsigned int &width, unsigned int &height) const
+void mini3d::OSWrapper::GetWindowContentSize(const MINI3D_WINDOW window, unsigned int &width, unsigned int &height) const
 {
 	RECT rect;
 	GetClientRect(window, &rect);
@@ -75,6 +75,27 @@ void mini3d::OSWrapper::GetWindowSize(const MINI3D_WINDOW window, unsigned int &
 	// get the width and height (must be bigger than 0)
 	width = (rect.right - rect.left) | 1;
 	height = (rect.bottom - rect.top) | 1;
+}
+
+unsigned int mini3d::OSWrapper::GetMonitorBitDepth() const
+{
+	// read the monitor information from win32
+	DEVMODE devMode;
+	devMode.dmSize = sizeof(devMode);
+
+	// get monitor settings from os
+	EnumDisplaySettings(0, ENUM_CURRENT_SETTINGS, &devMode);
+
+	switch(devMode.dmBitsPerPel)
+	{
+		case 16:
+			return 16;
+		case 32:
+			return 32;
+	}
+
+	// Default case for when running 8 strange desktop modes. (I have no idea what mode that would be!)
+	return 16;
 }
 
 void mini3d::OSWrapper::SetFullscreenWindow(MINI3D_WINDOW window, const unsigned int& width, const unsigned int& height)
@@ -114,7 +135,6 @@ void mini3d::OSWrapper::SetFullscreenWindow(MINI3D_WINDOW window, const unsigned
 	}
 
 	// Set the window style
-	
 	SetWindowLongPtr(window, GWL_STYLE, WS_POPUP);
     
 	// Apply the window style settings above

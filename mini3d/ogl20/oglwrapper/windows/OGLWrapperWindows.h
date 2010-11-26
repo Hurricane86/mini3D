@@ -3,56 +3,52 @@
 // This file is part of mini3d <www.mini3d.org>
 // It is distributed under the MIT Software License <www.mini3d.org/license>
 
+
 #ifdef _WIN32
 
 #ifndef MINI3D_OSFUNCTIONWINDOWS_H
 #define MINI3D_OSFUNCTIONWINDOWS_H
 
+#include "../IOGLWrapper.h"
+#include "../../../oswrapper/OSWrapper.h"
+
 #include <windows.h>
-#include "../IOSFunction.h"
 #include <GL/wglext.h>
+
 
 namespace mini3d
 {
-class OSFunctions : IOSFunctions
+class OGLWrapper : IOGLWrapper
 {
 public:
 	
-	OSFunctions();
-	virtual ~OSFunctions();
+	OGLWrapper();
 
+	virtual ~OGLWrapper();
 	virtual void Init();
-
-	// Used by OPENGL for determining setting buffer and depth buffer format
-	virtual unsigned int GetMonitorBitDepth() const;
-	virtual void GetClientAreaSize(const HWND windowHandle, unsigned int &width, unsigned int &height) const;
-	void Log(const char* message) const;
 
 	// Device creation
 	void CreateDevice();
 	void CreateInternalWindow();
 
+
 	// ---------- ABSTRACT OPENGL FUNCTIONS --------------------------------------
+	
 	// These functions preform opengl operations but they do not map 1-1 against opengl functions.
 	// what they do is platform dependent
 	virtual void PrepareWindow(const HWND hWindow) const;
+
 	virtual void SetRenderWindow(const HWND hWindow) const;
-
-	virtual void SetFullscreenWindow(HWND hWindow, const unsigned int& width, const unsigned int& height);	
-	virtual void RestoreFullscreenWindow(HWND hWindow);
-
-	DEVMODE GetClosestCompatibleResolution(const unsigned int& width, const unsigned int& height);
-	unsigned ScoreDeviceModeMatch(const DEVMODE &dm1, const DEVMODE &dm2);
-
 	virtual void SetDefaultRenderWindow() const;
+
 	virtual void SwapWindowBuffers(const HWND hWindow) const;
+
 
 	// ---------- OPEN GL FUNCTIONS ----------------------------------------------
 
 	// GENERAL
 	virtual void GLSwapBuffers() const {};
 	virtual void GLBindFramebuffer(GLenum target, GLuint framebuffer) const { glBindFramebufferEXT(target, framebuffer); };
-	//virtual void GLMakeCurrent(const DisplayContext displayContext, const WindowContext windowContext, const GLRenderingContext renderingContext) const {};
 	virtual void GLViewport(const unsigned int width, const unsigned int height) const {};
 
 	virtual void GLShadeModel(GLenum mode) const { glShadeModel(mode); };
@@ -204,7 +200,6 @@ public:
 	PFNGLUNIFORM4IPROC glUniform4i;
 	
 	PFNGLUNIFORMMATRIX4FVPROC glUniformMatrix4fv;
-
 	PFNGLDRAWRANGEELEMENTSPROC glDrawRangeElements;
 
 	// Default window and render context
@@ -220,6 +215,9 @@ public:
 
 	// Stores the windowstyle for the window before changing it when entering fullscreen
 	long windowStyle;
+
+	// Exposes OS functionality
+	OSWrapper* oSWrapper;
 };
 }
 

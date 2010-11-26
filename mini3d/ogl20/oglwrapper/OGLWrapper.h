@@ -7,11 +7,11 @@
 #define MINI3D_OSFUNCTION_H
 
 #ifdef _WIN32
-	#include "windows/OSFunctionsWindows.h"
+	#include "windows/OGLWrapperWindows.h"
 #endif
 
 #ifdef __linux
-	#include "linux/OSFunctionsLinux.h"
+	#include "linux/OGLWrapperLinux.h"
 #endif
 
 #endif

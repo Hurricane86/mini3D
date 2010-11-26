@@ -19,8 +19,10 @@ public:
 	virtual ~IOSWrapper() {};
 
 	// Window States
+	virtual void GetWindowContentSize(const MINI3D_WINDOW window, unsigned int &width, unsigned int &height) const = 0;
 	virtual void SetFullscreenWindow(MINI3D_WINDOW window, const unsigned int& width, const unsigned int& height) = 0;
 	virtual void RestoreFullscreenWindow(MINI3D_WINDOW window) = 0;
+	virtual void Log(const char* message) const = 0;
 
 };
 }

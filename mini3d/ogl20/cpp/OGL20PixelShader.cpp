@@ -10,7 +10,7 @@
 #include <cstring>
 
 mini3d::OGL20PixelShader::OGL20PixelShader(OGL20GraphicsService* pGraphicsService, const void* pShaderBytes, const unsigned int& sizeInBytes) :
-	pGraphicsService(pGraphicsService), pShaderBuffer(0), sizeInBytes(sizeInBytes), pOS(pGraphicsService->GetOS())
+	pGraphicsService(pGraphicsService), pShaderBuffer(0), sizeInBytes(sizeInBytes), pOGLWrapper(pGraphicsService->GetOGLWrapper()), pOSWrapper(pGraphicsService->GetOSWrapper())
 {
 	this->pShaderBytes = malloc(sizeInBytes);
 	std::memcpy(this->pShaderBytes, pShaderBytes, sizeInBytes);
@@ -34,9 +34,9 @@ void mini3d::OGL20PixelShader::LoadResource(void)
 		UnloadResource();
 	}
 	
-	pShaderBuffer = pOS->GLCreateShader(GL_FRAGMENT_SHADER);
-	pOS->GLShaderSource(pShaderBuffer, 1, (const GLchar**)&pShaderBytes, (GLint*)&sizeInBytes);
-	pOS->GLCompileShader(pShaderBuffer);
+	pShaderBuffer = pOGLWrapper->GLCreateShader(GL_FRAGMENT_SHADER);
+	pOGLWrapper->GLShaderSource(pShaderBuffer, 1, (const GLchar**)&pShaderBytes, (GLint*)&sizeInBytes);
+	pOGLWrapper->GLCompileShader(pShaderBuffer);
 
 	printLog(pShaderBuffer);
 	isDirty = false;
@@ -50,7 +50,7 @@ void mini3d::OGL20PixelShader::UnloadResource(void)
 		//if (pGraphicsService_->GetPixelShader() == this)
 		//	pGraphicsService_->SetPixelShader(0);
 
-		pOS->GLDeleteShader(pShaderBuffer);
+		pOGLWrapper->GLDeleteShader(pShaderBuffer);
 		pShaderBuffer = 0;
 	}
 
@@ -60,16 +60,16 @@ void mini3d::OGL20PixelShader::UnloadResource(void)
 void mini3d::OGL20PixelShader::printLog(GLuint obj)
 {
 	int maxLength;
-	pOS->GLGetShaderiv(obj,GL_INFO_LOG_LENGTH,&maxLength);
+	pOGLWrapper->GLGetShaderiv(obj,GL_INFO_LOG_LENGTH,&maxLength);
 
 	int infologLength;
 	char* infoLog = new char[maxLength];
-	pOS->GLGetShaderInfoLog(obj, maxLength, &infologLength, infoLog);
+	pOGLWrapper->GLGetShaderInfoLog(obj, maxLength, &infologLength, infoLog);
 
 	if (infologLength > 0)
 	{
-		pOS->Log((char*)"\nDEBUG INFO ---------\n");
-		pOS->Log(infoLog);
+		pOSWrapper->Log((char*)"\nDEBUG INFO ---------\n");
+		pOSWrapper->Log(infoLog);
 	}
 
 	delete [] infoLog;

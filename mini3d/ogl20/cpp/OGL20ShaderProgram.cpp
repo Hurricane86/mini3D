@@ -9,7 +9,7 @@
 #include <sstream>
 
 mini3d::OGL20ShaderProgram::OGL20ShaderProgram(OGL20GraphicsService* pGraphicsService, IVertexShader* pVertexShader, IPixelShader* pPixelShader) :
-	pGraphicsService(pGraphicsService), pVertexShader(pVertexShader), pPixelShader(pPixelShader), hProgram(0), pOS(pGraphicsService->GetOS())
+	pGraphicsService(pGraphicsService), pVertexShader(pVertexShader), pPixelShader(pPixelShader), hProgram(0), pOGLWrapper(pGraphicsService->GetOGLWrapper()), pOSWrapper(pGraphicsService->GetOSWrapper())
 {
 	LoadResource();
 	pGraphicsService->AddResource(this);
@@ -30,31 +30,31 @@ void mini3d::OGL20ShaderProgram::LoadResource(void)
 		UnloadResource();
 	}
 
-	hProgram = pOS->GLCreateProgram();
+	hProgram = pOGLWrapper->GLCreateProgram();
 
 	// Attach vertex shader
 	if (pVertexShader == 0)
 	{
-		pOS->GLAttachShader(hProgram, 0);
+		pOGLWrapper->GLAttachShader(hProgram, 0);
 	}
 	else
 	{
 		OGL20VertexShader* pOLG20VertexShader = (OGL20VertexShader*)pVertexShader;
-		pOS->GLAttachShader(hProgram, pOLG20VertexShader->GetVertexShaderBuffer());
+		pOGLWrapper->GLAttachShader(hProgram, pOLG20VertexShader->GetVertexShaderBuffer());
 	}
 
 	// Attach pixel shader
 	if (pPixelShader == 0)
 	{
-		pOS->GLAttachShader(hProgram, 0);
+		pOGLWrapper->GLAttachShader(hProgram, 0);
 	}
 	else
 	{
 		OGL20PixelShader* pOLG20PixelShader = (OGL20PixelShader*)pPixelShader;
-		pOS->GLAttachShader(hProgram, pOLG20PixelShader->GetPixelShaderBuffer());
+		pOGLWrapper->GLAttachShader(hProgram, pOLG20PixelShader->GetPixelShaderBuffer());
 	}
 
-	pOS->GLLinkProgram(hProgram);
+	pOGLWrapper->GLLinkProgram(hProgram);
 	printLog(hProgram);
 	
 	// Get attrib information
@@ -65,28 +65,28 @@ void mini3d::OGL20ShaderProgram::LoadResource(void)
 	GLint size;
 	GLenum type;
 
-	pOS->GLGetProgramiv(hProgram, GL_ACTIVE_ATTRIBUTES, &active_attribs);
-	pOS->GLGetProgramiv(hProgram, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &max_length);
+	pOGLWrapper->GLGetProgramiv(hProgram, GL_ACTIVE_ATTRIBUTES, &active_attribs);
+	pOGLWrapper->GLGetProgramiv(hProgram, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &max_length);
 
 	for (int i = 0; i < active_attribs; i++) 
 	{
-		pOS->GLGetActiveAttrib(hProgram, i, max_length + 1, NULL, &size, &type, name);
+		pOGLWrapper->GLGetActiveAttrib(hProgram, i, max_length + 1, NULL, &size, &type, name);
 		std::stringstream ss;
-		ss << "Type: " << type << " Name: " << name << " AttribLocation: " << pOS->GLGetAttribLocation(hProgram, name) << "\n";
+		ss << "Type: " << type << " Name: " << name << " AttribLocation: " << pOGLWrapper->GLGetAttribLocation(hProgram, name) << "\n";
 		std::string s = ss.str();
-		pOS->Log((char*)s.c_str());
+		pOSWrapper->Log((char*)s.c_str());
 	}
 
-	pOS->GLGetProgramiv(hProgram, GL_ACTIVE_UNIFORMS, &active_attribs);
-	pOS->GLGetProgramiv(hProgram, GL_ACTIVE_UNIFORM_MAX_LENGTH, &max_length);
+	pOGLWrapper->GLGetProgramiv(hProgram, GL_ACTIVE_UNIFORMS, &active_attribs);
+	pOGLWrapper->GLGetProgramiv(hProgram, GL_ACTIVE_UNIFORM_MAX_LENGTH, &max_length);
 
 	for (int i = 0; i < active_attribs; i++) 
 	{
-		pOS->GLGetActiveUniform(hProgram, i, max_length + 1, NULL, &size, &type, name);
+		pOGLWrapper->GLGetActiveUniform(hProgram, i, max_length + 1, NULL, &size, &type, name);
 		std::stringstream ss;
-		ss << "Type: " << type << " Name: " << name << " AttribLocation: " << pOS->GLGetUniformLocation(hProgram, name) << "\n";
+		ss << "Type: " << type << " Name: " << name << " AttribLocation: " << pOGLWrapper->GLGetUniformLocation(hProgram, name) << "\n";
 		std::string s = ss.str();
-		pOS->Log((char*)s.c_str());
+		pOSWrapper->Log((char*)s.c_str());
 	}
 
 	delete[] name;
@@ -103,7 +103,7 @@ void mini3d::OGL20ShaderProgram::UnloadResource(void)
 		if (pGraphicsService->GetShaderProgram() == this)
 			pGraphicsService->SetShaderProgram(0);
 
-		pOS->GLDeleteProgram(hProgram);
+		pOGLWrapper->GLDeleteProgram(hProgram);
 		hProgram  = 0;
 	}
 
@@ -113,16 +113,16 @@ void mini3d::OGL20ShaderProgram::UnloadResource(void)
 void mini3d::OGL20ShaderProgram::printLog(GLuint obj)
 {
 	int maxLength;
-	pOS->GLGetProgramiv(obj,GL_INFO_LOG_LENGTH,&maxLength);
+	pOGLWrapper->GLGetProgramiv(obj,GL_INFO_LOG_LENGTH,&maxLength);
 
 	int infologLength = 0;
 	char* infoLog = new char[maxLength];
-	pOS->GLGetProgramInfoLog(obj, maxLength, &infologLength, infoLog);
+	pOGLWrapper->GLGetProgramInfoLog(obj, maxLength, &infologLength, infoLog);
  
 	if (infologLength > 0)
 	{
-		pOS->Log((char*)"\nDEBUG INFO ---------\n");
-		pOS->Log(infoLog);
+		pOSWrapper->Log((char*)"\nDEBUG INFO ---------\n");
+		pOSWrapper->Log(infoLog);
 	}
 
 	delete [] infoLog;

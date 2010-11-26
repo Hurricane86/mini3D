@@ -12,7 +12,7 @@
 std::map<HWND, mini3d::D3D9WindowRenderTarget*> mini3d::D3D9WindowRenderTarget::windowMap;
 
 mini3d::D3D9WindowRenderTarget::D3D9WindowRenderTarget(D3D9GraphicsService* pGraphicsService, const HWND windowHandle, const bool& depthTestEnabled, const Quality& quality) : 
-pGraphicsService(pGraphicsService), pScreenRenderTarget(0), pDepthStencil(0), quality(quality), depthTestEnabled(depthTestEnabled), pOrigProc(0), screenState(SCREEN_STATE_WINDOWED)
+pGraphicsService(pGraphicsService), pScreenRenderTarget(0), pDepthStencil(0), quality(quality), depthTestEnabled(depthTestEnabled), pOrigProc(0), screenState(SCREEN_STATE_WINDOWED), oSWrapper(0)
 {
 	SetWindowRenderTarget(windowHandle, depthTestEnabled, quality);
 	pGraphicsService->AddResource(this);
@@ -43,6 +43,9 @@ void mini3d::D3D9WindowRenderTarget::SetScreenStateWindowed()
 
 	// Keep track of our new state
 	screenState = SCREEN_STATE_WINDOWED;
+
+	if (oSWrapper != 0)
+		delete oSWrapper;
 }
 
 void mini3d::D3D9WindowRenderTarget::SetScreenStateFullscreen(const unsigned int& width, const unsigned int& height)
@@ -81,7 +84,7 @@ void mini3d::D3D9WindowRenderTarget::SetWindowRenderTarget(const MINI3D_WINDOW w
 	}
 
 	// Get the size of the client area of the window 
-	oSWrapper->GetWindowSize(windowHandle, width, height);
+	oSWrapper->GetWindowContentSize(windowHandle, width, height);
 
 	// set the variables from the call
 	this->hWindow = windowHandle;

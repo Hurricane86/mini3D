@@ -9,7 +9,7 @@
 
 #include "../IPixelShader.h"
 #include "internal/IOGL20Resource.h"
-#include "os/OSFunction.h"
+#include "oglwrapper/OGLWrapper.h"
 
 namespace mini3d
 {
@@ -50,7 +50,8 @@ private:
 
 	// GraphicsDevice link
 	OGL20GraphicsService* pGraphicsService;
-	OSFunctions* pOS;
+	OGLWrapper* pOGLWrapper;
+	OSWrapper* pOSWrapper;
 
 	// Indices
 	void* pShaderBytes;

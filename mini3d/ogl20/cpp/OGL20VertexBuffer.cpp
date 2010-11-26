@@ -10,7 +10,7 @@
 #include <cstring>
 
 mini3d::OGL20VertexBuffer::OGL20VertexBuffer(OGL20GraphicsService* pGraphicsService, const void* pVertices, const unsigned int& count, const unsigned int& vertexSizeInBytes) :
-	pGraphicsService(pGraphicsService), bufferSizeInBytes(0), pVertices(0), pVertexBuffer(0), sizeInBytes(0), pOS(pGraphicsService->GetOS())
+	pGraphicsService(pGraphicsService), bufferSizeInBytes(0), pVertices(0), pVertexBuffer(0), sizeInBytes(0), pOGLWrapper(pGraphicsService->GetOGLWrapper())
 {
 	SetVertices(pVertices, count, vertexSizeInBytes);
 	pGraphicsService->AddResource(this);
@@ -93,12 +93,12 @@ void mini3d::OGL20VertexBuffer::LoadResource(void)
 	// If it does not exist, create a new one
 	if (pVertexBuffer == 0)
 	{
-		pOS->GLGenBuffers(1, &pVertexBuffer);
-		pOS->GLBindBuffer(GL_ARRAY_BUFFER, pVertexBuffer);
+		pOGLWrapper->GLGenBuffers(1, &pVertexBuffer);
+		pOGLWrapper->GLBindBuffer(GL_ARRAY_BUFFER, pVertexBuffer);
 
 		try 
 		{
-			pOS->GLBufferData(GL_ARRAY_BUFFER, sizeInBytes, pVertices, GL_STATIC_DRAW);
+			pOGLWrapper->GLBufferData(GL_ARRAY_BUFFER, sizeInBytes, pVertices, GL_STATIC_DRAW);
 		}
 		catch (GLuint error)
 		{
@@ -113,12 +113,12 @@ void mini3d::OGL20VertexBuffer::LoadResource(void)
 	}
 
 	// Lock the buffer to gain access to the vertices 
-	GLvoid* pBufferVertices = pOS->GLMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+	GLvoid* pBufferVertices = pOGLWrapper->GLMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
 	std::memcpy(pBufferVertices, pVertices, sizeInBytes);
-	pOS->GLUnmapBuffer(GL_ARRAY_BUFFER);
+	pOGLWrapper->GLUnmapBuffer(GL_ARRAY_BUFFER);
 	
 	// clear the bound buffer
-	pOS->GLBindBuffer(GL_ARRAY_BUFFER, 0);
+	pOGLWrapper->GLBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	bufferSizeInBytes = sizeInBytes;
 	isDirty = false;
@@ -132,7 +132,7 @@ void mini3d::OGL20VertexBuffer::UnloadResource(void)
 		if (pGraphicsService->GetVertexBuffer() == this)
 			pGraphicsService->SetVertexBuffer(0);
 
-		pOS->GLDeleteBuffers(1, &pVertexBuffer); 
+		pOGLWrapper->GLDeleteBuffers(1, &pVertexBuffer); 
 		pVertexBuffer = 0;
 	}
 

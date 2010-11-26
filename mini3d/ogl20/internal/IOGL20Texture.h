@@ -8,13 +8,12 @@
 #define MINI3D_OGL20TEXTURE_H
 
 #include "../../internal/ITexture.h"
-#include "../os/OSFunction.h"
+#include "../oglwrapper/OGLWrapper.h"
 
 namespace mini3d
 {
 class IOGL20Texture: public virtual ITexture
 {
-friend class OGL20GraphicsService;
 
 public:
 

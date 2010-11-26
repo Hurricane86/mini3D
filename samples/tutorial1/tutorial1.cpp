@@ -102,8 +102,8 @@ int main()
 	pPixelShader = graphics->CreatePixelShader(pixelShaderGLSL, strlen(pixelShaderGLSL));
 
 	// create shader program
-	pShaderProgram = graphics->CreateShaderProgram(pVertexShader, pPixelShader);
 
+	pShaderProgram = graphics->CreateShaderProgram(pVertexShader, pPixelShader);
 
 	// ----- SHOW THE WINDOW --------------------------------------------------
 

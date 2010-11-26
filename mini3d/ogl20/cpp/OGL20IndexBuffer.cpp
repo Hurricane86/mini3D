@@ -10,7 +10,7 @@
 #include <cstring>
 
 mini3d::OGL20IndexBuffer::OGL20IndexBuffer(OGL20GraphicsService* pGraphicsService, const void* pIndices, const unsigned int& count, const DataType& dataType, const CullMode& cullMode) : 
-	pGraphicsService(pGraphicsService), bufferSizeInBytes(0), pIndices(0), pIndexBuffer(0), pOS(pGraphicsService->GetOS())
+	pGraphicsService(pGraphicsService), bufferSizeInBytes(0), pIndices(0), pIndexBuffer(0), pOGLWrapper(pGraphicsService->GetOGLWrapper())
 {
 	SetIndices(pIndices, count, dataType, cullMode);
 	pGraphicsService->AddResource(this);
@@ -98,12 +98,12 @@ void mini3d::OGL20IndexBuffer::LoadResource(void)
 	// If it does not exist, create a new one
 	if (pIndexBuffer == 0)
 	{
-		pOS->GLGenBuffers(1, &pIndexBuffer);
-		pOS->GLBindBuffer(GL_ELEMENT_ARRAY_BUFFER, pIndexBuffer);
+		pOGLWrapper->GLGenBuffers(1, &pIndexBuffer);
+		pOGLWrapper->GLBindBuffer(GL_ELEMENT_ARRAY_BUFFER, pIndexBuffer);
 
 		try {
 	
-			pOS->GLBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeInBytes, pIndices, GL_STATIC_DRAW);
+			pOGLWrapper->GLBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeInBytes, pIndices, GL_STATIC_DRAW);
 		}
 		catch (GLuint error)
 		{
@@ -118,12 +118,12 @@ void mini3d::OGL20IndexBuffer::LoadResource(void)
 	}
 
 	// Lock the buffer to gain access to the vertices 
-	GLvoid* pBufferVertices = pOS->GLMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY);
+	GLvoid* pBufferVertices = pOGLWrapper->GLMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY);
 	std::memcpy(pBufferVertices, pIndices, sizeInBytes);
-	pOS->GLUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
+	pOGLWrapper->GLUnmapBuffer(GL_ELEMENT_ARRAY_BUFFER);
 
 	// Clear the bound array
-	pOS->GLBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	pOGLWrapper->GLBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	bufferSizeInBytes = sizeInBytes;
 	isDirty = false;
@@ -137,7 +137,7 @@ void mini3d::OGL20IndexBuffer::UnloadResource(void)
 		if (pGraphicsService->GetIndexBuffer() == this)
 			pGraphicsService->SetIndexBuffer(0);
 
-		pOS->GLDeleteBuffers(1, &pIndexBuffer); 
+		pOGLWrapper->GLDeleteBuffers(1, &pIndexBuffer); 
 		pIndexBuffer = 0;
 	}
 

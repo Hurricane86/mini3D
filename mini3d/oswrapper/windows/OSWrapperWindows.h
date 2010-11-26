@@ -28,34 +28,21 @@ public:
 	// ::::: IOSWrapper Methods :::::::::::::::::::::::::::::::::::::::::::::::
 
 	// Window Dimensions
-	void GetWindowSize(const MINI3D_WINDOW window, unsigned int &width, unsigned int &height) const;
+	void GetWindowContentSize(const MINI3D_WINDOW window, unsigned int &width, unsigned int &height) const;
+	unsigned int GetMonitorBitDepth() const;
 
 	// Window States
 	void SetFullscreenWindow(MINI3D_WINDOW window, const unsigned int& width, const unsigned int& height);
 	void RestoreFullscreenWindow(MINI3D_WINDOW window);
+
+	// Logging
 	void Log(const char* message) const;
+
 
 	// ::::: Public Methods :::::::::::::::::::::::::::::::::::::::::::::::::::
 
-	// Window Functions
-	
-	//void GetWindowClientSize(const MINI3D_WINDOW windowHandle, unsigned int &width, unsigned int &height) const;
-	//MINI3D_SCREEN GetScreenFromWindow(const MINI3D_WINDOW window) const;
-
-	//// Get screen information
-	//void GetScreenPosition(const MINI3D_SCREEN screen, unsigned int& x, unsigned int& y) const;
-	//void GetScreenResolution(const MINI3D_SCREEN screen, unsigned int& width, unsigned int& height ) const;
-	//unsigned int GetScreenBitDepth(const MINI3D_SCREEN screen) const;
-	//unsigned int GetScreenFrequency(const MINI3D_SCREEN screen) const;
-	//unsigned int GetScreenOrientation(const MINI3D_SCREEN screen) const;
-	//MINI3D_GRAPHICS_CARD GetGraphicsCardFromScreen(const MINI3D_SCREEN screen) const;
-
-	// Get Graphics Card Information
-	//int GetGraphicsCardCount() const;
-	
 	// Debug function
 	//void PrintAllGraphicsCardInformation() const;
-
 
 
 private:

@@ -13,7 +13,7 @@
 #include <cstring>
 
 mini3d::OGL20VertexShader::OGL20VertexShader(OGL20GraphicsService* pGraphicsService, const void* pShaderBytes, const unsigned int& sizeInBytes, const IVertexShader::VertexDataType vertexDeclaration[], const unsigned int& vertexDataCount) :
-	pGraphicsService(pGraphicsService), pShaderBuffer(0), vertexAttributes(0), pOS(pGraphicsService->GetOS())
+	pGraphicsService(pGraphicsService), pShaderBuffer(0), vertexAttributes(0), pOGLWrapper(pGraphicsService->GetOGLWrapper()), pOSWrapper(pGraphicsService->GetOSWrapper())
 {
 	// Vertex shader data
 	this->sizeInBytes = sizeInBytes;
@@ -59,9 +59,9 @@ void mini3d::OGL20VertexShader::LoadResource(void)
 		UnloadResource();
 	}
 
-	pShaderBuffer = pOS->GLCreateShader(GL_VERTEX_SHADER);
-	pOS->GLShaderSource(pShaderBuffer, 1, (const GLchar**)&pShaderBytes, (const GLint*)&sizeInBytes);
-	pOS->GLCompileShader(pShaderBuffer);
+	pShaderBuffer = pOGLWrapper->GLCreateShader(GL_VERTEX_SHADER);
+	pOGLWrapper->GLShaderSource(pShaderBuffer, 1, (const GLchar**)&pShaderBytes, (const GLint*)&sizeInBytes);
+	pOGLWrapper->GLCompileShader(pShaderBuffer);
 
 	printLog(pShaderBuffer);
 	isDirty = false;
@@ -75,7 +75,7 @@ void mini3d::OGL20VertexShader::UnloadResource(void)
 {
 	if (pShaderBuffer != 0)
 	{
-		pOS->GLDeleteShader(pShaderBuffer);
+		pOGLWrapper->GLDeleteShader(pShaderBuffer);
 		pShaderBuffer = 0;
 	}
 
@@ -93,7 +93,7 @@ void mini3d::OGL20VertexShader::CreateOGL20VertexAttributes()
 	int offset = 0;
 	int textureUsageIndex = 0;
 	int uvStream = 0;
-	int positionUsageIndex = 0;
+	int pOGLWrapperitionUsageIndex = 0;
 	int colorUsageIndex = 0;
 
 
@@ -195,16 +195,16 @@ void mini3d::OGL20VertexShader::CreateOGL20VertexAttributes()
 void mini3d::OGL20VertexShader::printLog(GLuint obj)
 {
 	int maxLength;
-	pOS->GLGetShaderiv(obj,GL_INFO_LOG_LENGTH,&maxLength);
+	pOGLWrapper->GLGetShaderiv(obj,GL_INFO_LOG_LENGTH,&maxLength);
 
 	int infologLength;
 	char* infoLog = new char[maxLength];
-	pOS->GLGetShaderInfoLog(obj, maxLength, &infologLength, infoLog);
+	pOGLWrapper->GLGetShaderInfoLog(obj, maxLength, &infologLength, infoLog);
 
 	if (infologLength > 0)
 	{
-		pOS->Log((char*)"\nDEBUG INFO ---------\n");
-		pOS->Log(infoLog);
+		pOSWrapper->Log((char*)"\nDEBUG INFO ---------\n");
+		pOSWrapper->Log(infoLog);
 	}
 
 	delete [] infoLog;
