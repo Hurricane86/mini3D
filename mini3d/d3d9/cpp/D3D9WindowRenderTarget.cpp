@@ -49,7 +49,7 @@ void mini3d::D3D9WindowRenderTarget::SetScreenStateFullscreen(const unsigned int
 {
 	// Attempt to set the window to fullscreen mode
 	oSWrapper->SetFullscreenWindow(hWindow, width, height);
-
+	
 	// Keep track of our new state
 	screenState = SCREEN_STATE_FULLSCREEN;
 }
@@ -231,6 +231,7 @@ void mini3d::D3D9WindowRenderTarget::UnloadDepthStencil(void)
 
 	if (pDepthStencil != 0)
 	{
+		
 		pDepthStencil->Release();
 		pDepthStencil = 0;
 	}
@@ -249,13 +250,13 @@ LRESULT CALLBACK mini3d::D3D9WindowRenderTarget::HookWndProc(HWND hwnd, UINT msg
 	{
 	// Window has been resized
 	case WM_SIZE:
-		
-		// Update the window size
-		//screenRenderTarget->width = LOWORD(lParam) | 1;
-		//screenRenderTarget->height = HIWORD(lParam) | 1;
 
-		// update the render target size
-		//screenRenderTarget->LoadResource();
+			// Update the window size
+			screenRenderTarget->width = LOWORD(lParam) | 1;
+			screenRenderTarget->height = HIWORD(lParam) | 1;
+
+			// update the render target size
+			screenRenderTarget->LoadResource();
 		break;
 	}
 

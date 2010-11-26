@@ -126,6 +126,9 @@ private:
 	D3DPRESENT_PARAMETERS presentationParameters;
 
 public:
+	static D3D9GraphicsService* graphicsService;
+
+public:
 	
 
 	// CONSTRUCTOR ------------------------------------------------------------
@@ -198,6 +201,7 @@ public:
 	IDirect3DDevice9* GetDevice();
 	IDirect3D9* GetDirect3D() { return pD3D; };
 	D3DPRESENT_PARAMETERS GetPresentationParameters();
+	void RecreateDevice();
 
 private:
 
@@ -227,7 +231,6 @@ private:
 	void RestoreGraphicsState();
 	void HandleLostDevice();
 
-	void RecreateDevice();
 	void TearDownDevice();
 	void CreateDevice();
 

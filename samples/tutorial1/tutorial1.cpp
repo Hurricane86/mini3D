@@ -13,8 +13,6 @@
 #include "shaders.h"
 #include "geometry.h"
 
-#include "../../mini3d/oswrapper/OSWrapper.h"
-
 
 // ----- FORWARD DECLARATIONS -------------------------------------------------
 void WndMessage(utilities::OSWindow* window, utilities::OSWindow::WindowMessage message);

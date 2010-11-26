@@ -100,5 +100,4 @@ void mini3d::D3D9VertexShader::UnloadResource(void)
 
 	// remove the vertex declaration from the pool
 	pGraphicsService->ReleaseVertexDeclaration(vertexDeclaration, vertexDataCount);
-
 }

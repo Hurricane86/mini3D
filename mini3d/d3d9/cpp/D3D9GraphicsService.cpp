@@ -8,15 +8,19 @@
 #include "../D3D9PresentationParameters.h"
 #include "../D3D9GraphicsSettings.h"
 #include "../../error/error.h"
-
+#include <Winuser.h>
 
 // Constructor Destructor -----------------------------------------------------
+
+mini3d::D3D9GraphicsService* mini3d::D3D9GraphicsService::graphicsService;
 
 mini3d::D3D9GraphicsService::D3D9GraphicsService() :
 pD3D(0), pDevice(0), isDrawingScene(false), deviceLost(true), lostDeviceCurrentITextures(0), currentITextures(0), isFullscreen(false), pCurrentRenderTarget(0), pDefaultSwapChain(0) 
 {
 	Init();
 	CreateDevice();
+
+	graphicsService = this;
 }
 
 mini3d::D3D9GraphicsService::~D3D9GraphicsService()
@@ -90,10 +94,16 @@ D3DPRESENT_PARAMETERS mini3d::D3D9GraphicsService::GetPresentationParameters()
 // Private helper methods -----------------------------------------------------
 
 
-	static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	switch(msg)
 	{
-		return DefWindowProc(hwnd, msg, wParam, lParam);
+		case WM_DISPLAYCHANGE:
+			mini3d::D3D9GraphicsService::graphicsService->RecreateDevice();
+			break;
 	}
+	return DefWindowProc(hwnd, msg, wParam, lParam);
+}
 
 void mini3d::D3D9GraphicsService::CreateInternalWindow()
 {
@@ -232,11 +242,11 @@ void mini3d::D3D9GraphicsService::CreateDevice()
 	D3DPRESENT_PARAMETERS d3dpp = D3D9PresentationParameters::GetPresentationParametersFromGraphicsSettings(pD3D, pDefaultSwapChain);
 	presentationParameters = d3dpp;
 
-	if (FAILED(pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, (HWND)hWindow, D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dpp, &pDevice)))
+	if (FAILED(pD3D->CreateDevice(0, D3DDEVTYPE_HAL, (HWND)hWindow, D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dpp, &pDevice)))
 	{
-		if (FAILED(pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, (HWND)hWindow, D3DCREATE_MIXED_VERTEXPROCESSING, &d3dpp, &pDevice)))
+		if (FAILED(pD3D->CreateDevice(0, D3DDEVTYPE_HAL, (HWND)hWindow, D3DCREATE_MIXED_VERTEXPROCESSING, &d3dpp, &pDevice)))
 		{
-			if (FAILED(pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, (HWND)hWindow, D3DCREATE_SOFTWARE_VERTEXPROCESSING, &d3dpp, &pDevice)))
+			if (FAILED(pD3D->CreateDevice(0, D3DDEVTYPE_HAL, (HWND)hWindow, D3DCREATE_SOFTWARE_VERTEXPROCESSING, &d3dpp, &pDevice)))
 			{				
 				throw Error::MINI3D_ERROR_UNKNOWN;
 			}
@@ -379,17 +389,12 @@ void mini3d::D3D9GraphicsService::ReleaseVertexDeclaration(IVertexShader::Vertex
 {
 	std::string key = CreateVertexDeclarationKey(vertexDeclaration, count);
 	
+	// Reduce the number of references to that entry in the pool
+	// if there are no references left, delete the entry
 	if (--vertexDeclarationPool[key].counter == 0)
 	{
 		vertexDeclarationPool[key].direct3dDeclaration->Release();
 		vertexDeclarationPool.erase(key);
-	}
-
-	// if the declaration is already pooled, just increase the counter
-	if (vertexDeclarationPool.find(key) != vertexDeclarationPool.end())
-	{
-		vertexDeclarationPool[key].counter++;
-		return;
 	}
 }
 

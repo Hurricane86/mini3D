@@ -15,151 +15,6 @@ void Init() { }
 
 // ::::: Public Methods :::::::::::::::::::::::::::::::::::::::::::::::::::
 
-//void mini3d::OSFunctionW::GetWindowClientSize(const MINI3D_WINDOW windowHandle, unsigned int &width, unsigned int &height) const
-//{
-//	RECT rect;
-//	GetClientRect(windowHandle, &rect);
-//
-//	// get the width and height (must be bigger than 0)
-//	width = (rect.right - rect.left) | 1;
-//	height = (rect.bottom - rect.top) | 1;
-//}
-//
-//MINI3D_SCREEN mini3d::OSFunctionW::GetScreenFromWindow(const MINI3D_WINDOW window) const
-//{
-//	HMONITOR monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONEAREST);
-//	return monitor;
-//}
-//
-//// Get screen information
-//void mini3d::OSFunctionW::GetScreenPosition(const MINI3D_SCREEN screen, unsigned int& x, unsigned int& y) const
-//{
-//	MONITORINFO info;
-//	info.cbSize = sizeof(MONITORINFO);
-//	GetMonitorInfo(screen, &info);
-//
-//	x = info.rcMonitor.left;
-//	y = info.rcMonitor.top;
-//}
-//void mini3d::OSFunctionW::GetScreenResolution(const MINI3D_SCREEN screen, unsigned int& width, unsigned int& height ) const
-//{
-//	MONITORINFOEX info;
-//	info.cbSize = sizeof(MONITORINFOEX);
-//	GetMonitorInfo(screen, &info);
-//		
-//	DEVMODE dm;
-//	dm.dmSize = sizeof(DEVMODE);
-//	EnumDisplaySettings(info.szDevice, ENUM_CURRENT_SETTINGS, &dm);
-//
-//	width = dm.dmPelsWidth;
-//	height = dm.dmPelsHeight;
-//}
-//unsigned int mini3d::OSFunctionW::GetScreenBitDepth(const MINI3D_SCREEN screen) const
-//{
-//	MONITORINFOEX info;
-//	info.cbSize = sizeof(MONITORINFOEX);
-//	GetMonitorInfo(screen, &info);
-//		
-//	DEVMODE dm;
-//	dm.dmSize = sizeof(DEVMODE);
-//	EnumDisplaySettings(info.szDevice, ENUM_CURRENT_SETTINGS, &dm);
-//
-//	return dm.dmBitsPerPel;
-//}
-//unsigned int mini3d::OSFunctionW::GetScreenFrequency(const MINI3D_SCREEN screen) const
-//{
-//	MONITORINFOEX info;
-//	info.cbSize = sizeof(MONITORINFOEX);
-//	GetMonitorInfo(screen, &info);
-//		
-//	DEVMODE dm;
-//	dm.dmSize = sizeof(DEVMODE);
-//	EnumDisplaySettings(info.szDevice, ENUM_CURRENT_SETTINGS, &dm);
-//
-//	return dm.dmDisplayFrequency;		
-//}
-//unsigned int mini3d::OSFunctionW::GetScreenOrientation(const MINI3D_SCREEN screen) const
-//{
-//	MONITORINFOEX info;
-//	info.cbSize = sizeof(MONITORINFOEX);
-//	GetMonitorInfo(screen, &info);
-//		
-//	DEVMODE dm;
-//	dm.dmSize = sizeof(DEVMODE);
-//	EnumDisplaySettings(info.szDevice, ENUM_CURRENT_SETTINGS, &dm);
-//
-//	return dm.dmDisplayOrientation;
-//}
-//MINI3D_GRAPHICS_CARD mini3d::OSFunctionW::GetGraphicsCardFromScreen(const MINI3D_SCREEN screen) const
-//{
-//	MONITORINFOEX monitorInfo;
-//	monitorInfo.cbSize = sizeof(MONITORINFOEX);
-//	GetMonitorInfo(screen, &monitorInfo);
-//		
-//	// Enumerate all display adapters.
-//	DISPLAY_DEVICE device, monitor;
-//	device.cb = monitor.cb = sizeof(DISPLAY_DEVICE);
-//		
-//	DWORD devNum = 0;
-//	while(EnumDisplayDevices(0, devNum, &device, 0)) 
-//	{
-//		// Loop through all monitors this display adapter is attached to (in case it is multi headed).
-//		DWORD monitorNum = 0;
-//		while(EnumDisplayDevices(device.DeviceName, monitorNum, &monitor, 0))
-//		{
-//			if (monitor.DeviceName == monitorInfo.szDevice)
-//				return devNum;
-//
-//			monitorNum++;
-//		}
-//		devNum++;
-//	}
-//	return 0;
-//}
-//
-//// Get Graphics Card Information
-//int mini3d::OSFunctionW::GetGraphicsCardCount() const
-//{
-//	// TODO: This stuff we should really cache and update when there is a screen change!
-//
-//	// Enumerate all display adapters.
-//	DISPLAY_DEVICE device;
-//	device.cb = sizeof(DISPLAY_DEVICE);
-//		
-//	int numDevices = 0;
-//
-//	// Loop through all monitors this display adapter is attached to (in case it is multi headed).
-//	DWORD deviceNum = 0;
-//	while(EnumDisplayDevices(0, deviceNum, &device, 0))
-//	{
-//		deviceNum++;
-//
-//		// Skip this device if it is a mirroring device (such as the NetMeetingvdevice) or if it is not attached to the desktop.
-//		if((device.StateFlags & DISPLAY_DEVICE_MIRRORING_DRIVER) || !(device.StateFlags & DISPLAY_DEVICE_ATTACHED_TO_DESKTOP))
-//			continue;
-//
-//		// count this monitor
-//		numDevices++;
-//	}
-//
-//	MINI3D_GRAPHICS_CARD* graphicsCards = new MINI3D_GRAPHICS_CARD[numDevices];
-//
-//	numDevices = deviceNum = 0;
-//	while(EnumDisplayDevices(0, deviceNum, &device, 0))
-//	{
-//		deviceNum++;
-//
-//		// Skip this device if it is a mirroring device (such as the NetMeetingvdevice) or if it is not attached to the desktop.
-//		if((device.StateFlags & DISPLAY_DEVICE_MIRRORING_DRIVER) || !(device.StateFlags & DISPLAY_DEVICE_ATTACHED_TO_DESKTOP))
-//			continue;
-//
-//		// count this monitor
-//		numDevices++;
-//	}
-//		
-//	return numDevices;
-//}		
-//	
 //// Debug function
 //void mini3d::OSFunctionW::PrintAllGraphicsCardInformation() const
 //{
@@ -248,9 +103,9 @@ void mini3d::OSWrapper::SetFullscreenWindow(MINI3D_WINDOW window, const unsigned
 	// if this is the first time we enter fullscreen state, capture the settings
 	if (fullscreenWindow == 0)
 	{
-		// Capture window style
+		// Capture the window style
 		windowStyle = GetWindowLongPtr(window, GWL_STYLE);
-
+		
 		// Capture window position
 		GetWindowRect(window, &winRect);
 
@@ -258,32 +113,43 @@ void mini3d::OSWrapper::SetFullscreenWindow(MINI3D_WINDOW window, const unsigned
 		fullscreenWindow = window;
 	}
 
+	// Set the window style
+	
+	SetWindowLongPtr(window, GWL_STYLE, WS_POPUP);
+    
+	// Apply the window style settings above
+	SetWindowPos(window, 0, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_SHOWWINDOW | SWP_NOACTIVATE | SWP_NOCOPYBITS | SWP_NOOWNERZORDER | SWP_NOREPOSITION | SWP_NOZORDER | SWP_NOSIZE | SWP_NOMOVE);
+
 	// Change Screen Resolution
-	if (ChangeDisplaySettingsEx(fullscreenMonitorName, &dm, 0, CDS_FULLSCREEN, 0) != DISP_CHANGE_SUCCESSFUL)
+	if (ChangeDisplaySettingsEx(fullscreenMonitorName, &dm, NULL, CDS_FULLSCREEN, NULL) != DISP_CHANGE_SUCCESSFUL)
 	{      
 		// TODO: Handle Error?
 		return;
 	}
 
+	// Make the window the same size as the fullscreen desktop
+	SetWindowPos(window, HWND_TOP, dm.dmPosition.x, dm.dmPosition.y, dm.dmPelsWidth, dm.dmPelsHeight, SWP_NOCOPYBITS | SWP_NOOWNERZORDER);
+
 	// TODO: Fix mouse cursor position (SetCursorPos, GetCursorPos)
-
-	// Make the window fullscreen and the same size as the fullscreen desktop
-	SetWindowLongPtr(window, GWL_STYLE, 0);
-	SetWindowPos(window, HWND_TOPMOST, dm.dmPosition.x, dm.dmPosition.y, dm.dmPelsWidth, dm.dmPelsHeight, SWP_FRAMECHANGED | SWP_SHOWWINDOW);
-
 }
+
 void mini3d::OSWrapper::RestoreFullscreenWindow(MINI3D_WINDOW window)
 {
 	// Only set if we are not already in windowed mode
 	if (fullscreenWindow == 0)
 		return;
 
-	// Restore desktop resolution
-	ChangeDisplaySettingsEx(fullscreenMonitorName, 0, 0, 0, 0);
-
-	// Restore window style, size and position
+	// Restore window style
 	SetWindowLongPtr(window, GWL_STYLE, windowStyle);
-	SetWindowPos(window, HWND_TOP, winRect.left, winRect.top, winRect.right - winRect.left, winRect.bottom - winRect.top, SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+
+	// Make sure settings above are applied
+	SetWindowPos(window, 0, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_SHOWWINDOW | SWP_NOACTIVATE | SWP_NOCOPYBITS | SWP_NOOWNERZORDER | SWP_NOREPOSITION | SWP_NOZORDER | SWP_NOSIZE | SWP_NOMOVE);
+
+	// Restore desktop resolution
+	ChangeDisplaySettingsEx(fullscreenMonitorName, NULL, NULL, 0, NULL);
+
+	// Restore window size and position
+	SetWindowPos(window, NULL, winRect.left, winRect.top, winRect.right - winRect.left, winRect.bottom - winRect.top, SWP_NOCOPYBITS | SWP_NOOWNERZORDER);
 
 	// Set the fullscreenWindow to 0
 	fullscreenWindow = 0;
