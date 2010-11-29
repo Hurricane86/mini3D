@@ -4,6 +4,8 @@
 // It is distributed under the MIT Software License <www.mini3d.org/license>
 
 
+#ifdef _WIN32
+
 #include "../D3D9IndexBuffer.h"
 #include <d3d9.h>
 
@@ -163,3 +165,5 @@ unsigned int mini3d::D3D9IndexBuffer::GetBytesPerIndex()
 	// TODO: Default case to avoid build warnings
 	return 4;
 }
+
+#endif

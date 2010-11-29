@@ -6,7 +6,7 @@
 
 #include "../OGL20BitmapTexture.h"
 #include "../OGL20GraphicsService.h"
-#include "../../mini3d/datatypes/error/error.h"
+#include "../../mini3d/datatypes/error/Error.h"
 #include <cstdlib>
 #include <cstring>
 

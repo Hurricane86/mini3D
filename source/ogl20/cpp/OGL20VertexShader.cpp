@@ -6,6 +6,7 @@
 
 #include "../OGL20VertexShader.h"
 #include "../OGL20GraphicsService.h"
+#include "../../oswrapper/OSWrapper.h"
 #include <iostream>
 #include <iomanip>
 #include <sstream>

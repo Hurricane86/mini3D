@@ -24,7 +24,7 @@ public:
 	inline M3DMatrix operator * (M3DMatrix& m ) const {	return Multiply(*(M3DMatrix*)this, m); }
 	inline float* operator () (unsigned int i, unsigned int j) { return (&_00 + i * 4 + j); };
 	inline float* At (unsigned int i, unsigned int j) { return (&_00 + i * 4 + j); };
-	inline void SetAt (unsigned int i, unsigned int j, float value) { ((float)*(&_00 + i * 4 + j)) = value; };
+	//inline void SetAt (unsigned int i, unsigned int j, float value) { ((float)*(&_00 + i * 4 + j)) = value; };
 
 	static M3DMatrix Multiply(M3DMatrix& A, M3DMatrix& B)
 	{

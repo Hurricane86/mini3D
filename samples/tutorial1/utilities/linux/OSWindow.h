@@ -13,7 +13,7 @@
 #include <map>
 #include <math.h>
 
-namespace utilites
+namespace utilities
 {
 class OSWindow
 {
@@ -21,7 +21,8 @@ class OSWindow
 	// ---------- ENUMS -------------------------------------------------------
 public:
 	enum WindowMessage { SIZE, CLOSED, DESTROYED, MOUSE_MOVE, MOUSE_LEFT_UP, MOUSE_LEFT_DOWN, MOUSE_WHEEL, KEY_DOWN, PAINT };
-
+	enum VirtualKeyCode { VKC_F12 = 68 };
+	
 private:
 	// ---------- FORWARD DECLARATIONS ----------------------------------------
 //	WNDPROC WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -38,7 +39,7 @@ private:
 	static bool leftMouseDown;
 	static WINDOWCALLBACK windowCallback;
 	Window window;
-	Display *dpy;
+	Display* dpy;
 
 public:
 
@@ -74,7 +75,7 @@ public:
 		XMapWindow(dpy, window);
 	}
 
-	static void WaitForMessage()
+	void WaitForMessage()
 	{
 		Atom wmDeleteMessage = XInternAtom(dpy, "WM_DELETE_WINDOW", False);
 		
@@ -93,7 +94,6 @@ public:
 				case ClientMessage:
 					if (e.xclient.data.l[0] == wmDeleteMessage)
 					{
-						DestoryWindow();				
 						windowCallback(this, CLOSED);
 					}
 				break;
@@ -183,12 +183,12 @@ private:
 };
 }
 
-int mini3d::utilites::OSWindow::width, mini3d::utilites::OSWindow::height;
-int mini3d::utilites::OSWindow::x, mini3d::utilites::OSWindow::y;
-int mini3d::utilites::OSWindow::mouseX, mini3d::utilites::OSWindow::mouseY, mini3d::utilites::OSWindow::mouseWheelDelta;
-int mini3d::utilites::OSWindow::key;	
-int mini3d::utilites::OSWindow::windowHandle;
-bool mini3d::utilites::OSWindow::leftMouseDown;
-mini3d::utilites::OSWindow::WINDOWCALLBACK mini3d::utilites::OSWindow::windowCallback;
+int utilities::OSWindow::width, utilities::OSWindow::height;
+int utilities::OSWindow::x, utilities::OSWindow::y;
+int utilities::OSWindow::mouseX, utilities::OSWindow::mouseY, utilities::OSWindow::mouseWheelDelta;
+int utilities::OSWindow::key;	
+int utilities::OSWindow::windowHandle;
+bool utilities::OSWindow::leftMouseDown;
+utilities::OSWindow::WINDOWCALLBACK utilities::OSWindow::windowCallback;
 
 #endif

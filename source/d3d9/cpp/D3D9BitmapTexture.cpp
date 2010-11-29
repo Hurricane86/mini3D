@@ -3,9 +3,10 @@
 // This file is part of mini3d <www.mini3d.org>
 // It is distributed under the MIT Software License <www.mini3d.org/license>
 
+#ifdef _WIN32
 
 #include "../D3D9BitmapTexture.h"
-#include "../../mini3d/datatypes/error/error.h"
+#include "../../mini3d/datatypes/error/Error.h"
 #include <d3d9.h>
 
 mini3d::D3D9BitmapTexture::D3D9BitmapTexture(D3D9GraphicsService* pGraphicsService, const void* pBitmap, const unsigned int& width, const unsigned int& height, const IBitmapTexture::BitDepth bitDepth, const ITexture::WrapStyle wrapStyle) :
@@ -231,3 +232,5 @@ unsigned int mini3d::D3D9BitmapTexture::GetBytesPerPixel(void)
 	// Default case to avoid compiler warnings
 	return 4;
 }
+
+#endif

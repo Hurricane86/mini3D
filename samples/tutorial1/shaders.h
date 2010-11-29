@@ -6,7 +6,7 @@
 
 // ---------- BASIC OPENGL VERTEX SHADER --------------------------------------
 char* vertexShaderGLSL =
-
+(char*)
 "\
 uniform mat4 modelViewProj;									\
 uniform sampler2D texture0;									\
@@ -29,7 +29,7 @@ void main()													\
 
 // ---------- BASIC OPENGL PIXEL SHADER ---------------------------------------
 char* pixelShaderGLSL = 
-
+(char*)
 "\
 uniform sampler2D texture0;									\
 															\
@@ -45,7 +45,7 @@ void main()													\
 
 // ---------- BASIC DIRECTX VERTEX SHADER --------------------------------------
 char* vertexShaderHLSL =
-
+(char*)
 "\
 float4x4 modelViewProj : register(c0);						\
 texture texture0;											\
@@ -68,7 +68,7 @@ void main( in data IN, out data PS )						\
 
 // ---------- BASIC DIRECTX PIXEL SHADER ---------------------------------------
 char* pixelShaderHLSL = 
-
+(char*)
 "\
 sampler2D texture0 : register(s0);							\
 															\

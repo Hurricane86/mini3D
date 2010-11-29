@@ -4,6 +4,8 @@
 // It is distributed under the MIT Software License <www.mini3d.org/license>
 
 
+#ifdef _WIN32
+
 #include "../D3D9VertexBuffer.h"
 #include "../D3D9GraphicsService.h"
 #include <d3d9.h>
@@ -74,3 +76,5 @@ void mini3d::D3D9PixelShader::UnloadResource(void)
 
 	isDirty = true;
 }
+
+#endif

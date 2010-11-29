@@ -6,6 +6,7 @@
 
 #include "../OGL20PixelShader.h"
 #include "../OGL20GraphicsService.h"
+#include "../../oswrapper/OSWrapper.h"
 #include <cstdlib>
 #include <cstring>
 

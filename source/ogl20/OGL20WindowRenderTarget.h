@@ -75,9 +75,6 @@ private:
 
 	// ::::: Private Methods :::::::::::::::::::::::::::::::::::::::::::::::::::
 
-	DEVMODE GetClosestCompatibleResolution(const unsigned int &width, const unsigned int &height);
-	unsigned int ScoreDeviceModeMatch(const DEVMODE &dm1, const DEVMODE &dm2);
-
 	virtual void UpdateSize();
 
 #ifdef _WIN32

@@ -25,6 +25,10 @@ public:
 	// Init the OS
 	virtual void Init() = 0;
 
+	// Device creation
+	virtual void CreateDevice() = 0;
+	virtual void CreateInternalWindow() = 0;
+
 	// ---------- ABSTRACT OPENGL FUNCTIONS --------------------------------------
 	// These functions preform opengl operations but they do not necessarily map 1-1 against any opengl functions.
 	// what they do depends on the platform opengl implementation.

@@ -33,9 +33,9 @@
 
 namespace mini3d
 {
-
-class OSFunction;
+class OGLWrapper;
 class OSWrapper;
+
 class OGL20GraphicsService : public IGraphicsService
 {
 

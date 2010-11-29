@@ -14,6 +14,8 @@
 namespace mini3d
 {
 class OGL20GraphicsService;
+class OGLWrapper;
+class OSWrapper;
 
 struct OGL20VertexAttribute
 {

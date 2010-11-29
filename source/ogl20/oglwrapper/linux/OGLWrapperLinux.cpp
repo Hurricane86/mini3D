@@ -141,14 +141,14 @@ void mini3d::OGLWrapper::CreateInternalWindow(void)
 		int j = 0;
 }
 
-void mini3d::OGLWrapper::PrepareWindow(const int& hWindow) const
+void mini3d::OGLWrapper::PrepareWindow(const MINI3D_WINDOW hWindow) const
 {
 
 }
 
-void mini3d::OGLWrapper::SetRenderWindow(const int& hWindow) const
+void mini3d::OGLWrapper::SetRenderWindow(const MINI3D_WINDOW window) const
 {
-	if (hWindow == 0)
+	if (window == 0)
 	{
 		if(!glXMakeCurrent(display, None, 0))
 		{
@@ -160,20 +160,11 @@ void mini3d::OGLWrapper::SetRenderWindow(const int& hWindow) const
 		//TODO: Switch to windowed mode
 			
 		GLBindFramebuffer(GL_FRAMEBUFFER, 0);
-		if (!glXMakeCurrent(GetDisplayFromWindow(hWindow), hWindow, renderingContext))
+		if (!glXMakeCurrent(GetDisplayFromWindow(window), window, renderingContext))
 		{
 			// todo: throw error
 		}
 	}
-}
-
-void mini3d::OGLWrapper::SetFullscreenRenderWindow(const int& hWindow, const unsigned int& width, const unsigned int& height) const
-{
-	// Set the video resolution to the fullscreen resolution
-	
-	// TODO: Set Fullscreen mode
-	GLBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glXMakeCurrent(GetDisplayFromWindow(hWindow), hWindow, renderingContext);
 }
 
 void mini3d::OGLWrapper::SetDefaultRenderWindow() const
@@ -181,23 +172,9 @@ void mini3d::OGLWrapper::SetDefaultRenderWindow() const
 	glXMakeCurrent(display, window, renderingContext);
 }
 
-void mini3d::OGLWrapper::SwapWindowBuffers(const int& hWindow) const
+void mini3d::OGLWrapper::SwapWindowBuffers(const MINI3D_WINDOW window) const
 {
-	glXSwapBuffers(GetDisplayFromWindow(hWindow), hWindow);
-}
-
-unsigned int mini3d::OGLWrapper::GetMonitorBitDepth() const
-{
-	return 32;
-}
-
-void mini3d::OGLWrapper::GetClientAreaSize(int windowHandle, unsigned int &width, unsigned int &height) const
-{
-	XWindowAttributes attr;
-	XGetWindowAttributes(display, windowHandle, &attr);
-	
-	width = attr.width;
-	height = attr.height;
+	glXSwapBuffers(GetDisplayFromWindow(window), window);
 }
 
 Display* mini3d::OGLWrapper::GetDisplayFromWindow(Window window) const
@@ -206,11 +183,6 @@ Display* mini3d::OGLWrapper::GetDisplayFromWindow(Window window) const
 	XGetWindowAttributes(display, window, &attr);
 	
 	return attr.screen->display;
-}
-
-void mini3d::OGLWrapper::Log(const char* message) const
-{
-	//printf(message);
 }
 
 #endif

@@ -4,6 +4,8 @@
 // It is distributed under the MIT Software License <www.mini3d.org/license>
 
 
+#ifdef _WIN32
+
 #include "../D3D9WindowRenderTarget.h"
 #include "../D3D9PresentationParameters.h"
 #include "../../oswrapper/OSWrapper.h"
@@ -265,3 +267,5 @@ LRESULT CALLBACK mini3d::D3D9WindowRenderTarget::HookWndProc(HWND hwnd, UINT msg
 
 	return CallWindowProc(screenRenderTarget->pOrigProc, hwnd, msg, wParam, lParam);
 }
+
+#endif

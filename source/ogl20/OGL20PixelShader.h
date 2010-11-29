@@ -14,6 +14,9 @@
 namespace mini3d
 {
 class OGL20GraphicsService;
+class OGLWrapper;
+class OSWrapper;
+
 class OGL20PixelShader : public IPixelShader, IOGL20Resource
 {
 

@@ -4,7 +4,7 @@
 // It is distributed under the MIT Software License <www.mini3d.org/license>
 
 
-#include <math.h>
+/*#include <math.h>
 #include "../../mini3d.h"
 #include <Windows.h>
 
@@ -347,5 +347,5 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			break;
 	}
 	return DefWindowProc(hwnd, msg, wParam, lParam);
-}
+}*/
 

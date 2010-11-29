@@ -6,7 +6,7 @@
 
 #include "../OGL20GraphicsService.h"
 #include "../../mini3d/datatypes/error/Error.h"
-#include "../../oswrapper/IOSWrapper.h"
+#include "../../oswrapper/OSWrapper.h"
 
 
 // Constructor Destructor -----------------------------------------------------

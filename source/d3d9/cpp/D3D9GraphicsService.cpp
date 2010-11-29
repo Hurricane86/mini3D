@@ -4,6 +4,8 @@
 // It is distributed under the MIT Software License <www.mini3d.org/license>
 
 
+#ifdef _WIN32
+
 #include "../D3D9GraphicsService.h"
 #include "../D3D9PresentationParameters.h"
 #include "../D3D9GraphicsSettings.h"
@@ -932,3 +934,5 @@ mini3d::IShaderProgram* mini3d::D3D9GraphicsService::CreateShaderProgram(IVertex
 {
 	return new D3D9ShaderProgram(this, pVertexShader, pPixelShader);
 }
+
+#endif

@@ -4,6 +4,8 @@
 // It is distributed under the MIT Software License <www.mini3d.org/license>
 
 
+#ifdef _WIN32
+
 #include "../D3D9RenderTargetTexture.h"
 #include "../../mini3d/datatypes/error/error.h"
 #include <d3d9.h>
@@ -169,3 +171,5 @@ void mini3d::D3D9RenderTargetTexture::UnloadDepthStencil()
 		pDepthStencil = 0;
 	}
 }
+
+#endif

@@ -7,7 +7,7 @@
 #define MINI3D_IOSWRAPPER_H
 
 // Set the data type for the MINI3D_WINDOW macro
-#include "../../mini3d/datatypes/DataTypes.h"
+#include "../mini3d/datatypes/DataTypes.h"
 
 namespace mini3d
 {

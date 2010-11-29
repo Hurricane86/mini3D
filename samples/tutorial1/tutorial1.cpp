@@ -4,7 +4,8 @@
 // It is distributed under the MIT Software License <www.mini3d.org/license>
 
 #include <math.h>
-#include "..\..\mini3d.h"
+#include <string.h>
+#include "../../mini3d.h"
 
 #include "utilities/OSWindow.h"
 #include "utilities/M3DMatrix.h"

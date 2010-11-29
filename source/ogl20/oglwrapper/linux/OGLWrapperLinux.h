@@ -4,17 +4,19 @@
 // It is distributed under the MIT Software License <www.mini3d.org/license>
 
 
-#ifdef _WIN32
+#ifdef __linux
 
-#ifndef MINI3D_OSFUNCTIONWINDOWS_H
-#define MINI3D_OSFUNCTIONWINDOWS_H
+#ifndef MINI3D_OSFUNCTIONLINUX_H
+#define MINI3D_OSFUNCTIONLINUX_H
 
+#define GLX_GLXEXT_PROTOTYPES
 #include "../IOGLWrapper.h"
-#include "../../../oswrapper/OSWrapper.h"
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <GL/glx.h>
 
-#include <windows.h>
-#include <GL/wglext.h>
 
+typedef char GLchar;
 
 namespace mini3d
 {
@@ -23,32 +25,29 @@ class OGLWrapper : IOGLWrapper
 public:
 	
 	OGLWrapper();
-
 	virtual ~OGLWrapper();
+
 	virtual void Init();
 
 	// Device creation
 	void CreateDevice();
 	void CreateInternalWindow();
 
-
 	// ---------- ABSTRACT OPENGL FUNCTIONS --------------------------------------
 	
 	// These functions preform opengl operations but they do not map 1-1 against opengl functions.
 	// what they do is platform dependent
-	virtual void PrepareWindow(const HWND hWindow) const;
-
-	virtual void SetRenderWindow(const HWND hWindow) const;
+	virtual void PrepareWindow(const MINI3D_WINDOW window) const;
+	virtual void SetRenderWindow(const MINI3D_WINDOW window) const;
 	virtual void SetDefaultRenderWindow() const;
-
-	virtual void SwapWindowBuffers(const HWND hWindow) const;
+	virtual void SwapWindowBuffers(const MINI3D_WINDOW window) const;
 
 
 	// ---------- OPEN GL FUNCTIONS ----------------------------------------------
 
 	// GENERAL
 	virtual void GLSwapBuffers() const {};
-	virtual void GLBindFramebuffer(GLenum target, GLuint framebuffer) const { glBindFramebufferEXT(target, framebuffer); };
+	//virtual void GLMakeCurrent(const DisplayContext displayContext, const WindowContext windowContext, const GLRenderingContext renderingContext) const {};
 	virtual void GLViewport(const unsigned int width, const unsigned int height) const {};
 
 	virtual void GLShadeModel(GLenum mode) const { glShadeModel(mode); };
@@ -65,6 +64,7 @@ public:
 
 	virtual void GLGenRenderbuffers(GLsizei n, GLuint* renderbuffers) const { glGenRenderbuffersEXT(n, renderbuffers); };
 	virtual void GLBindRenderbuffer(GLenum target, GLuint renderbuffer) const {glBindRenderbufferEXT(target, renderbuffer); };
+	virtual void GLBindFramebuffer(GLenum target, GLuint framebuffer) const { glBindFramebufferEXT(target, framebuffer); };
 	virtual void GLRenderbufferStorage(GLenum target, GLenum internalformat, GLsizei width, GLsizei height) const { glRenderbufferStorageEXT(target, internalformat, width, height); };
 
 	virtual void GLDeleteRenderbuffers(GLsizei n, GLuint* renderbuffers) const { glDeleteRenderbuffersEXT(n, renderbuffers); };
@@ -137,7 +137,13 @@ public:
 	virtual void GLClearDepth(GLdouble depth) const { glClearDepth(depth); };
 	virtual void GLClear(GLbitfield mask) const { glClear(mask); };
 
+
 private:
+
+	// --------- Private helper functions ----------------------------------------
+
+	Display* GetDisplayFromWindow(Window window) const;
+	
 
 	// --------- Private variables -----------------------------------------------
 
@@ -201,24 +207,15 @@ private:
 	PFNGLUNIFORM4IPROC glUniform4i;
 	
 	PFNGLUNIFORMMATRIX4FVPROC glUniformMatrix4fv;
-	PFNGLDRAWRANGEELEMENTSPROC glDrawRangeElements;
 
+	
 	// Default window and render context
-	HWND hWindow;
-	HDC hDeviceContext;
-	HGLRC hRenderContext;
+	Display* display; 
+	XVisualInfo* vinfo; 
+	XSetWindowAttributes swattr;
+	Window window;
+	GLXContext renderingContext;
 
-	// Current fullscreen window
-	HWND fullscreenWindow;
-
-	// Stores the original window position and size before entering fullscreen
-	RECT winRect;
-
-	// Stores the windowstyle for the window before changing it when entering fullscreen
-	long windowStyle;
-
-	// Exposes OS functionality
-	OSWrapper* oSWrapper;
 };
 }
 
