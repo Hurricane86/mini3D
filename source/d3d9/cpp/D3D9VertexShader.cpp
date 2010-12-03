@@ -70,6 +70,8 @@ void mini3d::D3D9VertexShader::LoadResource(void)
 	if (ppErroMessage != 0)
 	{
 		OutputDebugStringA((char*)(ppErroMessage->GetBufferPointer()));
+		isDirty = true;
+		return;
 	}
 
 	if( FAILED( pDevice->CreateVertexShader((DWORD*)buffer->GetBufferPointer(), &pShaderBuffer)))

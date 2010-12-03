@@ -70,8 +70,8 @@ int main()
 
 	// ----- CREATE GRAPHICS SERVICE ------------------------------------------
 	
-	//graphics = new mini3d::D3D9GraphicsService();
-	graphics = new mini3d::OGL20GraphicsService();
+	graphics = new mini3d::D3D9GraphicsService();
+	//graphics = new mini3d::OGL20GraphicsService();
 
 
 	// ----- CREATE GRAPHICS RESOURCES ----------------------------------------
@@ -150,7 +150,7 @@ void Render()
 	UpdateViewProjectionMatrix();
 
 	// clear render target with color
-	graphics->Clear(0.5,0.5,0.5,1.0);
+	graphics->Clear(1.f,0.5f,1.f,1.f);
 
 	// draw the scene to the renderTargetTexture
 	graphics->Draw();

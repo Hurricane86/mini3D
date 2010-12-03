@@ -13,13 +13,19 @@
 
 std::map<HWND, mini3d::D3D9WindowRenderTarget*> mini3d::D3D9WindowRenderTarget::windowMap;
 
-mini3d::D3D9WindowRenderTarget::D3D9WindowRenderTarget(D3D9GraphicsService* pGraphicsService, const HWND windowHandle, const bool& depthTestEnabled, const Quality& quality) : 
-pGraphicsService(pGraphicsService), pScreenRenderTarget(0), pDepthStencil(0), quality(quality), depthTestEnabled(depthTestEnabled), pOrigProc(0), screenState(SCREEN_STATE_WINDOWED), oSWrapper(0)
+mini3d::D3D9WindowRenderTarget::D3D9WindowRenderTarget(D3D9GraphicsService* pGraphicsService, const HWND windowHandle, const bool& depthTestEnabled, const Quality& quality)
+: 
+pGraphicsService(pGraphicsService),
+pScreenRenderTarget(0),
+pDepthStencil(0),
+quality(quality),
+depthTestEnabled(depthTestEnabled),
+pOrigProc(0),
+screenState(SCREEN_STATE_WINDOWED),
+oSWrapper(new OSWrapper)
 {
 	SetWindowRenderTarget(windowHandle, depthTestEnabled, quality);
 	pGraphicsService->AddResource(this);
-
-	oSWrapper = new OSWrapper();
 }
 
 mini3d::D3D9WindowRenderTarget::~D3D9WindowRenderTarget(void)
