@@ -76,6 +76,8 @@ public:
 	virtual void GLFramebufferRenderbuffer(GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer) const { glFramebufferRenderbufferEXT(target, attachment, renderbuffertarget, renderbuffer); };
 
 	// SHADER FUNCTIONS
+	virtual void GLValidateProgram(GLuint program) const { glValidateProgram(program); };
+
 	virtual void GLUseProgram(GLuint program) const { glUseProgram(program); }; 
 	
 	virtual void GLEnableVertexAttribArray(GLuint index) const { glEnableVertexAttribArray(index); };
@@ -98,6 +100,8 @@ public:
 	virtual GLuint GLCreateProgram() const { return glCreateProgram(); };
 	virtual void GLAttachShader(GLuint program, GLuint shader) const { glAttachShader(program, shader); };
 	virtual void GLLinkProgram(GLuint program) const { glLinkProgram(program); };
+
+	virtual void GLBindAttribLocation(GLuint program, GLuint index, const GLchar* name) const { glBindAttribLocation(program, index, name); }
 
 	// SHADER PROGRAM FUNCTIONS
 	virtual void GLGetActiveAttrib(GLuint program, GLuint index, GLsizei bufSize, GLsizei* length, GLint* size, GLenum* type, GLchar* name) const { glGetActiveAttrib(program, index, bufSize, length, size, type, name); };
@@ -157,6 +161,10 @@ private:
 	PFNGLCREATEPROGRAMPROC glCreateProgram;
 	PFNGLATTACHSHADERPROC glAttachShader;
 	PFNGLLINKPROGRAMPROC glLinkProgram;
+
+	PFNGLBINDATTRIBLOCATIONPROC glBindAttribLocation;
+
+	PFNGLVALIDATEPROGRAMPROC glValidateProgram;
 
 	PFNGLGETACTIVEATTRIBPROC glGetActiveAttrib;
 	PFNGLGETATTRIBLOCATIONPROC glGetAttribLocation;

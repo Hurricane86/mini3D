@@ -70,6 +70,8 @@ public:
 	virtual void GLFramebufferRenderbuffer(GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer) const = 0;
 
 	// SHADER FUNCTIONS
+	virtual void GLValidateProgram(GLuint program) const = 0;
+
 	virtual void GLUseProgram(GLuint program) const = 0; 
 	
 	virtual void GLEnableVertexAttribArray(GLuint index) const = 0;
@@ -92,6 +94,8 @@ public:
 	virtual GLuint GLCreateProgram() const = 0;
 	virtual void GLAttachShader(GLuint program, GLuint shader) const = 0;
 	virtual void GLLinkProgram(GLuint program) const = 0;
+
+	virtual void GLBindAttribLocation(GLuint program, GLuint index, const GLchar* name) const = 0;
 
 	// SHADER PROGRAM FUNCTIONS
 	virtual void GLGetActiveAttrib(GLuint program, GLuint index, GLsizei bufSize, GLsizei* length, GLint* size, GLenum* type, GLchar* name) const = 0;

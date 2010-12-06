@@ -14,6 +14,11 @@
 #include "shaders.h"
 #include "geometry.h"
 
+#include <cassert>
+
+#ifdef _WIN32
+#define DIRECTX9
+#endif
 
 // ----- FORWARD DECLARATIONS -------------------------------------------------
 void WndMessage(utilities::OSWindow* window, utilities::OSWindow::WindowMessage message);
@@ -57,7 +62,6 @@ mini3d::IVertexShader* pVertexShader;
 mini3d::IPixelShader* pPixelShader;
 mini3d::IShaderProgram* pShaderProgram;
 
-
 // Tutorial Application
 #ifdef _WIN32
 INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
@@ -66,13 +70,13 @@ INT WINAPI wWinMain( HINSTANCE, HINSTANCE, LPWSTR, int )
 int main()
 #endif
 {
-	
-
 	// ----- CREATE GRAPHICS SERVICE ------------------------------------------
 	
+#ifdef DIRECTX9
 	graphics = new mini3d::D3D9GraphicsService();
-	//graphics = new mini3d::OGL20GraphicsService();
-
+#else
+	graphics = new mini3d::OGL20GraphicsService();
+#endif
 
 	// ----- CREATE GRAPHICS RESOURCES ----------------------------------------
 
@@ -81,10 +85,10 @@ int main()
 	pWindowRenderTarget = graphics->CreateWindowRenderTarget(window->GetWindowHandle(), true, mini3d::IWindowRenderTarget::QUALITY_MINIMUM);
 
 	// create index buffer
-	iBuffer = graphics->CreateIndexBuffer(indices, 36);
-	
+	iBuffer = graphics->CreateIndexBuffer(indices, 36, mini3d::IIndexBuffer::INT_32, mini3d::IIndexBuffer::CULL_NONE);
+
 	// create vertex buffer
-	vBuffer = graphics->CreateVertexBuffer(vertices, 24, sizeof(VertexPCT));
+	vBuffer = graphics->CreateVertexBuffer(vertices, 24, sizeof(VertexPCT));	
 	
 	// create a 32bpp texture
 	unsigned int* pBitmap = CreateTestBitmap(512, 256);
@@ -95,16 +99,33 @@ int main()
 	mini3d::IVertexShader::VertexDataType vertexDeclaration[] = { mini3d::IVertexShader::POSITION_FLOAT4, mini3d::IVertexShader::COLOR_FLOAT4, mini3d::IVertexShader::TEXTURECOORDINATE_FLOAT2 };
 
 	// create vertex shader
-//	pVertexShader = graphics->CreateVertexShader(vertexShaderHLSL, strlen(vertexShaderHLSL), vertexDeclaration, 3);
+#ifdef DIRECTX9
+	pVertexShader = graphics->CreateVertexShader(vertexShaderHLSL, strlen(vertexShaderHLSL), vertexDeclaration, 3);
+#else
 	pVertexShader = graphics->CreateVertexShader(vertexShaderGLSL, strlen(vertexShaderGLSL), vertexDeclaration, 3);
+#endif
 
 	// create pixel shader
-//	pPixelShader = graphics->CreatePixelShader(pixelShaderHLSL, strlen(pixelShaderHLSL));
+#ifdef DIRECTX9
+	pPixelShader = graphics->CreatePixelShader(pixelShaderHLSL, strlen(pixelShaderHLSL));
+#else
 	pPixelShader = graphics->CreatePixelShader(pixelShaderGLSL, strlen(pixelShaderGLSL));
+#endif
 
 	// create shader program
 
 	pShaderProgram = graphics->CreateShaderProgram(pVertexShader, pPixelShader);
+
+#ifndef DIRECTX9
+	mini3d::OGL20GraphicsService* ogl_graphics = static_cast<mini3d::OGL20GraphicsService*>(graphics);
+
+	GLuint progam = static_cast<mini3d::OGL20ShaderProgram*>(pShaderProgram)->GetProgram();
+
+	// here the program is already linked so glBindAttribLocation doesn't work
+	//ogl_graphics->GetOGLWrapper()->GLBindAttribLocation(progam, 0, "IN_position");
+	//ogl_graphics->GetOGLWrapper()->GLBindAttribLocation(progam, 1, "IN_colors");
+	//ogl_graphics->GetOGLWrapper()->GLBindAttribLocation(progam, 2, "IN_texCoords");
+#endif
 
 	// ----- SHOW THE WINDOW --------------------------------------------------
 
@@ -118,7 +139,6 @@ int main()
 	{
 		window->WaitForMessage();
 	}
-
 
 	// ----- DELETE RESOURCES -------------------------------------------------
 
@@ -150,7 +170,7 @@ void Render()
 	UpdateViewProjectionMatrix();
 
 	// clear render target with color
-	graphics->Clear(1.f,0.5f,1.f,1.f);
+	graphics->Clear(0.5f,0.5f,0.5f,1.f);
 
 	// draw the scene to the renderTargetTexture
 	graphics->Draw();

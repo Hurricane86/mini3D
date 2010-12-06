@@ -6,8 +6,22 @@
 
 // ----- GEOMETRY DATA --------------------------------------------------------
 
+struct VertexPCT_v2 { float x,y,z;  float r,g,b,a; };
+
+VertexPCT_v2 vertices_v2[] = { 
+
+	{ 0.0f, 0.0f, 0.0f,		1.0f, 0.0f, 0.0f, 1.0f },
+	{ 0.0f, 0.5f, 0.0f,		0.0f, 1.0f, 0.0f, 1.0f },
+	{ 0.5f, 0.0f, 0.0f,		0.0f, 0.0f, 1.0f, 1.0f }
+};
+
+unsigned int indices2[] = { 0, 1, 2 };
+
+
 // Vertex Data Structure
 struct VertexPCT { float x,y,z,w;  float r,g,b,a;  float u,v; };
+
+//in_Color , in_Position , in_TexCoords
 
 // Vertex array
 VertexPCT vertices[] = {

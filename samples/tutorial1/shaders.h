@@ -26,6 +26,19 @@ void main()													\
 }															\
 "; 
 
+char* vertexShaderGLSL_v2 = (char*)
+"												\
+in  vec3 in_Position;							\
+in  vec4 in_Color;								\
+out vec4 ex_Color;								\
+												\
+void main(void)									\
+{												\
+	gl_Position = vec4(in_Position, 1.0);		\
+	ex_Color = in_Color;						\
+}												\
+";
+
 
 // ---------- BASIC OPENGL PIXEL SHADER ---------------------------------------
 char* pixelShaderGLSL = 
@@ -39,6 +52,18 @@ varying vec2 PS_texCoords;									\
 void main()													\
 {															\
 	gl_FragColor = PS_color * texture2D(texture0, PS_texCoords);\
+}															\
+";
+
+char* pixelShaderGLSL_v2 = 
+	(char*)
+"															\
+in  vec4 ex_Color;											\
+out vec4 out_Color;											\
+															\
+void main(void)												\
+{															\
+	out_Color = ex_Color;									\
 }															\
 ";
 

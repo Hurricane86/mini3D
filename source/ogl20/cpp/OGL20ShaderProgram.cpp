@@ -55,7 +55,15 @@ void mini3d::OGL20ShaderProgram::LoadResource(void)
 		pOGLWrapper->GLAttachShader(hProgram, pOLG20PixelShader->GetPixelShaderBuffer());
 	}
 
+	// ONLY FOR TEST
+	pOGLWrapper->GLBindAttribLocation(hProgram, 0, "IN_position");
+	pOGLWrapper->GLBindAttribLocation(hProgram, 1, "IN_colors");
+	pOGLWrapper->GLBindAttribLocation(hProgram, 2, "IN_texCoords");
+
 	pOGLWrapper->GLLinkProgram(hProgram);
+
+	pOGLWrapper->GLValidateProgram(hProgram);
+
 	printLog(hProgram);
 	
 	// Get attrib information
