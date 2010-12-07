@@ -41,101 +41,168 @@ public:
 	// ---------- OPEN GL FUNCTIONS ----------------------------------------------
 
 	// GENERAL
-	virtual void GLSwapBuffers() const = 0;
-	virtual void GLBindFramebuffer(GLenum target, GLuint framebuffer) const = 0;
-	virtual void GLViewport(const unsigned int width, const unsigned int height) const = 0;
+	void GLSwapBuffers() const {};
+	void GLBindFramebuffer(GLenum target, GLuint framebuffer) const { glBindFramebufferEXT(target, framebuffer); };
+	void GLViewport(const unsigned int width, const unsigned int height) const {};
 
-	virtual void GLShadeModel(GLenum mode) const = 0;
-	virtual void GLEnable(GLenum cap) const = 0;
-	virtual void GLDepthFunc(GLenum func) const = 0;
+	void GLShadeModel(GLenum mode) const { glShadeModel(mode); };
+	void GLEnable(GLenum cap) const { glEnable(cap); };
+	void GLDepthFunc(GLenum func) const { glDepthFunc(func); };
 
 	//CAPS
-	virtual void GLGetIntegerv(GLenum pname, GLint *params) const = 0;
+	void GLGetIntegerv(GLenum pname, GLint *params) const { glGetIntegerv(pname, params); };
 
 	// TEXTURE
-	virtual void GLActiveTexture(GLenum texture) const = 0;
-	virtual void GLBindTexture(GLenum target, GLuint texture) const = 0;
-	virtual void GLTexParameteri(GLenum target, GLenum pname, GLint params) const = 0;	
+	void GLActiveTexture(GLenum texture) const { glActiveTexture(texture); };
+	void GLBindTexture(GLenum target, GLuint texture) const { glBindTexture(target, texture); };
+	void GLTexParameteri(GLenum target, GLenum pname, GLint params) const { glTexParameteri(target, pname, params); };	
 
-	virtual void GLGenRenderbuffers(GLsizei n, GLuint* renderbuffers) const = 0;
-	virtual void GLBindRenderbuffer(GLenum target, GLuint renderbuffer) const = 0;
-	virtual void GLRenderbufferStorage(GLenum target, GLenum internalformat, GLsizei width, GLsizei height) const = 0;
+	void GLGenRenderbuffers(GLsizei n, GLuint* renderbuffers) const { glGenRenderbuffersEXT(n, renderbuffers); };
+	void GLBindRenderbuffer(GLenum target, GLuint renderbuffer) const {glBindRenderbufferEXT(target, renderbuffer); };
+	void GLRenderbufferStorage(GLenum target, GLenum internalformat, GLsizei width, GLsizei height) const { glRenderbufferStorageEXT(target, internalformat, width, height); };
 
-	virtual void GLDeleteRenderbuffers(GLsizei n, GLuint* renderbuffers) const = 0;
-	virtual void GLDeleteFramebuffers(GLsizei n, GLuint* framebuffers) const= 0;
+	void GLDeleteRenderbuffers(GLsizei n, GLuint* renderbuffers) const { glDeleteRenderbuffersEXT(n, renderbuffers); };
+	void GLDeleteFramebuffers(GLsizei n, GLuint* framebuffers) const{ glDeleteFramebuffersEXT(n, framebuffers); };
 
-	virtual void GLGenFramebuffers(GLsizei n, GLuint* ids) const = 0;
+	void GLGenFramebuffers(GLsizei n, GLuint* ids) const { glGenFramebuffersEXT(n, ids); };
 
-	virtual void GLFramebufferTexture2D(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level) const = 0;
-	virtual void GLFramebufferRenderbuffer(GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer) const = 0;
+	void GLFramebufferTexture2D(GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level) const { glFramebufferTexture2DEXT(target, attachment, textarget, texture, level); };
+	void GLFramebufferRenderbuffer(GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer) const { glFramebufferRenderbufferEXT(target, attachment, renderbuffertarget, renderbuffer); };
 
 	// SHADER FUNCTIONS
-	virtual void GLValidateProgram(GLuint program) const = 0;
+	void GLValidateProgram(GLuint program) const { glValidateProgram(program); };
 
-	virtual void GLUseProgram(GLuint program) const = 0; 
-	
-	virtual void GLEnableVertexAttribArray(GLuint index) const = 0;
-	virtual void GLDisableVertexAttribArray(GLuint index) const = 0;
-	virtual void GLVertexAttribPointer(GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid *pointer) const = 0;
+	void GLUseProgram(GLuint program) const { glUseProgram(program); }; 
 
-	virtual GLboolean GLIsShader(GLuint shader) const = 0;
+	void GLEnableVertexAttribArray(GLuint index) const { glEnableVertexAttribArray(index); };
+	void GLDisableVertexAttribArray(GLuint index) const { glDisableVertexAttribArray(index); };
+	void GLVertexAttribPointer(GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid *pointer) const { glVertexAttribPointer(index, size, type, normalized, stride, pointer); };
 
-	virtual GLuint GLCreateShader(GLenum shaderType) const = 0;
-	virtual void GLShaderSource(GLuint shader, GLsizei count, const GLchar** string, const GLint* length) const = 0;
-	virtual void GLCompileShader(GLuint shader) const = 0;
-	virtual void GLDeleteShader(GLuint shader) const = 0;
+	GLboolean GLIsShader(GLuint shader) const { return glIsShader(shader); };
 
-	virtual void GLGetShaderiv(GLuint shader, GLenum pname, GLint *params) const = 0;
-	virtual void GLGetProgramiv(GLenum target, GLenum pname, GLint *params) const = 0;
-	virtual void GLGetShaderInfoLog(GLuint shader, GLsizei bufSize, GLsizei *length, GLchar *infoLog) const = 0;
-	virtual void GLGetProgramInfoLog(GLuint program, GLsizei bufSize, GLsizei *length, GLchar *infoLog) const = 0;
+	GLuint GLCreateShader(GLenum shaderType) const { return glCreateShader(shaderType); };
+	void GLShaderSource(GLuint shader, GLsizei count, const GLchar** string, const GLint* length) const { glShaderSource(shader, count, string, length); };
+	void GLCompileShader(GLuint shader) const { glCompileShader(shader); };
+	void GLDeleteShader(GLuint shader) const { glDeleteShader(shader); };
 
-	virtual void GLDeleteProgram(GLuint program) const = 0;
-	virtual GLuint GLCreateProgram() const = 0;
-	virtual void GLAttachShader(GLuint program, GLuint shader) const = 0;
-	virtual void GLLinkProgram(GLuint program) const = 0;
+	void GLGetShaderiv(GLuint shader, GLenum pname, GLint *params) const { glGetShaderiv(shader, pname, params); };
+	void GLGetProgramiv(GLenum target, GLenum pname, GLint *params) const { glGetProgramiv(target,pname,params); };
+	void GLGetShaderInfoLog(GLuint shader, GLsizei bufSize, GLsizei *length, GLchar *infoLog) const { glGetShaderInfoLog(shader, bufSize, length, infoLog); };
+	void GLGetProgramInfoLog(GLuint program, GLsizei bufSize, GLsizei *length, GLchar *infoLog) const { glGetProgramInfoLog(program, bufSize, length, infoLog); };
 
-	virtual void GLBindAttribLocation(GLuint program, GLuint index, const GLchar* name) const = 0;
+	void GLDeleteProgram(GLuint program) const { glDeleteProgram(program); };
+	GLuint GLCreateProgram() const { return glCreateProgram(); };
+	void GLAttachShader(GLuint program, GLuint shader) const { glAttachShader(program, shader); };
+	void GLLinkProgram(GLuint program) const { glLinkProgram(program); };
+
+	void GLBindAttribLocation(GLuint program, GLuint index, const GLchar* name) const { glBindAttribLocation(program, index, name); }
 
 	// SHADER PROGRAM FUNCTIONS
-	virtual void GLGetActiveAttrib(GLuint program, GLuint index, GLsizei bufSize, GLsizei* length, GLint* size, GLenum* type, GLchar* name) const = 0;
-	virtual GLint GLGetAttribLocation(GLuint program, const GLchar* name) const = 0;
+	void GLGetActiveAttrib(GLuint program, GLuint index, GLsizei bufSize, GLsizei* length, GLint* size, GLenum* type, GLchar* name) const { glGetActiveAttrib(program, index, bufSize, length, size, type, name); };
+	GLint GLGetAttribLocation(GLuint program, const GLchar* name) const { return glGetAttribLocation(program, name); };
 
-	virtual void GLGetActiveUniform(GLuint program, GLuint index, GLsizei bufSize, GLsizei* length, GLint* size, GLenum* type, GLchar* name) const = 0;
-	virtual GLint GLGetUniformLocation(GLuint program, const GLchar* name) const = 0;
+	void GLGetActiveUniform(GLuint program, GLuint index, GLsizei bufSize, GLsizei* length, GLint* size, GLenum* type, GLchar* name) const { glGetActiveUniform(program, index, bufSize, length, size, type, name); };
+	GLint GLGetUniformLocation(GLuint program, const GLchar* name) const { return glGetUniformLocation(program, name); };
 
 	// SHADER PARAMETERS
-	virtual void GLUniform1f(GLint location, GLfloat v0) const = 0;
-	virtual void GLUniform2f(GLint location, GLfloat v0, GLfloat v1) const = 0;
-	virtual void GLUniform3f(GLint location, GLfloat v0, GLfloat v1, GLfloat v2) const = 0;
-	virtual void GLUniform4f(GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3) const = 0;
+	void GLUniform1f(GLint location, GLfloat v0) const { glUniform1f(location, v0); };
+	void GLUniform2f(GLint location, GLfloat v0, GLfloat v1) const { glUniform2f(location, v0, v1); };
+	void GLUniform3f(GLint location, GLfloat v0, GLfloat v1, GLfloat v2) const { glUniform3f(location, v0, v1, v2); };
+	void GLUniform4f(GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3) const { glUniform4f(location, v0, v1, v2, v3); };
 
-	virtual void GLUniform1i(GLint location, GLint  v0) const = 0;
-	virtual void GLUniform2i(GLint location, GLint  v0, GLint  v1) const = 0;
-	virtual void GLUniform3i(GLint location, GLint  v0, GLint  v1, GLint  v2) const = 0;
-	virtual void GLUniform4i(GLint location, GLint  v0, GLint  v1, GLint  v2, GLint  v3) const = 0;
+	void GLUniform1i(GLint location, GLint  v0) const { glUniform1i(location, v0); };
+	void GLUniform2i(GLint location, GLint  v0, GLint  v1) const { glUniform2i(location, v0, v1); };
+	void GLUniform3i(GLint location, GLint  v0, GLint  v1, GLint  v2) const { glUniform3i(location, v0, v1, v2); };
+	void GLUniform4i(GLint location, GLint  v0, GLint  v1, GLint  v2, GLint  v3) const { glUniform4i(location, v0, v1, v2, v3); };
 
-	virtual void GLUniformMatrix4fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat* value) const = 0;
-	
+	void GLUniformMatrix4fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat* value) const { glUniformMatrix4fv(location, count, transpose, value); };
+
 	// GEOMETRY
-	virtual void GLBindBuffer(GLenum target, GLuint buffer) const = 0;
-	virtual void* GLMapBuffer(GLenum target, GLenum access) const = 0;
-	virtual void GLUnmapBuffer(GLenum target) const = 0;
-	virtual void GLBufferData(GLenum target, GLsizeiptr size, const GLvoid* data, GLenum usage) const = 0;
-	virtual void GLGenBuffers(GLsizei n, GLuint* buffers) const = 0;
-	virtual void GLDeleteBuffers(GLsizei n, GLuint* buffers) const = 0;
+	void GLBindBuffer(GLenum target, GLuint buffer) const { glBindBuffer(target, buffer); };
+	void* GLMapBuffer(GLenum target, GLenum access) const { return glMapBuffer(target, access); };
+	void GLUnmapBuffer(GLenum target) const { glUnmapBuffer(target); };
+	void GLBufferData(GLenum target, GLsizeiptr size, const GLvoid* data, GLenum usage) const { glBufferData(target, size, data, usage); };
+	void GLGenBuffers(GLsizei n, GLuint* buffers) const { glGenBuffers(n, buffers); };
+	void GLDeleteBuffers(GLsizei n, GLuint* buffers) const { glDeleteBuffers(n, buffers); };
 
 	// DRAWING
-	virtual void GLEnableClientState(GLenum target) const = 0;
-	virtual void GLDrawElements(GLenum mode, GLsizei count, GLenum type, const GLvoid* indices) const = 0;
-    virtual void GLDrawRangeElements(GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, const GLvoid *   indices) const = 0;
-	virtual void GLDisableClientState(GLenum array) const = 0;
+	void GLEnableClientState(GLenum target) const { glEnableClientState(target); };
+	void GLDrawElements(GLenum mode, GLsizei count, GLenum type, const GLvoid* indices) const { glDrawElements(mode, count, type, indices); };
+	void GLDrawRangeElements(GLenum mode, GLuint start, GLuint end, GLsizei count, GLenum type, const GLvoid *   indices) const { glDrawRangeElements(mode, start, end, count, type, indices); };
+	void GLDisableClientState(GLenum array) const { glDisableClientState(array); };
 
-	virtual void GLClearColor(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha) const = 0;
-	virtual void GLClearDepth(GLdouble depth) const = 0;
-	virtual void GLClear(GLbitfield mask) const = 0;
+	void GLClearColor(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha) const { glClearColor(red, green, blue, alpha); };
+	void GLClearDepth(GLdouble depth) const { glClearDepth(depth); };
+	void GLClear(GLbitfield mask) const { glClear(mask); };
 
 
+protected:
+
+	PFNGLISSHADERPROC glIsShader;
+
+	PFNGLCREATESHADERPROC glCreateShader;
+	PFNGLSHADERSOURCEPROC glShaderSource;
+	PFNGLCOMPILESHADERPROC glCompileShader;
+	PFNGLDELETESHADERPROC glDeleteShader;
+
+	PFNGLGETSHADERIVPROC glGetShaderiv;
+	PFNGLGETPROGRAMIVNVPROC glGetProgramiv;
+	PFNGLGETSHADERINFOLOGPROC glGetShaderInfoLog;
+	PFNGLGETPROGRAMINFOLOGPROC glGetProgramInfoLog;
+
+	PFNGLDELETEPROGRAMPROC glDeleteProgram;
+	PFNGLCREATEPROGRAMPROC glCreateProgram;
+	PFNGLATTACHSHADERPROC glAttachShader;
+	PFNGLLINKPROGRAMPROC glLinkProgram;
+
+	PFNGLBINDATTRIBLOCATIONPROC glBindAttribLocation;
+
+	PFNGLVALIDATEPROGRAMPROC glValidateProgram;
+
+	PFNGLGETACTIVEATTRIBPROC glGetActiveAttrib;
+	PFNGLGETATTRIBLOCATIONPROC glGetAttribLocation;
+
+	PFNGLGETACTIVEUNIFORMPROC glGetActiveUniform;
+	PFNGLGETUNIFORMLOCATIONPROC glGetUniformLocation;
+
+	PFNGLUSEPROGRAMPROC glUseProgram;
+	PFNGLENABLEVERTEXATTRIBARRAYPROC glEnableVertexAttribArray;
+	PFNGLDISABLEVERTEXATTRIBARRAYPROC glDisableVertexAttribArray;
+	PFNGLVERTEXATTRIBPOINTERPROC glVertexAttribPointer;
+	PFNGLACTIVETEXTUREPROC glActiveTexture;
+
+	PFNGLGENRENDERBUFFERSEXTPROC glGenRenderbuffersEXT;
+	PFNGLBINDRENDERBUFFEREXTPROC glBindRenderbufferEXT;
+	PFNGLBINDFRAMEBUFFERPROC glBindFramebufferEXT;
+	PFNGLRENDERBUFFERSTORAGEEXTPROC glRenderbufferStorageEXT;
+
+	PFNGLDELETERENDERBUFFERSEXTPROC glDeleteRenderbuffersEXT;
+	PFNGLDELETEFRAMEBUFFERSEXTPROC glDeleteFramebuffersEXT;
+
+	PFNGLGENFRAMEBUFFERSEXTPROC glGenFramebuffersEXT;
+
+	PFNGLFRAMEBUFFERTEXTURE2DEXTPROC glFramebufferTexture2DEXT;
+	PFNGLFRAMEBUFFERRENDERBUFFEREXTPROC glFramebufferRenderbufferEXT;
+
+	PFNGLBINDBUFFERPROC glBindBuffer;
+	PFNGLMAPBUFFERPROC glMapBuffer;
+	PFNGLUNMAPBUFFERPROC glUnmapBuffer;
+	PFNGLBUFFERDATAPROC glBufferData;
+	PFNGLGENBUFFERSPROC glGenBuffers;
+	PFNGLDELETEBUFFERSPROC glDeleteBuffers;
+
+	PFNGLUNIFORM1FPROC glUniform1f;
+	PFNGLUNIFORM2FPROC glUniform2f;
+	PFNGLUNIFORM3FPROC glUniform3f;
+	PFNGLUNIFORM4FPROC glUniform4f;
+
+	PFNGLUNIFORM1IPROC glUniform1i;
+	PFNGLUNIFORM2IPROC glUniform2i;
+	PFNGLUNIFORM3IPROC glUniform3i;
+	PFNGLUNIFORM4IPROC glUniform4i;
+
+	PFNGLUNIFORMMATRIX4FVPROC glUniformMatrix4fv;
+	PFNGLDRAWRANGEELEMENTSPROC glDrawRangeElements;
 };
 }
 

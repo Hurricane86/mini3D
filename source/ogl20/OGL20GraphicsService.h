@@ -33,7 +33,6 @@
 
 namespace mini3d
 {
-class OGLWrapper;
 class OSWrapper;
 
 class OGL20GraphicsService : public IGraphicsService
@@ -48,7 +47,9 @@ private:
 	// Member variables
 	
 	// Operating system functions
-	OGLWrapper* pOGLWrapper;
+	//OGLWrapper* pOGLWrapper;
+	OGLWrapper mOGLWrapper;
+
 	OSWrapper* pOSWrapper;
 
 	// currently loaded resources
@@ -160,7 +161,7 @@ public:
 
 	// PUBLIC MEMBER FUNCTIONS ------------------------------------------------
 
-	OGLWrapper* GetOGLWrapper() { return pOGLWrapper; };
+	OGLWrapper* GetOGLWrapper() { return &mOGLWrapper; };
 	OSWrapper* GetOSWrapper() { return pOSWrapper; };
 
 	IWindowRenderTarget* GetScreenRenderTarget() { return pCurrentWindowRenderTarget; };

@@ -17,7 +17,7 @@
 #include <cassert>
 
 #ifdef _WIN32
-#define DIRECTX9
+//#define DIRECTX9
 #endif
 
 // ----- FORWARD DECLARATIONS -------------------------------------------------
